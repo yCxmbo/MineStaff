@@ -104,3 +104,21 @@ effects:
     pitch: 1.0
     particles: true
     particle_type: SPELL
+
+stafflogin:
+  enabled: true
+  require_password_for_staffmode: true
+  max_login_attempts: 3
+  lockout_time_seconds: 60
+
+logging:
+  enabled: true
+  log_to_console: true
+  log_to_file: true
+  log_file: "plugins/MineStaff/staff_actions.log"
+  log_inspect: true
+  log_freeze: true
+  log_vanish: true
+  log_teleport: true
+  log_commands: true
+

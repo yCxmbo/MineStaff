@@ -1,7 +1,8 @@
 package me.ycxmbo.mineStaff.tools;
 
 import me.ycxmbo.mineStaff.MineStaff;
-import org.bukkit.*;
+import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -31,7 +32,13 @@ public class ToolManager {
     }
 
     public void giveStaffTools(Player player) {
-        reloadSlots(); // Reload slots from config each time
+        reloadSlots();
+        if (!plugin.getStaffLoginManager().isLoggedIn(player)) {
+            // If not logged in, don't give tools
+            player.getInventory().clear();
+            return;
+        }
+
         player.getInventory().setItem(toolSlots.get("inspect"), getInspectTool());
         player.getInventory().setItem(toolSlots.get("teleport"), getTeleportTool());
         player.getInventory().setItem(toolSlots.get("freeze"), getFreezeTool());
@@ -65,35 +72,5 @@ public class ToolManager {
             item.setItemMeta(meta);
         }
         return item;
-    }
-
-    /**
-     * Plays tool-specific sound and particle effects from config.
-     *
-     * @param player   Player to affect
-     * @param toolKey  Config key under tools.effects (e.g., "freeze", "vanish")
-     */
-    public void playToolEffects(Player player, String toolKey) {
-        String path = "tools.effects." + toolKey;
-        String soundName = plugin.getConfig().getString(path + ".sound");
-        String particleName = plugin.getConfig().getString(path + ".particle");
-
-        if (soundName != null && !soundName.isEmpty()) {
-            try {
-                Sound sound = Sound.valueOf(soundName.toUpperCase());
-                player.playSound(player.getLocation(), sound, 1.0f, 1.0f);
-            } catch (IllegalArgumentException ex) {
-                plugin.getLogger().warning("[MineStaff] Invalid sound in config: " + soundName);
-            }
-        }
-
-        if (particleName != null && !particleName.isEmpty()) {
-            try {
-                Particle particle = Particle.valueOf(particleName.toUpperCase());
-                player.getWorld().spawnParticle(particle, player.getLocation().add(0, 1, 0), 20);
-            } catch (IllegalArgumentException ex) {
-                plugin.getLogger().warning("[MineStaff] Invalid particle in config: " + particleName);
-            }
-        }
     }
 }
