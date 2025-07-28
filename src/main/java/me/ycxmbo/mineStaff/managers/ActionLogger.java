@@ -22,6 +22,7 @@ public class ActionLogger {
                 .forEach(p -> p.sendMessage(fullMessage));
     }
 
+    // --- Core Actions ---
     public void logInspect(Player staff, Player target) {
         sendLog(staff.getName() + " inspected " + target.getName());
     }
@@ -40,5 +41,31 @@ public class ActionLogger {
 
     public void logCommand(Player staff, String command) {
         sendLog(staff.getName() + " executed command: " + command);
+    }
+
+    // --- Aliases for Listener Compatibility ---
+    public void logFreezeAction(Player staff, Player target, boolean frozen) {
+        logFreeze(staff, target, frozen);
+    }
+
+    public void logTeleportAction(Player staff, Player target) {
+        logTeleport(staff, target);
+    }
+
+    public void logVanishAction(Player staff, boolean vanished) {
+        logVanish(staff, vanished);
+    }
+
+    // --- World Interaction Logs ---
+    public void logBlockBreak(Player player, int x, int y, int z, String blockType) {
+        sendLog(player.getName() + " broke a block (" + blockType + ") at " + x + ", " + y + ", " + z);
+    }
+
+    public void logBlockPlace(Player player, int x, int y, int z, String blockType) {
+        sendLog(player.getName() + " placed a block (" + blockType + ") at " + x + ", " + y + ", " + z);
+    }
+
+    public void logItemDrop(Player player, String itemType, int amount) {
+        sendLog(player.getName() + " dropped " + amount + "x " + itemType);
     }
 }
