@@ -5,32 +5,28 @@ import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.tools.ToolManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class StaffModeListener implements Listener {
 
     private final MineStaff plugin;
     private final ToolManager toolManager;
     private final StaffDataManager staffManager;
-
-    // Keep track of frozen players
-    private final Set<UUID> frozenPlayers = new HashSet<>();
 
     public StaffModeListener(MineStaff plugin) {
         this.plugin = plugin;
@@ -42,29 +38,32 @@ public class StaffModeListener implements Listener {
     public void onRightClickEntity(PlayerInteractEntityEvent event) {
         Player staff = event.getPlayer();
         if (!(event.getRightClicked() instanceof Player target)) return;
-
         if (!staffManager.isInStaffMode(staff)) return;
+
         ItemStack item = staff.getInventory().getItemInMainHand();
         if (item == null || !item.hasItemMeta()) return;
 
         String displayName = ChatColor.stripColor(item.getItemMeta().getDisplayName());
 
         switch (displayName.toLowerCase()) {
-            case "inspect player" -> staff.openInventory(target.getInventory());
+            case "inspect player" -> {
+                staff.openInventory(target.getInventory());
+                toolManager.playToolEffects(staff, "inspect");
+            }
+
             case "freeze player" -> {
-                UUID uuid = target.getUniqueId();
-                boolean isFrozen = frozenPlayers.contains(uuid);
-                if (isFrozen) {
-                    frozenPlayers.remove(uuid);
+                if (staffManager.isFrozen(target)) {
+                    staffManager.unfreezePlayer(target);
                     target.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             plugin.getConfig().getString("messages.unfreeze_notify", "&aYou have been unfrozen.")));
                     staff.sendMessage(ChatColor.GREEN + "Unfroze " + target.getName());
                 } else {
-                    frozenPlayers.add(uuid);
+                    staffManager.freezePlayer(target);
                     target.sendMessage(ChatColor.translateAlternateColorCodes('&',
                             plugin.getConfig().getString("messages.freeze_notify", "&eYou have been frozen by a staff member.")));
                     staff.sendMessage(ChatColor.RED + "Froze " + target.getName());
                 }
+                toolManager.playToolEffects(staff, "freeze");
             }
         }
     }
@@ -73,6 +72,7 @@ public class StaffModeListener implements Listener {
     public void onRightClick(PlayerInteractEvent event) {
         Player staff = event.getPlayer();
         if (!staffManager.isInStaffMode(staff)) return;
+
         ItemStack item = staff.getInventory().getItemInMainHand();
         if (item == null || !item.hasItemMeta()) return;
 
@@ -93,6 +93,8 @@ public class StaffModeListener implements Listener {
                 Player target = onlinePlayers.get(new Random().nextInt(onlinePlayers.size()));
                 staff.teleport(target.getLocation());
                 staff.sendMessage(ChatColor.YELLOW + "Teleported to " + target.getName());
+
+                toolManager.playToolEffects(staff, "teleport");
             }
 
             case "toggle vanish" -> {
@@ -112,16 +114,16 @@ public class StaffModeListener implements Listener {
                     staff.sendMessage(ChatColor.YELLOW + "You are now invisible.");
                 }
 
-                // Update vanish tool to reflect current vanish state
                 toolManager.giveStaffTools(staff);
+                toolManager.playToolEffects(staff, "vanish");
             }
         }
     }
 
     @EventHandler
     public void onMove(org.bukkit.event.player.PlayerMoveEvent event) {
-        if (frozenPlayers.contains(event.getPlayer().getUniqueId())) {
-            event.setTo(event.getFrom()); // prevent movement
+        if (staffManager.isFrozen(event.getPlayer())) {
+            event.setTo(event.getFrom()); // prevent movement if frozen
         }
     }
 
@@ -153,13 +155,5 @@ public class StaffModeListener implements Listener {
                 event.setCancelled(true); // Prevent modifying own inventory in staff mode
             }
         }
-    }
-
-    public boolean isFrozen(Player player) {
-        return frozenPlayers.contains(player.getUniqueId());
-    }
-
-    public Set<UUID> getFrozenPlayers() {
-        return Collections.unmodifiableSet(frozenPlayers);
     }
 }

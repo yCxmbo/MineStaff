@@ -9,7 +9,9 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 public class StaffDataManager {
@@ -43,6 +45,9 @@ public class StaffDataManager {
 
     private final HashMap<UUID, StaffData> staffMap = new HashMap<>();
 
+    // Track frozen players by UUID
+    private final Set<UUID> frozenPlayers = new HashSet<>();
+
     public void enableStaffMode(Player player) {
         staffMap.put(player.getUniqueId(), new StaffData(player));
         player.getInventory().clear();
@@ -58,6 +63,7 @@ public class StaffDataManager {
         if (data != null) {
             data.restore(player);
         }
+        frozenPlayers.remove(player.getUniqueId()); // Unfreeze if disabling staff mode
         Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
     }
 
@@ -65,8 +71,24 @@ public class StaffDataManager {
         return staffMap.containsKey(player.getUniqueId());
     }
 
-    // New getter added here
     public Map<UUID, StaffData> getStaffMap() {
         return Collections.unmodifiableMap(staffMap);
+    }
+
+    // Freeze management methods:
+    public boolean isFrozen(Player player) {
+        return frozenPlayers.contains(player.getUniqueId());
+    }
+
+    public void freezePlayer(Player player) {
+        frozenPlayers.add(player.getUniqueId());
+    }
+
+    public void unfreezePlayer(Player player) {
+        frozenPlayers.remove(player.getUniqueId());
+    }
+
+    public Set<UUID> getFrozenPlayers() {
+        return Collections.unmodifiableSet(frozenPlayers);
     }
 }

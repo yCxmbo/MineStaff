@@ -1,25 +1,15 @@
-package me.ycxmbo.mineStaff;/*
- * me.ycxmbo.mineStaff.MineStaff - A comprehensive Staff Mode plugin for Minecraft Paper 1.20+
- * Group ID: me.ycxmbo
- * Artifact ID: me.ycxmbo.mineStaff.MineStaff
- *
- * Core class structure:
- * - MineStaff.java (plugin entry point)
- * - me.ycxmbo.mineStaff.commands/StaffModeCommand.java (handles /staffmode and /sm)
- * - me.ycxmbo.mineStaff.listeners/StaffModeListener.java (handles interaction, inventory, and restrictions)
- * - me.ycxmbo.mineStaff.tools/ToolManager.java (generates custom staff me.ycxmbo.mineStaff.tools)
- * - me.ycxmbo.mineStaff.managers/StaffDataManager.java (stores and restores player states)
- * - me.ycxmbo.mineStaff.util/ConfigManager.java (loads and manages config)
- */
-
-// Main plugin class
+package me.ycxmbo.mineStaff;
 
 import me.ycxmbo.mineStaff.commands.StaffListCommand;
 import me.ycxmbo.mineStaff.commands.StaffModeCommand;
+import me.ycxmbo.mineStaff.listeners.AlertListener;
+import me.ycxmbo.mineStaff.listeners.InspectorGUIListener;
+import me.ycxmbo.mineStaff.listeners.StaffAlertListener;
 import me.ycxmbo.mineStaff.listeners.StaffModeListener;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
-import me.ycxmbo.mineStaff.util.ConfigManager;
+import me.ycxmbo.mineStaff.tools.InspectorGUI;
 import me.ycxmbo.mineStaff.tools.ToolManager;
+import me.ycxmbo.mineStaff.util.ConfigManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MineStaff extends JavaPlugin {
@@ -28,6 +18,7 @@ public class MineStaff extends JavaPlugin {
     private StaffDataManager staffDataManager;
     private ConfigManager configManager;
     private ToolManager toolManager;
+    private InspectorGUI inspectorGUI;
 
     @Override
     public void onEnable() {
@@ -35,14 +26,21 @@ public class MineStaff extends JavaPlugin {
 
         saveDefaultConfig();
         configManager = new ConfigManager(this);
-        staffDataManager = new StaffDataManager(this); // ✅ Correct
+        staffDataManager = new StaffDataManager(this);
         toolManager = new ToolManager(this);
+        inspectorGUI = new InspectorGUI(this);
 
+        // Register commands
         getCommand("staffmode").setExecutor(new StaffModeCommand(this));
         getCommand("sm").setExecutor(new StaffModeCommand(this));
         getCommand("stafflist").setExecutor(new StaffListCommand(this));
 
+        // Register listeners
+        getServer().getPluginManager().registerEvents(new AlertListener(this), this);
+        getServer().getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.AlertListener(this), this);
         getServer().getPluginManager().registerEvents(new StaffModeListener(this), this);
+        getServer().getPluginManager().registerEvents(new InspectorGUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new StaffAlertListener(this), this); // ✅ NEW
 
         getLogger().info("MineStaff has been enabled.");
     }
@@ -66,5 +64,9 @@ public class MineStaff extends JavaPlugin {
 
     public ToolManager getToolManager() {
         return toolManager;
+    }
+
+    public InspectorGUI getInspectorGUI() {
+        return inspectorGUI;
     }
 }

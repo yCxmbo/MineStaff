@@ -3,6 +3,7 @@ main: me.ycxmbo.mineStaff.MineStaff
 version: 1.1
 api-version: 1.21
 author: ycxmbo
+softdepend: [LiteBans]
 description: A powerful and customizable Staff Mode plugin for Paper 1.20+
 
 commands:
@@ -17,6 +18,13 @@ commands:
     usage: /stafflist
     permission: staffmode.list
     permission-message: You do not have permission to use this command.
+  staffinspect:
+    description: Inspect a player's inventory, armor, and more.
+    usage: /<command> <player>
+  staffchat:
+    description: Toggles or sends a message to staff chat.
+    usage: /staffchat [message]
+    aliases: [sc]
 
 permissions:
   staffmode.use:
@@ -27,4 +35,7 @@ permissions:
     default: op
   staffmode.list:
     description: Allows use of /stafflist
+    default: op
+  staffmode.alerts:
+    description: Receive staff alerts for important events
     default: op

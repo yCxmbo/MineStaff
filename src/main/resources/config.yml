@@ -1,17 +1,28 @@
+# MineStaff Plugin Configuration
+
 messages:
   staffmode_enabled: "&aStaff Mode enabled."
   staffmode_disabled: "&cStaff Mode disabled."
-  freeze_notify: "&eYou have been frozen by a staff member."
-  unfreeze_notify: "&aYou have been unfrozen."
   no_permission: "&cYou do not have permission."
   only_players: "&cOnly players can use this command."
   teleport_failed: "&cNo players to teleport to."
+  freeze_notify: "&eYou have been frozen by a staff member."
+  unfreeze_notify: "&aYou have been unfrozen."
+  alert_prefix: "&c[MineStaff Alert] &f"
+  name_skin_change: "&e%player%'s skin or name has changed!"
+  litebans_action: "&c%player% was punished via LiteBans: %reason% by %actor%"
+  godseye_detected: "&4GodEyes Alert: &c%player% flagged for &f%cheat%&c."
+  staff_chat: "&8[&bStaff&8] &7%player%: %message%"
+  alert_messages:
+    block_place: "&e%player% placed a block at &7%x%, %y%, %z%"
+    block_break: "&c%player% broke a block at &7%x%, %y%, %z%"
+    item_drop: "&d%player% dropped an item at &7%x%, %y%, %z%"
 
 tools:
   inspect:
     material: BOOK
     name: "&bInspect Player"
-    lore: "Right-click to view inventory"
+    lore: "Right-click to view inventory and stats"
 
   teleport:
     material: COMPASS
@@ -29,9 +40,67 @@ tools:
     lore: "Right-click to vanish/unvanish"
 
   tool-slots:
-    inspect: 0     # Slot for Inspect Tool (0 = first hotbar slot)
-    teleport: 1    # Slot for Random Teleport Tool
-    freeze: 7      # Slot for Freeze Tool
-    vanish: 8      # Slot for Vanish Toggle Tool
+    inspect: 0
+    teleport: 1
+    freeze: 7
+    vanish: 8
 
-# Note: Add config-based options like allowed-interactions, log-to-file, etc. if needed.
+alerts:
+  block_place: true
+  block_break: true
+  item_drop: true
+  skin_or_name_change: true
+  litebans_events: true
+  godseye_events: true
+
+staff-chat:
+  enabled: true
+  format: "&8[&bStaff&8] &7%player%: %message%"
+
+effects:
+  enabled: true
+
+  vanish:
+    toggle_on:
+      sound: ENTITY_ENDERMAN_TELEPORT
+      volume: 1.0
+      pitch: 1.0
+      particles: true
+      particle_type: CLOUD
+    toggle_off:
+      sound: BLOCK_NOTE_BLOCK_BASS
+      volume: 1.0
+      pitch: 0.8
+      particles: true
+      particle_type: SMOKE_NORMAL
+
+  freeze:
+    enabled: true
+    on_freeze:
+      sound: BLOCK_GLASS_BREAK
+      volume: 1.0
+      pitch: 1.2
+      particles: true
+      particle_type: SNOWFLAKE
+    on_unfreeze:
+      sound: BLOCK_ANVIL_BREAK
+      volume: 1.0
+      pitch: 0.8
+      particles: true
+      particle_type: HEART
+
+  teleport:
+    enabled: true
+    sound: ENTITY_ENDERMAN_TELEPORT
+    volume: 1.0
+    pitch: 1.0
+    particles: true
+    particle_type: PORTAL
+
+  inspect:
+    enabled: true
+    sound: BLOCK_CHEST_OPEN
+    volume: 1.0
+    pitch: 1.0
+    particles: true
+    particle_type: SPELL
