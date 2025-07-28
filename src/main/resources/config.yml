@@ -1,0 +1,37 @@
+messages:
+  staffmode_enabled: "&aStaff Mode enabled."
+  staffmode_disabled: "&cStaff Mode disabled."
+  freeze_notify: "&eYou have been frozen by a staff member."
+  unfreeze_notify: "&aYou have been unfrozen."
+  no_permission: "&cYou do not have permission."
+  only_players: "&cOnly players can use this command."
+  teleport_failed: "&cNo players to teleport to."
+
+tools:
+  inspect:
+    material: BOOK
+    name: "&bInspect Player"
+    lore: "Right-click to view inventory"
+
+  teleport:
+    material: COMPASS
+    name: "&aRandom Teleport"
+    lore: "Right-click to teleport to a random player"
+
+  freeze:
+    material: STICK
+    name: "&cFreeze Player"
+    lore: "Right-click to freeze/unfreeze a player"
+
+  vanish:
+    material: FEATHER
+    name: "&eToggle Vanish"
+    lore: "Right-click to vanish/unvanish"
+
+  tool-slots:
+    inspect: 0     # Slot for Inspect Tool (0 = first hotbar slot)
+    teleport: 1    # Slot for Random Teleport Tool
+    freeze: 7      # Slot for Freeze Tool
+    vanish: 8      # Slot for Vanish Toggle Tool
+
+# Note: Add config-based options like allowed-interactions, log-to-file, etc. if needed.

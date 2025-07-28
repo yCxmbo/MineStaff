@@ -1,0 +1,30 @@
+name: MineStaff
+main: me.ycxmbo.mineStaff.MineStaff
+version: 1.1
+api-version: 1.21
+author: ycxmbo
+description: A powerful and customizable Staff Mode plugin for Paper 1.20+
+
+commands:
+  staffmode:
+    description: Toggle staff mode
+    usage: /staffmode
+    aliases: [sm]
+    permission: staffmode.use
+    permission-message: You do not have permission to use this command.
+  stafflist:
+    description: List all players in Staff Mode
+    usage: /stafflist
+    permission: staffmode.list
+    permission-message: You do not have permission to use this command.
+
+permissions:
+  staffmode.use:
+    description: Allows toggling staff mode
+    default: op
+  staffmode.notify:
+    description: Notify on join with server/player status
+    default: op
+  staffmode.list:
+    description: Allows use of /stafflist
+    default: op
