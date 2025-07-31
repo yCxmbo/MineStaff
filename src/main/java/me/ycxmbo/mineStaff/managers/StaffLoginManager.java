@@ -46,23 +46,28 @@ public class StaffLoginManager {
         if (!staffAccountsConfig.isConfigurationSection("passwords")) return;
 
         for (String key : staffAccountsConfig.getConfigurationSection("passwords").getKeys(false)) {
-            UUID uuid = UUID.fromString(key);
-            String password = staffAccountsConfig.getString("passwords." + key);
-            cachedPasswords.put(uuid, password);
+            try {
+                UUID uuid = UUID.fromString(key);
+                String passwordHash = staffAccountsConfig.getString("passwords." + key);
+
+                // Migrate plain text passwords to BCrypt
+                if (!passwordHash.startsWith("$2a$")) {
+                    plugin.getLogger().info("Migrating plain text password for " + key + " to BCrypt");
+                    String newHash = BCrypt.hashpw(passwordHash, BCrypt.gensalt());
+                    staffAccountsConfig.set("passwords." + key, newHash);
+                    savePasswords();
+                }
+
+                cachedPasswords.put(uuid, passwordHash);
+            } catch (IllegalArgumentException e) {
+                plugin.getLogger().severe("Invalid UUID in staffaccounts.yml: " + key);
+            }
         }
     }
 
     private void savePasswords() {
-        // Clear old entries first
-        if (staffAccountsConfig.isConfigurationSection("passwords")) {
-            for (String key : staffAccountsConfig.getConfigurationSection("passwords").getKeys(false)) {
-                staffAccountsConfig.set("passwords." + key, null);
-            }
-        }
-
-        for (Map.Entry<UUID, String> entry : cachedPasswords.entrySet()) {
-            staffAccountsConfig.set("passwords." + entry.getKey().toString(), entry.getValue());
-        }
+        staffAccountsConfig.set("passwords", null); // Clear old entries
+        staffAccountsConfig.createSection("passwords", cachedPasswords); // Save all cached passwords
 
         try {
             staffAccountsConfig.save(staffAccountsFile);
@@ -81,13 +86,14 @@ public class StaffLoginManager {
     }
 
     public void setPassword(Player player, String password) {
-        cachedPasswords.put(player.getUniqueId(), password);
+        String hashed = BCrypt.hashpw(password, BCrypt.gensalt());
+        cachedPasswords.put(player.getUniqueId(), hashed);
         savePasswords();
     }
 
     public boolean checkPassword(Player player, String password) {
-        String stored = cachedPasswords.get(player.getUniqueId());
-        if (stored != null && stored.equals(password)) {
+        String storedHash = cachedPasswords.get(player.getUniqueId());
+        if (storedHash != null && BCrypt.checkpw(password, storedHash)) {
             loggedInPlayers.put(player.getUniqueId(), true);
             return true;
         }
@@ -96,10 +102,17 @@ public class StaffLoginManager {
 
     public void logout(Player player) {
         loggedInPlayers.remove(player.getUniqueId());
+        plugin.getStaffDataManager().unVanishPlayer(player); // Ensure vanish is reset
     }
 
     public void logoutAll() {
         loggedInPlayers.clear();
+        plugin.getStaffDataManager().getStaffMap().keySet().forEach(uuid -> {
+            Player player = org.bukkit.Bukkit.getPlayer(uuid);
+            if (player != null) {
+                plugin.getStaffDataManager().unVanishPlayer(player);
+            }
+        });
     }
 
     public void forceLogin(Player player) {

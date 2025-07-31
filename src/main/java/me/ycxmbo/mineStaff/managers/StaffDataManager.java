@@ -6,6 +6,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 
 import java.util.*;
 
@@ -40,15 +41,15 @@ public class StaffDataManager {
 
     private final Map<UUID, StaffData> staffMap = new HashMap<>();
     private final Set<UUID> frozenPlayers = new HashSet<>();
+    private final Set<UUID> vanishedPlayers = new HashSet<>();
 
     public void enableStaffMode(Player player) {
+        if (player.getOpenInventory() != null &&
+                player.getOpenInventory().getTopInventory().getType() != InventoryType.PLAYER) {
+            player.closeInventory(); // Close GUIs to prevent conflicts
+        }
         staffMap.put(player.getUniqueId(), new StaffData(player));
         player.getInventory().clear();
-        Bukkit.getOnlinePlayers().forEach(p -> {
-            if (!p.hasPermission("staffmode.use")) {
-                p.hidePlayer(plugin, player);
-            }
-        });
     }
 
     public void disableStaffMode(Player player) {
@@ -74,6 +75,24 @@ public class StaffDataManager {
 
     public boolean isFrozen(Player player) {
         return frozenPlayers.contains(player.getUniqueId());
+    }
+
+    public void vanishPlayer(Player player) {
+        vanishedPlayers.add(player.getUniqueId());
+        Bukkit.getOnlinePlayers().forEach(p -> {
+            if (!p.hasPermission("staffmode.use")) {
+                p.hidePlayer(plugin, player);
+            }
+        });
+    }
+
+    public void unVanishPlayer(Player player) {
+        vanishedPlayers.remove(player.getUniqueId());
+        Bukkit.getOnlinePlayers().forEach(p -> p.showPlayer(plugin, player));
+    }
+
+    public boolean isVanished(Player player) {
+        return vanishedPlayers.contains(player.getUniqueId());
     }
 
     public Map<UUID, StaffData> getStaffMap() {

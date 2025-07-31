@@ -22,6 +22,7 @@ public class VulcanListener implements Listener {
 
     @EventHandler
     public void onVulcanViolation(VulcanViolationEvent event) {
+        if (!configManager.getBoolean("integrations.vulcan.enabled", true)) return;
         if (!config.getConfig().getBoolean("alerts.vulcan_violation")) return;
 
         Player player = event.getPlayer();
@@ -38,6 +39,7 @@ public class VulcanListener implements Listener {
 
     @EventHandler
     public void onVulcanPunish(VulcanPunishEvent event) {
+        if (!configManager.getBoolean("integrations.vulcan.enabled", true)) return;
         if (!config.getConfig().getBoolean("alerts.vulcan_punishment")) return;
 
         Player player = event.getPlayer();

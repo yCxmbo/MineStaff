@@ -44,7 +44,8 @@ public class MineStaff extends JavaPlugin {
         getCommand("stafflogin").setExecutor(new StaffLoginCommand(this));
         getCommand("cpscheck").setExecutor(new CPSCheckCommand(this));
         getCommand("staffinspect").setExecutor(new StaffInspectCommand(this));
-        getCommand("staffchat").setExecutor(staffChatCommand); // Toggles or sends message
+        getCommand("staffchat").setExecutor(staffChatCommand);
+        getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
 
         // Listeners
         getServer().getPluginManager().registerEvents(new AlertListener(this), this);
@@ -53,7 +54,7 @@ public class MineStaff extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new StaffAlertListener(this), this);
         getServer().getPluginManager().registerEvents(new FreezeListener(this), this);
 
-        // Register Vulcan alerts only if available
+        // Vulcan integration
         if (Bukkit.getPluginManager().isPluginEnabled("Vulcan")) {
             getLogger().info("Vulcan Anti-Cheat detected. Enabling cheat detection alerts.");
             getServer().getPluginManager().registerEvents(new VulcanListener(this), this);
@@ -105,5 +106,9 @@ public class MineStaff extends JavaPlugin {
 
     public StaffChatCommand getStaffChatCommand() {
         return staffChatCommand;
+    }
+
+    public void reloadConfigManager() {
+        configManager.reloadConfig();
     }
 }

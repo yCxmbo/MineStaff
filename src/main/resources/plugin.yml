@@ -12,6 +12,9 @@ commands:
     usage: /freeze <player>
     permission: staffmode.freeze
     permission-message: You do not have permission to freeze players.
+  staffreload:
+    description: Reload MineStaff configuration
+    permission: staffmode.reload
 
   inspecttool:
     description: Gives you the inspect tool

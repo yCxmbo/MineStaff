@@ -9,22 +9,23 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 public class StaffChatCommand implements CommandExecutor, TabExecutor {
 
     private final MineStaff plugin;
-    private final ConfigManager config;
-
-    // Track which players have staff chat toggled on
+    private final ConfigManager configManager;
     private final Set<UUID> toggledPlayers = new HashSet<>();
 
     public StaffChatCommand(MineStaff plugin) {
         this.plugin = plugin;
-        this.config = plugin.getConfigManager();
+        this.configManager = plugin.getConfigManager();
     }
 
-    // Check if player has staff chat toggled on
     public boolean isToggled(UUID playerUUID) {
         return toggledPlayers.contains(playerUUID);
     }
@@ -32,12 +33,12 @@ public class StaffChatCommand implements CommandExecutor, TabExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(ChatColor.RED + config.getMessage("only_players", "Only players can use this command."));
+            sender.sendMessage(ChatColor.RED + configManager.getMessage("only_players", "Only players can use this command."));
             return true;
         }
 
         if (!player.hasPermission("staffmode.use")) {
-            player.sendMessage(ChatColor.RED + config.getMessage("no_permission", "You do not have permission."));
+            player.sendMessage(ChatColor.RED + configManager.getMessage("no_permission", "You do not have permission."));
             return true;
         }
 
@@ -45,10 +46,10 @@ public class StaffChatCommand implements CommandExecutor, TabExecutor {
             // Toggle staff chat on/off
             if (toggledPlayers.contains(player.getUniqueId())) {
                 toggledPlayers.remove(player.getUniqueId());
-                player.sendMessage(ChatColor.GREEN + "Staff chat disabled.");
+                player.sendMessage(ChatColor.GREEN + configManager.getMessage("staffchat_disabled", "Staff chat disabled."));
             } else {
                 toggledPlayers.add(player.getUniqueId());
-                player.sendMessage(ChatColor.GREEN + "Staff chat enabled.");
+                player.sendMessage(ChatColor.GREEN + configManager.getMessage("staffchat_enabled", "Staff chat enabled."));
             }
             return true;
         }
@@ -60,7 +61,7 @@ public class StaffChatCommand implements CommandExecutor, TabExecutor {
     }
 
     private void sendStaffChatMessage(Player sender, String message) {
-        String format = config.getConfig().getString("staff-chat.format", "&8[&bStaff&8] &7%player%: %message%");
+        String format = configManager.getMessage("staff-chat.format", "&8[&bStaff&8] &7%player%: %message%");
         String formattedMessage = ChatColor.translateAlternateColorCodes('&',
                 format.replace("%player%", sender.getName())
                         .replace("%message%", message));
@@ -70,7 +71,6 @@ public class StaffChatCommand implements CommandExecutor, TabExecutor {
                 .forEach(p -> p.sendMessage(formattedMessage));
     }
 
-    // Optional: Add tab completion for better UX
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         return Collections.emptyList();

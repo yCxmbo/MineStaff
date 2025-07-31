@@ -9,13 +9,12 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataType;
 
 import java.util.List;
 
 public class InspectorGUI {
 
-    public void openInventoryView(Player viewer, Player target) {
+    public void openInspectorGUI(Player viewer, Player target) {
         Inventory inv = Bukkit.createInventory(null, 54, ChatColor.GOLD + "Inspecting " + target.getName());
 
         // Add target inventory
@@ -40,6 +39,8 @@ public class InspectorGUI {
             double max = target.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue();
             healthMeta.setDisplayName(ChatColor.RED + "Health: " + hp + "/" + max);
             health.setItemMeta(healthMeta);
+        } else {
+            MineStaff.getInstance().getLogger().severe("Failed to create health item meta!");
         }
         inv.setItem(50, health);
 
@@ -56,20 +57,24 @@ public class InspectorGUI {
             effectsMeta.setDisplayName(ChatColor.AQUA + "Potion Effects");
             effectsMeta.setLore(List.of(effectList.toString().split("\n")));
             effects.setItemMeta(effectsMeta);
+        } else {
+            MineStaff.getInstance().getLogger().severe("Failed to create effects item meta!");
         }
         inv.setItem(51, effects);
 
-// Ender Chest
+        // Ender Chest
         ItemStack ender = new ItemStack(Material.ENDER_CHEST);
         ItemMeta enderMeta = ender.getItemMeta();
         if (enderMeta != null) {
-            enderMeta.setDisplayName(ChatColor.LIGHT_PURPLE + "Click to view Ender Chest");
+            String description = MineStaff.getInstance().getConfigManager().getMessage("tool-descriptions.ender_chest", "Click to view Ender Chest");
+            enderMeta.setDisplayName(ChatColor.LIGHT_PURPLE + description);
             enderMeta.getPersistentDataContainer().set(
-                    new NamespacedKey(MineStaff.getInstance(), "ender_view"),
-                    PersistentDataType.STRING,
-                    target.getName()
-            );
+                    new NamespacedKey(MineStaff.getInstance(), "ender_chest"), 
+                    new ConfigManager().getConfig().getNamespace(), 
+                    "ender_chest");
             ender.setItemMeta(enderMeta);
+        } else {
+            MineStaff.getInstance().getLogger().severe("Failed to create ender chest item meta!");
         }
         inv.setItem(52, ender);
 

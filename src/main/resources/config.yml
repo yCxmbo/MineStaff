@@ -1,124 +1,111 @@
-# MineStaff Plugin Configuration
-
+# MineStaff Configuration
 messages:
+  # General messages
+  only_players: "Only players can use this command."
+  no_permission: "You do not have permission to use this command."
   staffmode_enabled: "&aStaff Mode enabled."
   staffmode_disabled: "&cStaff Mode disabled."
-  no_permission: "&cYou do not have permission."
-  only_players: "&cOnly players can use this command."
-  teleport_failed: "&cNo players to teleport to."
+  no_password_set: "You must set a staff login password first using /stafflogin set <password>"
+  must_login: "You must log in first using /stafflogin <password> before toggling Staff Mode."
+  password_required: "Please provide a password."
+  password_set: "Staff login password set successfully."
+  already_logged_in: "You are already logged in."
+  login_success: "Staff login successful! You can now use staff mode."
+  login_failed: "Incorrect password."
+  teleport_failed: "No players to teleport to."
   freeze_notify: "&eYou have been frozen by a staff member."
   unfreeze_notify: "&aYou have been unfrozen."
+  vanish_invisible: "You are now invisible."
+  vanish_visible: "You are now visible."
+
+  # Action logger messages
+  inspect: "&6%staff% &finspected &7%target%"
+  freeze: "&6%staff% &f%action% &7%target%"
+  teleport: "&6%staff% &fteleported to &7%target%"
+  vanish: "&6%staff% &f%action%"
+  command_log: "&6%staff% &fexecuted command: &7%command%"
+  block_break: "&c%player% &fbroke a &7%block% &fat &7%x%, %y%, %z%"
+  block_place: "&a%player% &fplaced a &7%block% &fat &7%x%, %y%, %z%"
+  item_drop: "&d%player% &fdropped &7%amount%x &7%item% &fat &7%x%, %y%, %z%"
+
+  # Staff chat
+  staffchat_enabled: "Staff chat enabled."
+  staffchat_disabled: "Staff chat disabled."
+  staffchat_usage: "Usage: /staffchat <message>"
+  staffchat_format: "&8[&bStaff&8] &7%player%: %message%"
+
+  # Alert prefixes
   alert_prefix: "&c[MineStaff Alert] &f"
   name_skin_change: "&e%player%'s skin or name has changed!"
-  litebans_action: "&c%player% was punished via LiteBans: %reason% by %actor%"
-  vulcan_detected: "&4Vulcan Alert: &c%player% flagged for &f%check%&c."
-  staff_chat: "&8[&bStaff&8] &7%player%: %message%"
+  vulcan_violation: "&4Vulcan Alert: &c%player% failed &f%check% &c(VL: %vl%)"
+  vulcan_punishment: "&c%player% was punished by Vulcan for &f%check%"
+  godseye_detected: "&4GodEyes Alert: &c%player% flagged for &f%cheat%&c."
 
-  alert_messages:
-    block_place: "&e%player% placed a block at &7%x%, %y%, %z%"
-    block_break: "&c%player% broke a block at &7%x%, %y%, %z%"
-    item_drop: "&d%player% dropped an item at &7%x%, %y%, %z%"
+# Staff tool configurations
+tool-slots:
+  inspect: 0
+  teleport: 1
+  freeze: 7
+  vanish: 8
 
-tools:
-  inspect:
-    material: BOOK
-    name: "&bInspect Player"
-    lore: "Right-click to view inventory and stats"
+tool-materials:
+  inspect: "CHEST"
+  teleport: "COMPASS"
+  freeze: "ICE"
+  vanish: "INVISIBILITY_POTION"
 
-  teleport:
-    material: COMPASS
-    name: "&aRandom Teleport"
-    lore: "Right-click to teleport to a random player"
+tool-names:
+  inspect: "Inspect Player"
+  teleport: "Random Teleport"
+  freeze: "Freeze Player"
+  vanish: "Toggle Vanish"
 
-  freeze:
-    material: STICK
-    name: "&cFreeze Player"
-    lore: "Right-click to freeze/unfreeze a player"
+tool-cooldowns:
+  inspect: 20 # 1 second (20 ticks)
+  teleport: 40 # 2 seconds
+  freeze: 20 # 1 second
+  vanish: 20 # 1 second
 
-  vanish:
-    material: FEATHER
-    name: "&eToggle Vanish"
-    lore: "Right-click to vanish/unvanish"
+# Staff mode settings
+staff-mode:
+  hide-inventory: true
+  hide-block-interactions: true
+  toggle-cooldown: 200 # 10 seconds (200 ticks)
 
-  tool-slots:
-    inspect: 0
-    teleport: 1
-    freeze: 7
-    vanish: 8
-
-alerts:
-  block_place: true
-  block_break: true
-  item_drop: true
-  skin_or_name_change: true
-  litebans_events: true
-  vulcan_events: true
-
+# Staff chat settings
 staff-chat:
   enabled: true
+  toggle-only: true
   format: "&8[&bStaff&8] &7%player%: %message%"
 
-effects:
-  enabled: true
+# Alert settings
+alerts:
+  block_break: true
+  block_place: true
+  item_drop: true
+  vulcan_violation: true
+  vulcan_punishment: true
+  godseye_events: true
+  skin_or_name_change: true
+  name_skin_change: true
 
-  vanish:
-    toggle_on:
-      sound: ENTITY_ENDERMAN_TELEPORT
-      volume: 1.0
-      pitch: 1.0
-      particles: true
-      particle_type: CLOUD
-    toggle_off:
-      sound: BLOCK_NOTE_BLOCK_BASS
-      volume: 1.0
-      pitch: 0.8
-      particles: true
-      particle_type: SMOKE_NORMAL
+# Alert colors
+alert-colors:
+  block_break: "&c"
+  block_place: "&a"
+  item_drop: "&d"
+  vulcan_violation: "&4"
+  vulcan_punishment: "&c"
+  godseye_events: "&4"
+  name_skin_change: "&e"
 
-  freeze:
+# Integrations
+integrations:
+  vulcan:
     enabled: true
-    on_freeze:
-      sound: BLOCK_GLASS_BREAK
-      volume: 1.0
-      pitch: 1.2
-      particles: true
-      particle_type: SNOWFLAKE
-    on_unfreeze:
-      sound: BLOCK_ANVIL_BREAK
-      volume: 1.0
-      pitch: 0.8
-      particles: true
-      particle_type: HEART
-
-  teleport:
+  godseye:
     enabled: true
-    sound: ENTITY_ENDERMAN_TELEPORT
-    volume: 1.0
-    pitch: 1.0
-    particles: true
-    particle_type: PORTAL
 
-  inspect:
-    enabled: true
-    sound: BLOCK_CHEST_OPEN
-    volume: 1.0
-    pitch: 1.0
-    particles: true
-    particle_type: SPELL
-
-stafflogin:
-  enabled: true
-  require_password_for_staffmode: true
-  max_login_attempts: 3
-  lockout_time_seconds: 60
-
-logging:
-  enabled: true
-  log_to_console: true
-  log_to_file: true
-  log_file: "plugins/MineStaff/staff_actions.log"
-  log_inspect: true
-  log_freeze: true
-  log_vanish: true
-  log_teleport: true
-  log_commands: true
+# Debug settings
+debug:
+  enabled: false

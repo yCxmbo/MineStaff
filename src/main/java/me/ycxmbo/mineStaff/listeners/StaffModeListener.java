@@ -22,6 +22,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -34,6 +37,8 @@ public class StaffModeListener implements Listener {
     private final StaffLoginManager loginManager;
     private final ActionLogger actionLogger;
     private final CPSManager cpsManager;
+    private final Map<UUID, Long> toolCooldowns = new HashMap<>();
+    private final long cooldownDuration = 20 * 5; // 5 seconds
 
     public StaffModeListener(MineStaff plugin) {
         this.plugin = plugin;
@@ -42,6 +47,15 @@ public class StaffModeListener implements Listener {
         this.loginManager = plugin.getStaffLoginManager();
         this.actionLogger = plugin.getActionLogger();
         this.cpsManager = plugin.getCPSManager();
+    }
+
+    public boolean isOnCooldown(Player player) {
+        return toolCooldowns.containsKey(player.getUniqueId()) &&
+                System.currentTimeMillis() < toolCooldowns.get(player.getUniqueId());
+    }
+
+    public void setCooldown(Player player) {
+        toolCooldowns.put(player.getUniqueId(), System.currentTimeMillis() + cooldownDuration);
     }
 
     private boolean canUseStaffTools(Player player) {
@@ -92,6 +106,11 @@ public class StaffModeListener implements Listener {
 
         switch (displayName.toLowerCase()) {
             case "random teleport" -> {
+                if (isOnCooldown(staff)) {
+                    staff.sendMessage(ChatColor.RED + "Please wait before using the teleport tool again.");
+                    return;
+                }
+
                 List<Player> onlinePlayers = Bukkit.getOnlinePlayers().stream()
                         .filter(p -> !p.equals(staff))
                         .filter(p -> !staffManager.isInStaffMode(p))
@@ -107,9 +126,15 @@ public class StaffModeListener implements Listener {
                 staff.sendMessage(ChatColor.YELLOW + "Teleported to " + target.getName());
 
                 actionLogger.logTeleportAction(staff, target);
+                setCooldown(staff);
             }
 
             case "toggle vanish" -> {
+                if (isOnCooldown(staff)) {
+                    staff.sendMessage(ChatColor.RED + "Please wait before using the vanish tool again.");
+                    return;
+                }
+
                 boolean vanished = staff.hasPotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY);
                 if (vanished) {
                     staff.removePotionEffect(org.bukkit.potion.PotionEffectType.INVISIBILITY);
@@ -130,6 +155,7 @@ public class StaffModeListener implements Listener {
 
                 // Update vanish tool to reflect current vanish state
                 toolManager.giveStaffTools(staff);
+                setCooldown(staff);
             }
         }
     }
