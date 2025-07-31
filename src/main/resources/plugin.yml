@@ -1,41 +1,111 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 1.1
+version: 1.3
 api-version: 1.21
 author: ycxmbo
-softdepend: [LiteBans]
+softdepend: [LiteBans, Vulcan]
 description: A powerful and customizable Staff Mode plugin for Paper 1.20+
 
 commands:
+  freeze:
+    description: Freeze a player
+    usage: /freeze <player>
+    permission: staffmode.freeze
+    permission-message: You do not have permission to freeze players.
+
+  inspecttool:
+    description: Gives you the inspect tool
+    usage: /inspecttool
+    permission: staffmode.inspect
+    permission-message: You do not have permission to use the inspect tool.
+
+  staffchat:
+    description: Toggle or send a message to staff chat
+    usage: /staffchat [message]
+    aliases: [sc]
+    permission: staffmode.chat
+    permission-message: You do not have permission to use staff chat.
+
+  staffinspect:
+    description: Inspect a player's inventory, armor, and more
+    usage: /staffinspect <player>
+    permission: staffmode.inspect
+    permission-message: You do not have permission to inspect players.
+
+  stafflist:
+    description: List all players currently in Staff Mode
+    usage: /stafflist
+    permission: staffmode.list
+    permission-message: You do not have permission to view the staff list.
+
+  stafflogin:
+    description: Log into staff mode with a password
+    usage: /stafflogin <password>
+    permission: staffmode.login
+    permission-message: You do not have permission to use this command.
+
   staffmode:
-    description: Toggle staff mode
+    description: Toggle Staff Mode
     usage: /staffmode
     aliases: [sm]
     permission: staffmode.use
-    permission-message: You do not have permission to use this command.
-  stafflist:
-    description: List all players in Staff Mode
-    usage: /stafflist
-    permission: staffmode.list
-    permission-message: You do not have permission to use this command.
-  staffinspect:
-    description: Inspect a player's inventory, armor, and more.
-    usage: /<command> <player>
-  staffchat:
-    description: Toggles or sends a message to staff chat.
-    usage: /staffchat [message]
-    aliases: [sc]
+    permission-message: You do not have permission to toggle Staff Mode.
+
+  teleporttool:
+    description: Gives you the teleport tool
+    usage: /teleporttool
+    permission: staffmode.teleport
+    permission-message: You do not have permission to use the teleport tool.
+
+  unfreeze:
+    description: Unfreeze a player
+    usage: /unfreeze <player>
+    permission: staffmode.freeze
+    permission-message: You do not have permission to unfreeze players.
+
+  vanishtool:
+    description: Gives you the vanish tool
+    usage: /vanishtool
+    permission: staffmode.vanish
+    permission-message: You do not have permission to use the vanish tool.
 
 permissions:
+  staffmode.alerts:
+    description: Receive staff alerts for player events and cheat detections
+    default: op
+
+  staffmode.chat:
+    description: Allows sending and toggling staff chat
+    default: op
+
+  staffmode.freeze:
+    description: Allows freezing and unfreezing players
+    default: op
+
+  staffmode.inspect:
+    description: Allows inspecting player inventories and using the inspect tool
+    default: op
+
+  staffmode.list:
+    description: Allows listing players currently in staff mode
+    default: op
+
+  staffmode.login:
+    description: Allows logging into staff mode using a password
+    default: op
+
+  staffmode.logs:
+    description: Receive logs of staff tool usage and actions
+    default: op
+
+  staffmode.teleport:
+    description: Allows using the teleport tool
+    default: op
+
   staffmode.use:
     description: Allows toggling staff mode
     default: op
-  staffmode.notify:
-    description: Notify on join with server/player status
-    default: op
-  staffmode.list:
-    description: Allows use of /stafflist
-    default: op
-  staffmode.alerts:
-    description: Receive staff alerts for important events
+
+  staffmode.vanish:
+    description: Allows using the vanish tool
     default: op
