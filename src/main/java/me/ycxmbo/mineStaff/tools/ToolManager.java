@@ -21,10 +21,20 @@ public class ToolManager {
 
     public void giveStaffTools(Player p) {
         p.getInventory().clear();
-        p.getInventory().addItem(named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport Tool", "Right-click: teleport to block you look at", "Sneak+Right-click: up to max range"));
-        p.getInventory().addItem(named(FREEZE_TOOL, ChatColor.RED + "Freeze Tool", "Right-click a player to toggle freeze"));
-        p.getInventory().addItem(named(INSPECT_TOOL, ChatColor.GREEN + "Inspect Tool", "Right-click a player to open inspector"));
-        p.getInventory().addItem(named(VANISH_TOOL, ChatColor.LIGHT_PURPLE + "Vanish Toggle", "Right-click to toggle vanish"));
+
+        int tpSlot = plugin.getConfigManager().getToolSlot("teleport", 0);
+        int frSlot = plugin.getConfigManager().getToolSlot("freeze", 1);
+        int inSlot = plugin.getConfigManager().getToolSlot("inspect", 2);
+        int vaSlot = plugin.getConfigManager().getToolSlot("vanish", 8);
+
+        p.getInventory().setItem(tpSlot, named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport Tool",
+                "Right-click: teleport to block you look at", "Sneak+Right-click: up to max range"));
+        p.getInventory().setItem(frSlot, named(FREEZE_TOOL, ChatColor.RED + "Freeze Tool",
+                "Right-click a player to toggle freeze"));
+        p.getInventory().setItem(inSlot, named(INSPECT_TOOL, ChatColor.GREEN + "Inspect Tool",
+                "Right-click a player to open inspector"));
+        p.getInventory().setItem(vaSlot, named(VANISH_TOOL, ChatColor.LIGHT_PURPLE + "Vanish Toggle",
+                "Right-click to toggle vanish"));
     }
 
     private ItemStack named(Material m, String name, String... lore) {

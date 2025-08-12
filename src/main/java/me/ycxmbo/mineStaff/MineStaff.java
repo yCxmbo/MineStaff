@@ -59,6 +59,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ToolListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffAlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new AlertListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new StaffToolGuardListener(this), this);
 
         // Dynamic bridges (Vulcan/LiteBans)
         BridgeManager.initialize(this);

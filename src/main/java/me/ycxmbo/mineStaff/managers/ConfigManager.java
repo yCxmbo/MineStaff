@@ -38,6 +38,10 @@ public class ConfigManager {
         defaults.put("messages.password_set", "&aPassword set.");
         defaults.put("options.require_login", "true");
         defaults.put("options.staffchat_prefix", "@");
+        defaults.put("tools.slots.teleport", "0");
+        defaults.put("tools.slots.freeze", "1");
+        defaults.put("tools.slots.inspect", "2");
+        defaults.put("tools.slots.vanish", "8");
     }
 
     private void ensureDefaults() {
@@ -97,5 +101,9 @@ public class ConfigManager {
         this.config = plugin.getConfig();
         setupStaffAccounts();
         ensureDefaults();
+    }
+
+    public int getToolSlot(String key, int def) {
+        return config.getInt("tools.slots." + key, def);
     }
 }

@@ -27,3 +27,10 @@ alerts:
   hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
   click_tp: true
   sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+tools:
+  slots:
+    teleport: 0
+    freeze: 1
+    inspect: 2
+    vanish: 8
