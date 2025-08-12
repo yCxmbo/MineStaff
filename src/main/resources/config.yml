@@ -1,0 +1,29 @@
+messages:
+  prefix: "&8[&aMineStaff&8]&r "
+  no_permission: "&cYou don't have permission."
+  only_players: "&cOnly players can use this."
+  staffmode_enabled: "&aStaff Mode enabled."
+  staffmode_disabled: "&cStaff Mode disabled."
+  login_required: "&eYou must /stafflogin before using staff tools."
+  login_success: "&aLogin successful."
+  login_failure: "&cIncorrect password."
+  password_set: "&aPassword set."
+  vanish_on: "&dVanish enabled."
+  vanish_off: "&dVanish disabled."
+  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
+  teleport_blocked: "&cBlocked destination."
+  teleport_no_spot: "&cNo safe spot in sight."
+
+options:
+  require_login: true
+  staffchat_prefix: "@"
+  teleport_max_range: 60
+  teleport_max_range_sneak: 120
+  teleport_cooldown_ms: 1500
+
+alerts:
+  use_minimessage: true
+  template: "<gradient:#19E68C:#13B5FF>[StaffAlert]</gradient> <gray>{content}</gray>"
+  hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
+  click_tp: true
+  sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
