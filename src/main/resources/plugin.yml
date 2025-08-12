@@ -1,15 +1,16 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 2.4.0
+version: 2.5.0
 api-version: '1.21'
 author: ycxmbo
-softdepend: [LiteBans, Vulcan]
+softdepend: [LiteBans, Vulcan, Essentials]
 description: A streamlined Staff Mode plugin for Paper 1.21+
 
 commands:
   staffmode:
     description: Toggle Staff Mode
-    aliases: [sm]
+    usage: /<command>
+    aliases: [sm, staff]
     permission: staffmode.toggle
   stafflogin:
     description: Staff login and password management
@@ -59,7 +60,6 @@ permissions:
   staffmode.cpscheck:
     description: Use CPS checker
     default: op
-
   staffmode.vanish:
     description: Toggle vanish
     default: op
@@ -69,7 +69,6 @@ permissions:
   staffmode.see:
     description: See vanished staff
     default: op
-
   staffmode.alerts:
     description: Receive staff alerts
     default: op
