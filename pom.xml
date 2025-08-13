@@ -5,7 +5,7 @@
 
   <groupId>me.ycxmbo</groupId>
   <artifactId>MineStaff</artifactId>
-  <version>2.1</version>
+  <version>2.2</version>
   <name>MineStaff</name>
   <description>Staff mode plugin for Paper 1.21+</description>
   <url>https://example.invalid/MineStaff</url>

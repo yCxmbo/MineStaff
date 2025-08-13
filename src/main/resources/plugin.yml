@@ -1,6 +1,6 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 2.1
+version: 2.2
 api-version: '1.21'
 author: ycxmbo
 softdepend: [LiteBans, Vulcan, Essentials, PlaceholderAPI]

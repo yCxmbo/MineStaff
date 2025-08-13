@@ -8,6 +8,7 @@ import me.ycxmbo.mineStaff.util.SoundUtil;
 import me.ycxmbo.mineStaff.util.VanishUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -39,16 +40,26 @@ public class ToolListener implements Listener {
         if (it == null) return;
         if (!data.isStaffMode(p)) return;
 
+        final boolean rightClick = e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK;
+
+        // Teleport tool
         if (it.getType() == ToolManager.TELEPORT_TOOL && p.hasPermission("staffmode.teleport")) {
-            if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            if (rightClick) {
                 e.setCancelled(true);
-                useTeleport(p, p.isSneaking() ? 120 : 60);
+                int regular = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range", 60);
+                int sneak = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range_sneak", 120);
+                useTeleport(p, p.isSneaking() ? sneak : regular);
             }
-        } else if (it.getType() == ToolManager.VANISH_TOOL && p.hasPermission("staffmode.vanish")) {
-            if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        // Vanish tool (now a dye item)
+        if (isVanishItem(it) && p.hasPermission("staffmode.vanish")) {
+            if (rightClick) {
                 e.setCancelled(true);
                 toggleVanish(p);
             }
+            return;
         }
     }
 
@@ -67,7 +78,7 @@ public class ToolListener implements Listener {
             data.setFrozen(target, state);
             p.sendMessage(ChatColor.YELLOW + "Player " + target.getName() + " " + (state ? "frozen." : "unfrozen."));
             if (state) target.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
-            target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
+            target.getWorld().spawnParticle(Particle.CLOUD, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
             SoundUtil.playFreeze(p);
         } else if (it.getType() == ToolManager.INSPECT_TOOL && p.hasPermission("staffmode.inspect")) {
             e.setCancelled(true);
@@ -77,12 +88,21 @@ public class ToolListener implements Listener {
         }
     }
 
+    private boolean isVanishItem(ItemStack it) {
+        Material m = it.getType();
+        return m == Material.LIME_DYE || m == Material.LIGHT_GRAY_DYE;
+    }
+
     private void toggleVanish(Player p) {
         boolean newState = !data.isVanished(p);
         data.setVanished(p, newState);
         MineStaff.getInstance().getVanishStore().setVanished(p.getUniqueId(), newState);
         MineStaff.getInstance().getVanishStore().save();
         VanishUtil.applyVanish(p, newState);
+
+        // NEW: update vanish tool dye to reflect state
+        plugin.getToolManager().updateVanishTool(p, newState);
+
         if (newState) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "Vanish enabled.");
             SoundUtil.playVanishOn(p);
@@ -98,7 +118,7 @@ public class ToolListener implements Listener {
         String key = "teleport";
         if (!cooldowns.ready(p.getUniqueId(), key)) {
             long ms = cooldowns.remaining(p.getUniqueId(), key);
-            p.sendMessage(ChatColor.RED + "Teleport cooldown: " + (ms/1000.0) + "s");
+            p.sendMessage(ChatColor.RED + "Teleport cooldown: " + (ms / 1000.0) + "s");
             return;
         }
         Location eye = p.getEyeLocation();
@@ -113,7 +133,7 @@ public class ToolListener implements Listener {
 
         Location dest = last.getLocation().add(0.5, 1, 0.5);
         // Basic safety: ensure destination and head are not inside solid blocks
-        if (dest.getBlock().getType().isSolid() || dest.clone().add(0,1,0).getBlock().getType().isSolid()) {
+        if (dest.getBlock().getType().isSolid() || dest.clone().add(0, 1, 0).getBlock().getType().isSolid()) {
             p.sendMessage(ChatColor.RED + "Blocked destination.");
             return;
         }
