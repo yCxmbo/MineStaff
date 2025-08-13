@@ -24,6 +24,9 @@ public class MineStaff extends JavaPlugin {
     private CPSManager cpsManager;
     private VanishStore vanishStore;
     private StaffChatCommand staffChatCommand; // used by listener to check toggles
+    private ReportManager reportManager;
+    private InfractionManager infractionManager;
+    private RollbackManager rollbackManager;
 
     @Override
     public void onEnable() {
@@ -38,6 +41,9 @@ public class MineStaff extends JavaPlugin {
         this.actionLogger = new ActionLogger(this);
         this.cpsManager = new CPSManager(this);
         this.vanishStore = new VanishStore(this);
+        this.reportManager = new ReportManager(this);
+        this.infractionManager = new InfractionManager(this);
+        this.rollbackManager = new RollbackManager(this);
 
         // Commands
         getCommand("staffmode").setExecutor(new StaffModeCommand(this));
@@ -47,6 +53,10 @@ public class MineStaff extends JavaPlugin {
         getCommand("freeze").setExecutor(new FreezeCommand(this));
         getCommand("inspect").setExecutor(new InspectCommand(this));
         getCommand("cpscheck").setExecutor(new CPSCheckCommand(this));
+        getCommand("report").setExecutor(new ReportCommand(this));
+        getCommand("infractions").setExecutor(new InfractionsCommand(this));
+        getCommand("stafflistgui").setExecutor(new StaffListGUICommand(this));
+        getCommand("rollback").setExecutor(new RollbackCommand(this));
 
         this.staffChatCommand = new StaffChatCommand(this);
         getCommand("staffchat").setExecutor(staffChatCommand);
@@ -60,6 +70,9 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new StaffAlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new AlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffToolGuardListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new ReportsGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new SilentChestListener(this), this);
 
         // Dynamic bridges (Vulcan/LiteBans)
         BridgeManager.initialize(this);
@@ -92,4 +105,7 @@ public class MineStaff extends JavaPlugin {
     public CPSManager getCPSManager() { return cpsManager; }
     public VanishStore getVanishStore() { return vanishStore; }
     public StaffChatCommand getStaffChatCommand() { return staffChatCommand; }
+    public ReportManager getReportManager() { return reportManager; }
+    public InfractionManager getInfractionManager() { return infractionManager; }
+    public RollbackManager getRollbackManager() { return rollbackManager; }
 }

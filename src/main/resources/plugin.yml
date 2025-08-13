@@ -1,9 +1,9 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 2.5.0
+version: 2.1
 api-version: '1.21'
 author: ycxmbo
-softdepend: [LiteBans, Vulcan, Essentials]
+softdepend: [LiteBans, Vulcan, Essentials, PlaceholderAPI]
 description: A streamlined Staff Mode plugin for Paper 1.21+
 
 commands:
@@ -34,6 +34,20 @@ commands:
   cpscheck:
     description: Start a CPS test for a player
     permission: staffmode.cpscheck
+  report:
+    description: Report a player
+    usage: /<command> <player> <reason>
+    permission: staffmode.report
+  infractions:
+    description: Manage or view infractions
+    usage: /<command> <player> [add <type> <reason>]
+    permission: staffmode.infractions
+  stafflistgui:
+    description: Open staff list GUI
+    permission: staffmode.list
+  rollback:
+    description: Open rollback GUI for a player
+    permission: staffmode.rollback
 
 permissions:
   staffmode.toggle:
@@ -71,4 +85,15 @@ permissions:
     default: op
   staffmode.alerts:
     description: Receive staff alerts
+    default: op
+  staffmode.report:
+    default: true
+  staffmode.infractions:
+    default: op
+  staffmode.infractions.add:
+    default: op
+  staffmode.rollback:
+    default: op
+  staffmode.silentchest:
+    description: Open containers silently in Staff Mode
     default: op

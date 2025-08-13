@@ -36,3 +36,15 @@ tools:
     vanish: 8
 
 teleport-to-spawn-on-exit: true
+
+reports:
+  notify-staff-permission: "staffmode.alerts"
+
+infractions:
+  types: ["WARN","MUTE","BAN"]  # free-form; used for display
+
+rollback:
+  max-snapshots-per-player: 25
+
+silent-chest:
+  require-sneak: true
