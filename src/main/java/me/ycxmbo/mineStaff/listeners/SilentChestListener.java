@@ -24,10 +24,7 @@ public class SilentChestListener implements Listener {
     private final StaffDataManager data;
     private final MineStaff plugin;
 
-    public SilentChestListener(MineStaff plugin) {
-        this.plugin = plugin;
-        this.data = plugin.getStaffDataManager();
-    }
+    public SilentChestListener(MineStaff plugin) { this.plugin = plugin; this.data = plugin.getStaffDataManager(); }
 
     @EventHandler(ignoreCancelled = true)
     public void onOpen(PlayerInteractEvent e) {
@@ -39,22 +36,13 @@ public class SilentChestListener implements Listener {
         Player p = e.getPlayer();
         if (!data.isStaffMode(p)) return;
 
-        // config: require sneak to open silently (defaults to true)
-        boolean requireSneak = plugin.getConfigManager().getConfig()
-                .getBoolean("silent-chest.require-sneak", true);
+        boolean requireSneak = plugin.getConfigManager().getConfig().getBoolean("silent-chest.require-sneak", true);
         if (requireSneak && !p.isSneaking()) return;
 
-        // Intercept normal open and show a detached copy instead
         e.setCancelled(true);
-
         Inventory source = container.getInventory();
-        Inventory copy = Bukkit.createInventory(
-                p,
-                source.getSize(),
-                VIEW_PREFIX + prettify(block.getType().name())
-        );
+        Inventory copy = Bukkit.createInventory(p, source.getSize(), VIEW_PREFIX + prettify(block.getType().name()));
         copy.setContents(source.getContents());
-
         p.openInventory(copy);
         try { p.playSound(p.getLocation(), Sound.UI_TOAST_IN, 0.4f, 1.4f); } catch (Throwable ignored) {}
     }
@@ -65,11 +53,7 @@ public class SilentChestListener implements Listener {
         if (!data.isStaffMode(p)) return;
         String title = e.getView().getTitle();
         if (title == null || !ChatColor.stripColor(title).startsWith("SilentView:")) return;
-
-        // Absolutely no taking/placing/swap in silent view
         e.setCancelled(true);
-
-        // Also nuke number-key swaps that reference hotbar items
         if (e.getClick() == ClickType.NUMBER_KEY) {
             int hotbar = e.getHotbarButton();
             if (hotbar >= 0 && hotbar < 9) {
@@ -85,8 +69,6 @@ public class SilentChestListener implements Listener {
         if (!data.isStaffMode(p)) return;
         String title = e.getView().getTitle();
         if (title == null || !ChatColor.stripColor(title).startsWith("SilentView:")) return;
-
-        // No drag moves in the silent view
         e.setCancelled(true);
     }
 
@@ -96,9 +78,7 @@ public class SilentChestListener implements Listener {
         StringBuilder sb = new StringBuilder();
         for (String part : parts) {
             if (part.isEmpty()) continue;
-            sb.append(Character.toUpperCase(part.charAt(0)))
-                    .append(part.substring(1))
-                    .append(' ');
+            sb.append(Character.toUpperCase(part.charAt(0))).append(part.substring(1)).append(' ');
         }
         return sb.toString().trim();
     }

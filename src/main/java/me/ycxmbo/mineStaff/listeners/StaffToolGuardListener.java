@@ -15,10 +15,7 @@ import org.bukkit.inventory.ItemStack;
 
 public class StaffToolGuardListener implements Listener {
     private final StaffDataManager data;
-
-    public StaffToolGuardListener(MineStaff plugin) {
-        this.data = plugin.getStaffDataManager();
-    }
+    public StaffToolGuardListener(MineStaff plugin) { this.data = plugin.getStaffDataManager(); }
 
     private boolean isStaffTool(ItemStack it) {
         if (it == null) return false;
@@ -26,7 +23,8 @@ public class StaffToolGuardListener implements Listener {
         return m == ToolManager.TELEPORT_TOOL
                 || m == ToolManager.FREEZE_TOOL
                 || m == ToolManager.INSPECT_TOOL
-                || m == ToolManager.VANISH_TOOL;
+                || m == Material.LIME_DYE
+                || m == Material.LIGHT_GRAY_DYE;
     }
 
     @EventHandler
@@ -34,35 +32,25 @@ public class StaffToolGuardListener implements Listener {
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (!data.isStaffMode(p)) return;
 
-        // Cancel when trying to pick up / place / swap any staff tool
-        boolean touchingTool =
-                isStaffTool(e.getCurrentItem()) ||
-                        isStaffTool(e.getCursor());
+        boolean touching = isStaffTool(e.getCurrentItem()) || isStaffTool(e.getCursor());
 
-        // Also handle number-key hotbar swaps (the tool might be in the hotbar slot)
         if (e.getClick() == ClickType.NUMBER_KEY) {
             int hotbar = e.getHotbarButton();
             if (hotbar >= 0 && hotbar < 9) {
-                ItemStack hotbarItem = p.getInventory().getItem(hotbar);
-                if (isStaffTool(hotbarItem)) touchingTool = true;
+                ItemStack hb = p.getInventory().getItem(hotbar);
+                if (isStaffTool(hb)) touching = true;
             }
         }
-
-        if (touchingTool) {
-            e.setCancelled(true);
-            p.sendActionBar(ChatColor.RED + "You can't move staff tools in Staff Mode.");
-        }
+        if (touching) { e.setCancelled(true); p.sendMessage(ChatColor.RED + "You can't move staff tools in Staff Mode."); }
     }
 
     @EventHandler
     public void onDrag(InventoryDragEvent e) {
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (!data.isStaffMode(p)) return;
-
-        // If the cursor/old cursor is a staff tool, cancel all drag operations
         if (isStaffTool(e.getCursor()) || isStaffTool(e.getOldCursor())) {
             e.setCancelled(true);
-            p.sendActionBar(ChatColor.RED + "You can't move staff tools in Staff Mode.");
+            p.sendMessage(ChatColor.RED + "You can't move staff tools in Staff Mode.");
         }
     }
 }

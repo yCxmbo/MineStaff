@@ -15,6 +15,7 @@ public class ToolManager {
     public static final Material TELEPORT_TOOL = Material.COMPASS;
     public static final Material FREEZE_TOOL = Material.BLAZE_ROD;
     public static final Material INSPECT_TOOL = Material.BOOK;
+    public static final Material CPS_TOOL = Material.CLOCK; // or any item you like
 
     private final MineStaff plugin;
     public ToolManager(MineStaff plugin) { this.plugin = plugin; }
@@ -24,6 +25,7 @@ public class ToolManager {
         int frSlot = plugin.getConfigManager().getToolSlot("freeze", 1);
         int inSlot = plugin.getConfigManager().getToolSlot("inspect", 2);
         int vaSlot = plugin.getConfigManager().getToolSlot("vanish", 8);
+        int cpsSlot = plugin.getConfigManager().getToolSlot("cps", 3);
 
         p.getInventory().setItem(tpSlot, named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport Tool",
                 "Right-click: teleport to block you look at", "Sneak+Right-click: up to max range"));
@@ -33,6 +35,9 @@ public class ToolManager {
 
         p.getInventory().setItem(inSlot, named(INSPECT_TOOL, ChatColor.GREEN + "Inspect Tool",
                 "Right-click a player to open inspector"));
+
+        p.getInventory().setItem(cpsSlot, named(CPS_TOOL, ChatColor.GOLD + "CPS Checker",
+                "Right-click a player to run a 10s CPS test"));
 
         // vanish tool (dye) – initial appearance reflects current vanish state
         boolean vanished = plugin.getStaffDataManager().isVanished(p);

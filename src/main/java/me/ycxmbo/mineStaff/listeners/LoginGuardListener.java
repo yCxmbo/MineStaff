@@ -21,7 +21,6 @@ public class LoginGuardListener implements Listener {
 
     private boolean requiresLogin(Player p) {
         if (!config.isLoginRequired()) return false;
-        // staff must login if they have the staff toggle perm
         return p.hasPermission("staffmode.toggle") && !login.isLoggedIn(p);
     }
 
@@ -29,23 +28,19 @@ public class LoginGuardListener implements Listener {
     public void onMove(PlayerMoveEvent e) {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
-
-        // Only block real movement (not head rotation)
-        if (e.getFrom().getX() != e.getTo().getX()
-                || e.getFrom().getY() != e.getTo().getY()
-                || e.getFrom().getZ() != e.getTo().getZ()) {
+        if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ()) {
             e.setTo(e.getFrom());
-            p.sendActionBar(ChatColor.YELLOW + "Please /stafflogin to move.");
+            p.sendMessage(ChatColor.YELLOW + "Please /stafflogin to move.");
         }
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent e) {
-        Player p = (Player) e.getPlayer();
+        Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         String msg = e.getMessage().toLowerCase();
-        if (msg.startsWith("/stafflogin")) return; // allow login
+        if (msg.startsWith("/stafflogin")) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin before using commands."));
+        p.sendMessage(ChatColor.RED + "Please /stafflogin before using commands.");
     }
 }

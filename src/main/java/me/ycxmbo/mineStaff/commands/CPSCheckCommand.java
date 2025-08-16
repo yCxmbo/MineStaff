@@ -1,42 +1,42 @@
 package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
-import me.ycxmbo.mineStaff.util.CPSManager;
+import me.ycxmbo.mineStaff.managers.CPSCheckManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 public class CPSCheckCommand implements CommandExecutor {
-    private final CPSManager cps;
+    private final MineStaff plugin;
 
-    public CPSCheckCommand(MineStaff plugin) { this.cps = plugin.getCPSManager(); }
+    public CPSCheckCommand(MineStaff plugin) {
+        this.plugin = plugin;
+    }
 
     @Override
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (!(sender instanceof Player p)) {
-            sender.sendMessage(ChatColor.RED + "Only players.");
+    public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args) {
+        if (!(sender instanceof Player p)) { sender.sendMessage("Only players."); return true; }
+        if (!p.hasPermission("staffmode.cpscheck")) { p.sendMessage(ChatColor.RED + "No permission."); return true; }
+        if (args.length < 1) { p.sendMessage(ChatColor.YELLOW + "Usage: /cpscheck <player>"); return true; }
+
+        OfflinePlayer off = Bukkit.getOfflinePlayer(args[0]);
+        if (!off.isOnline()) { p.sendMessage(ChatColor.RED + "Target must be online."); return true; }
+        Player target = off.getPlayer();
+
+        CPSCheckManager cps = plugin.getCPSManager(); // aligned to your existing code
+        if (cps.isChecking(target)) {
+            p.sendMessage(ChatColor.RED + "A CPS test is already running for " + target.getName() + ".");
             return true;
         }
-        if (!p.hasPermission("staffmode.cpscheck")) {
-            p.sendMessage(ChatColor.RED + "No permission.");
-            return true;
+        if (cps.begin(p, target)) {
+            p.sendMessage(ChatColor.GREEN + "Started 10s CPS test on " + target.getName() + "…");
+            target.sendMessage(ChatColor.YELLOW + "A staff member is measuring your CPS for 10 seconds.");
+            cps.finishLater(p, target);
         }
-        if (args.length < 2) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /cpscheck <player> <seconds>");
-            return true;
-        }
-        Player t = Bukkit.getPlayerExact(args[0]);
-        if (t == null) {
-            p.sendMessage(ChatColor.RED + "Player not found.");
-            return true;
-        }
-        int seconds;
-        try { seconds = Integer.parseInt(args[1]); }
-        catch (Exception e) { p.sendMessage(ChatColor.RED + "Seconds must be a number."); return true; }
-        cps.startTest(p, t, seconds);
         return true;
     }
 }

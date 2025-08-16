@@ -34,6 +34,7 @@ tools:
     freeze: 1
     inspect: 2
     vanish: 8
+    cps: 3
 
 teleport-to-spawn-on-exit: true
 
