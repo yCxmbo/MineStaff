@@ -1,95 +1,127 @@
 # MineStaff
 
-**MineStaff** is an advanced, fully-featured **Staff Mode plugin** for Minecraft Paper servers (`1.20.x+` and tested on `1.21.x`).  
-It provides staff members with tools for moderation, player inspection, alerts, and integrated punishments — all while protecting gameplay balance.
+**The ultimate staff management plugin for Minecraft servers.**  
+MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines moderation tools, GUIs, alerts, and integrations into a single lightweight plugin designed for performance and extensibility.
 
 ---
 
 ## ✨ Features
 
-- **Staff Mode Toggle**  
-  Enable/disable staff mode with one command.  
-  - Automatically switches to **Creative Mode** when enabled  
-  - Restores **previous gamemode** when disabled  
-  - Gives configurable staff tools in configured hotbar slots  
-  - Blocks item spawning from Creative inventory  
-  - Prevents moving or removing staff tools  
+- **Staff Mode**
+    - Toggle with `/staffmode` (alias: `/staff`)
+    - Customizable staff tools: Teleport, Inspect, Freeze, Vanish
+    - Prevents moving/removing staff tools (guarded)
 
-- **Staff Tools**
-  - **Teleport Tool** – Teleport to blocks you look at, with cooldowns and range limits  
-  - **Freeze Tool** – Freeze/unfreeze players for investigation  
-  - **Inspect Tool** – View target’s inventory, ender chest, potion effects, health, and more  
-  - **Vanish Tool** – Toggle vanish mode to hide from other players
+- **Staff Chat**
+    - Private staff-only chat via `/staffchat` or `/sc`
+    - Toggle mode or use one-off messages
 
-- **Staff Chat**  
-  Private chat channel for staff members.
+- **Reports & Infractions**
+    - `/report <player> <reason>` to file player reports
+    - GUI-based report review
+    - Infractions system with punishments (ban, warn, mute, kick, etc.)
+    - Integration with **LiteBans** to show punishments in GUI
 
-- **Player Freeze System**  
-  Prevents movement, block breaking, chat, and commands while frozen.
+- **CPS Checker**
+    - `/cpscheck <player>` to measure clicks per second over 10s
+    - Staff alert events when checks finish
+
+- **Staff List GUI**
+    - `/stafflist` or `/stafflistgui`
+    - Displays online staff with ping and world info
+    - Fully read-only (no item stealing)
+
+- **Inventory Inspector**
+    - Inspect player inventory, ender chest, health, potion effects
+    - Inventory Rollback GUI for restoring deaths
+
+- **Silent Chest Opening**
+    - Open player chests silently in staff mode
+    - View-only (items cannot be taken)
+
+- **Staff Login System**
+    - Staff with permission must log in via `/stafflogin` before moving or using commands
+    - Password configurable in `config.yml`
 
 - **Alerts System**
-  - Manual staff alerts  
-  - Auto alerts for **LiteBans punishments** and **Vulcan Anti-Cheat** flags  
-  - Fully formatted with MiniMessage, hover text, and click-to-teleport
+    - Suspicious activity alerts
+    - Name/skin change alerts
+    - Plugin-triggered alerts from LiteBans
 
-- **Action Logger**  
-  Logs all staff tool uses and commands for accountability.
+- **Custom Sounds & Effects**
+    - Sounds and particles for staff tool usage
+    - Configurable in `config.yml`
 
-- **Configurable Everything**
-  - Tool slots  
-  - Alert templates & sounds  
-  - Teleport range & cooldown  
-  - Staff login requirement  
+- **PlaceholderAPI Support**
+    - Expose staff placeholders for other plugins
 
----
-
-## 📥 Installation
-
-1. Download the latest MineStaff JAR from [Releases](../../releases).
-2. Place it in your server's `plugins/` folder.
-3. Start the server to generate the default `config.yml`.
-4. Edit `plugins/MineStaff/config.yml` to your preferences.
-5. Reload or restart the server.
+- **Persistence**
+    - Vanish state saved across server restarts
+    - Staff inventories restored when leaving staff mode
 
 ---
 
-## ⚙ Configuration
+## 📜 Commands
 
-**Default `config.yml`:**
-```yaml
-messages:
-  prefix: "&8[&aMineStaff&8]&r "
-  no_permission: "&cYou don't have permission."
-  only_players: "&cOnly players can use this."
-  staffmode_enabled: "&aStaff Mode enabled."
-  staffmode_disabled: "&cStaff Mode disabled."
-  login_required: "&eYou must /stafflogin before using staff tools."
-  login_success: "&aLogin successful."
-  login_failure: "&cIncorrect password."
-  password_set: "&aPassword set."
-  vanish_on: "&dVanish enabled."
-  vanish_off: "&dVanish disabled."
-  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
-  teleport_blocked: "&cBlocked destination."
-  teleport_no_spot: "&cNo safe spot in sight."
+| Command              | Description                                | Permission                |
+|----------------------|--------------------------------------------|---------------------------|
+| `/staffmode` `/staff`| Toggle staff mode                          | `staffmode.use`           |
+| `/stafflogin`        | Log in as staff                            | `staffmode.login`         |
+| `/staffchat` `/sc`   | Staff-only chat                            | `staffmode.chat`          |
+| `/report`            | Report a player                            | `staffmode.report`        |
+| `/infractions`       | View/issue infractions                     | `staffmode.infractions`   |
+| `/rollback`          | Open rollback GUI                          | `staffmode.rollback`      |
+| `/cpscheck`          | Run a CPS check on a player                | `staffmode.cpscheck`      |
+| `/stafflist(gui)`    | Open staff list GUI                        | `staffmode.stafflist`     |
 
-options:
-  require_login: true
-  staffchat_prefix: "@"
-  teleport_max_range: 60
-  teleport_max_range_sneak: 120
-  teleport_cooldown_ms: 1500
+---
 
-tools:
-  slots:
-    teleport: 0
-    freeze: 1
-    inspect: 2
-    vanish: 8
+## 🔑 Permissions
 
-alerts:
-  use_minimessage: true
-  template: "<gradient:#19E68C:#13B5FF>[StaffAlert]</gradient> <gray>{content}</gray>"
-  hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
-  click_tp: true
-  sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+- `staffmode.use` – Enter staff mode
+- `staffmode.teleport` – Teleport tool
+- `staffmode.inspect` – Inspect tool
+- `staffmode.freeze` – Freeze players
+- `staffmode.vanish` – Vanish tool
+- `staffmode.chat` – Use staff chat
+- `staffmode.report` – File/view reports
+- `staffmode.infractions` – Manage infractions
+- `staffmode.rollback` – Rollback inventories
+- `staffmode.cpscheck` – Run CPS checks
+- `staffmode.stafflist` – View staff list GUI
+
+---
+
+## ⚙️ Configuration
+
+The `config.yml` lets you customize:
+
+- Staff tools (slots, materials, names)
+- Messages (supports MiniMessage & legacy color codes)
+- Login system (passwords, max attempts)
+- Sounds & particle effects
+- Alert formatting (with hover/click to teleport)
+- Tool cooldowns
+
+---
+
+## 🔌 Dependencies
+
+- [PaperMC / Spigot 1.20.x–1.21.x+](https://papermc.io/)
+- [LiteBans (optional)](https://www.spigotmc.org/resources/litebans.3715/) for punishment integration
+- [PlaceholderAPI (optional)](https://www.spigotmc.org/resources/placeholderapi.6245/) for placeholders
+
+---
+
+## 🧩 API
+
+MineStaff exposes a simple API for other plugins:
+
+```java
+import me.ycxmbo.mineStaff.api.MineStaffAPI;
+
+MineStaffAPI.get().ifPresent(api -> {
+    if (api.isStaffMode(player)) {
+        // Do something if the player is in staff mode
+    }
+});

@@ -1,6 +1,7 @@
 package me.ycxmbo.mineStaff.tools;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -9,61 +10,54 @@ import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.Arrays;
-
+/** Responsible for giving/refreshing staff tools and their materials. */
 public class ToolManager {
+
     public static final Material TELEPORT_TOOL = Material.COMPASS;
-    public static final Material FREEZE_TOOL = Material.BLAZE_ROD;
-    public static final Material INSPECT_TOOL = Material.BOOK;
-    public static final Material CPS_TOOL = Material.CLOCK; // or any item you like
+    public static final Material FREEZE_TOOL   = Material.BLAZE_ROD;
+    public static final Material INSPECT_TOOL  = Material.BOOK;
 
     private final MineStaff plugin;
-    public ToolManager(MineStaff plugin) { this.plugin = plugin; }
 
-    public void giveStaffTools(Player p) {
-        int tpSlot = plugin.getConfigManager().getToolSlot("teleport", 0);
-        int frSlot = plugin.getConfigManager().getToolSlot("freeze", 1);
-        int inSlot = plugin.getConfigManager().getToolSlot("inspect", 2);
-        int vaSlot = plugin.getConfigManager().getToolSlot("vanish", 8);
-        int cpsSlot = plugin.getConfigManager().getToolSlot("cps", 3);
-
-        p.getInventory().setItem(tpSlot, named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport Tool",
-                "Right-click: teleport to block you look at", "Sneak+Right-click: up to max range"));
-
-        p.getInventory().setItem(frSlot, named(FREEZE_TOOL, ChatColor.RED + "Freeze Tool",
-                "Right-click a player to toggle freeze"));
-
-        p.getInventory().setItem(inSlot, named(INSPECT_TOOL, ChatColor.GREEN + "Inspect Tool",
-                "Right-click a player to open inspector"));
-
-        p.getInventory().setItem(cpsSlot, named(CPS_TOOL, ChatColor.GOLD + "CPS Checker",
-                "Right-click a player to run a 10s CPS test"));
-
-        // vanish tool (dye) – initial appearance reflects current vanish state
-        boolean vanished = plugin.getStaffDataManager().isVanished(p);
-        p.getInventory().setItem(vaSlot, makeVanishItem(vanished));
+    public ToolManager(MineStaff plugin) {
+        this.plugin = plugin;
     }
 
-    public void updateVanishTool(Player p, boolean vanished) {
-        int vaSlot = plugin.getConfigManager().getToolSlot("vanish", 8);
-        p.getInventory().setItem(vaSlot, makeVanishItem(vanished));
+    public void giveStaffTools(Player p) {
+        ConfigManager cfg = plugin.getConfigManager();
+        StaffDataManager data = plugin.getStaffDataManager();
+
+        int tpSlot  = cfg.getConfig().getInt("tools.slots.teleport", 0);
+        int frSlot  = cfg.getConfig().getInt("tools.slots.freeze", 1);
+        int inSlot  = cfg.getConfig().getInt("tools.slots.inspect", 2);
+        int vaSlot  = cfg.getConfig().getInt("tools.slots.vanish", 8);
+
+        p.getInventory().setItem(tpSlot,  named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport"));
+        p.getInventory().setItem(frSlot,  named(FREEZE_TOOL,   ChatColor.RED + "Freeze"));
+        p.getInventory().setItem(inSlot,  named(INSPECT_TOOL,  ChatColor.GOLD + "Inspect"));
+
+        boolean vanished = data.isVanished(p);
+        Material dye = vanished ? Material.LIME_DYE : Material.LIGHT_GRAY_DYE;
+        p.getInventory().setItem(vaSlot,  named(dye, ChatColor.LIGHT_PURPLE + "Vanish " + (vanished ? ChatColor.GREEN + "ON" : ChatColor.GRAY + "OFF")));
+
         p.updateInventory();
     }
 
-    private ItemStack makeVanishItem(boolean vanished) {
-        Material m = vanished ? Material.LIME_DYE : Material.LIGHT_GRAY_DYE;
-        String name = vanished ? ChatColor.LIGHT_PURPLE + "Vanish: ON" : ChatColor.GRAY + "Vanish: OFF";
-        String lore = vanished ? "Right-click to disable vanish" : "Right-click to enable vanish";
-        return named(m, name, lore);
+    public void updateVanishDye(Player p, boolean vanished) {
+        int vaSlot  = plugin.getConfigManager().getConfig().getInt("tools.slots.vanish", 8);
+        Material dye = vanished ? Material.LIME_DYE : Material.LIGHT_GRAY_DYE;
+        p.getInventory().setItem(vaSlot, named(dye, ChatColor.LIGHT_PURPLE + "Vanish " + (vanished ? ChatColor.GREEN + "ON" : ChatColor.GRAY + "OFF")));
+        p.updateInventory();
     }
 
-    private ItemStack named(Material m, String name, String... lore) {
-        ItemStack it = new ItemStack(m);
-        ItemMeta meta = it.getItemMeta();
-        meta.setDisplayName(name);
-        meta.setLore(Arrays.asList(lore));
-        meta.addItemFlags(ItemFlag.HIDE_ATTRIBUTES);
-        it.setItemMeta(meta);
+    private ItemStack named(Material mat, String name) {
+        ItemStack it = new ItemStack(mat);
+        ItemMeta im = it.getItemMeta();
+        if (im != null) {
+            im.setDisplayName(name);
+            im.addItemFlags(ItemFlag.HIDE_ATTRIBUTES, ItemFlag.HIDE_ENCHANTS, ItemFlag.HIDE_UNBREAKABLE);
+            it.setItemMeta(im);
+        }
         return it;
     }
 }

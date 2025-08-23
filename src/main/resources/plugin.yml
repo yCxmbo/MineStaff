@@ -1,8 +1,9 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 2.5
+version: 2.6
 api-version: '1.21'
-author: ycxmbo
+author: 'ycxmbo'
+provides: [ "MineStaffAPI" ]
 softdepend: [LiteBans, Vulcan, Essentials, PlaceholderAPI]
 description: A streamlined Staff Mode plugin for Paper 1.21+
 
@@ -13,87 +14,39 @@ commands:
     aliases: [sm, staff]
     permission: staffmode.toggle
   stafflogin:
-    description: Staff login and password management
-    permission: staffmode.login
-  stafflist:
-    description: List staff currently in Staff Mode
-    permission: staffmode.list
-  staffreload:
-    description: Reload MineStaff configuration
-    permission: staffmode.reload
+    description: Staff must log in before moving or using commands
+    usage: /<command> <password>
   staffchat:
-    description: Toggle or send a staff chat message
-    permission: staffmode.chat
+    description: Send a message to staff chat
     aliases: [sc]
-  inspect:
-    description: Open an inspector GUI for a player
-    permission: staffmode.inspect
-  freeze:
-    description: Freeze or unfreeze a player
-    permission: staffmode.freeze
-  cpscheck:
-    description: Start a CPS test for a player
-    permission: staffmode.cpscheck
   report:
     description: Report a player
-    usage: /<command> <player> <reason>
-    permission: staffmode.report
   infractions:
-    description: Manage or view infractions
-    usage: /<command> <player> [add <type> <reason>]
-    permission: staffmode.infractions
+    description: Manage/view infractions
+  rollback:
+    description: Open rollback GUI
+  cpscheck:
+    description: Check clicks-per-second over 10s
   stafflistgui:
     description: Open staff list GUI
-    permission: staffmode.list
-  rollback:
-    description: Open rollback GUI for a player
-    permission: staffmode.rollback
+  stafflist:
+    description: Open staff list GUI (alias)
 
 permissions:
-  staffmode.toggle:
-    description: Toggle Staff Mode
-    default: op
-  staffmode.login:
-    description: Use /stafflogin
-    default: op
-  staffmode.list:
-    description: Use /stafflist
-    default: op
-  staffmode.reload:
-    description: Reload plugin config
-    default: op
-  staffmode.chat:
-    description: Use staff chat
-    default: op
-  staffmode.inspect:
-    description: Inspect players
-    default: op
-  staffmode.freeze:
-    description: Freeze players
-    default: op
-  staffmode.cpscheck:
-    description: Use CPS checker
-    default: op
-  staffmode.vanish:
-    description: Toggle vanish
-    default: op
-  staffmode.teleport:
-    description: Use teleport tool
-    default: op
+  staffmode.toggle:        { default: op }
+  staffmode.teleport:      { default: op }
+  staffmode.freeze:        { default: op }
+  staffmode.inspect:       { default: op }
+  staffmode.vanish:        { default: op }
   staffmode.see:
     description: See vanished staff
     default: op
-  staffmode.alerts:
-    description: Receive staff alerts
-    default: op
-  staffmode.report:
-    default: true
-  staffmode.infractions:
-    default: op
-  staffmode.infractions.add:
-    default: op
-  staffmode.rollback:
-    default: op
+  staffmode.chat:          { default: op }
+  staffmode.alerts:        { default: op }
+  staffmode.report:        { default: true }
+  staffmode.infractions:   { default: op }
+  staffmode.infractions.add: { default: op }
+  staffmode.rollback:      { default: op }
   staffmode.silentchest:
     description: Open containers silently in Staff Mode
     default: op

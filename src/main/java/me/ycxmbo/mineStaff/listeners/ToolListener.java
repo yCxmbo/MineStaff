@@ -1,11 +1,13 @@
 package me.ycxmbo.mineStaff.listeners;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.api.MineStaffAPI;
+import me.ycxmbo.mineStaff.api.events.FreezeToggleEvent;
+import me.ycxmbo.mineStaff.api.events.VanishToggleEvent;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.tools.ToolManager;
 import me.ycxmbo.mineStaff.util.CooldownManager;
 import me.ycxmbo.mineStaff.util.SoundUtil;
-import me.ycxmbo.mineStaff.util.VanishUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -26,7 +28,10 @@ public class ToolListener implements Listener {
     private final StaffDataManager data;
     private final CooldownManager cooldowns = new CooldownManager();
 
-    public ToolListener(MineStaff plugin) { this.plugin = plugin; this.data = plugin.getStaffDataManager(); }
+    public ToolListener(MineStaff plugin) {
+        this.plugin = plugin;
+        this.data = plugin.getStaffDataManager();
+    }
 
     @EventHandler
     public void onUse(PlayerInteractEvent e) {
@@ -41,21 +46,22 @@ public class ToolListener implements Listener {
         if (it.getType() == ToolManager.TELEPORT_TOOL && p.hasPermission("staffmode.teleport")) {
             if (right) {
                 e.setCancelled(true);
-                int regular = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range", 60);
-                int sneak = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range_sneak", 120);
-                useTeleport(p, p.isSneaking() ? sneak : regular);
+                useTeleport(p,  p.isSneaking() ? 120 : 60);
             }
             return;
         }
 
         if ((it.getType() == Material.LIME_DYE || it.getType() == Material.LIGHT_GRAY_DYE) && p.hasPermission("staffmode.vanish")) {
-            if (right) { e.setCancelled(true); toggleVanish(p); }
+            if (right) {
+                e.setCancelled(true);
+                toggleVanish(p);
+            }
+            return;
         }
     }
 
     @EventHandler
     public void onUseOnPlayer(PlayerInteractEntityEvent e) {
-        if (e.getHand() != EquipmentSlot.HAND) return; // fix double-trigger
         if (!(e.getRightClicked() instanceof Player target)) return;
         Player p = e.getPlayer();
         if (!data.isStaffMode(p)) return;
@@ -66,9 +72,12 @@ public class ToolListener implements Listener {
             e.setCancelled(true);
             boolean state = !data.isFrozen(target);
             data.setFrozen(target, state);
+            // API event
+            org.bukkit.Bukkit.getPluginManager().callEvent(new FreezeToggleEvent(target, state, MineStaffAPI.ToggleCause.TOOL));
+
             p.sendMessage(ChatColor.YELLOW + "Player " + target.getName() + " " + (state ? "frozen." : "unfrozen."));
             if (state) target.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
-            target.getWorld().spawnParticle(Particle.CLOUD, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
+            target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
             SoundUtil.playFreeze(p);
             return;
         }
@@ -83,28 +92,14 @@ public class ToolListener implements Listener {
 
     private void toggleVanish(Player p) {
         boolean newState = !data.isVanished(p);
-
-        // update runtime state
         data.setVanished(p, newState);
 
-        // persist to file
-        MineStaff pl = MineStaff.getInstance();
-        if (pl.getVanishStore() != null) {
-            pl.getVanishStore().setVanished(p.getUniqueId(), newState); // also saves
-        }
-
-        // apply on server + update dye icon
-        VanishUtil.applyVanish(p, newState);
-        plugin.getToolManager().updateVanishTool(p, newState);
-
+        // API + effects
+        org.bukkit.Bukkit.getPluginManager().callEvent(new VanishToggleEvent(p, newState, MineStaffAPI.ToggleCause.TOOL));
         if (newState) {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "Vanish enabled.");
-            SoundUtil.playVanishOn(p);
-            p.getWorld().spawnParticle(Particle.END_ROD, p.getLocation(), 40, 0.6, 0.8, 0.6);
         } else {
             p.sendMessage(ChatColor.LIGHT_PURPLE + "Vanish disabled.");
-            SoundUtil.playVanishOff(p);
-            p.getWorld().spawnParticle(Particle.CLOUD, p.getLocation(), 20, 0.6, 0.6, 0.6);
         }
     }
 
@@ -112,28 +107,25 @@ public class ToolListener implements Listener {
         String key = "teleport";
         if (!cooldowns.ready(p.getUniqueId(), key)) {
             long ms = cooldowns.remaining(p.getUniqueId(), key);
-            p.sendMessage(ChatColor.RED + "Teleport cooldown: " + (ms / 1000.0) + "s");
+            p.sendMessage(ChatColor.RED + "Teleport cooldown: " + String.format(java.util.Locale.US, "%.1f", ms / 1000.0) + "s");
             return;
         }
         Location eye = p.getEyeLocation();
         BlockIterator it = new BlockIterator(p.getWorld(), eye.toVector(), eye.getDirection(), 0, maxRange);
-        org.bukkit.block.Block last = null;
+        Block last = null;
         while (it.hasNext()) {
-            org.bukkit.block.Block b = it.next();
+            Block b = it.next();
             if (b.getType().isSolid()) { last = b; break; }
             last = b;
         }
         if (last == null) { p.sendMessage(ChatColor.RED + "No safe spot in sight."); return; }
 
         Location dest = last.getLocation().add(0.5, 1, 0.5);
-        if (dest.getBlock().getType().isSolid() || dest.clone().add(0, 1, 0).getBlock().getType().isSolid()) {
+        if (dest.getBlock().getType().isSolid() || dest.clone().add(0,1,0).getBlock().getType().isSolid()) {
             p.sendMessage(ChatColor.RED + "Blocked destination.");
             return;
         }
-        p.getWorld().spawnParticle(Particle.PORTAL, p.getLocation(), 30, 0.6, 1.0, 0.6);
         p.teleport(dest);
-        p.getWorld().spawnParticle(Particle.PORTAL, dest, 30, 0.6, 1.0, 0.6);
-        SoundUtil.playTeleport(p);
         cooldowns.set(p.getUniqueId(), key, 1500);
     }
 }
