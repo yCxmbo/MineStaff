@@ -23,6 +23,7 @@ public class StaffToolGuardListener implements Listener {
         return m == ToolManager.TELEPORT_TOOL
                 || m == ToolManager.FREEZE_TOOL
                 || m == ToolManager.INSPECT_TOOL
+                || m == ToolManager.RANDOMTP_TOOL
                 || m == Material.LIME_DYE
                 || m == Material.LIGHT_GRAY_DYE;
     }

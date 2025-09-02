@@ -16,6 +16,7 @@ public class ToolManager {
     public static final Material TELEPORT_TOOL = Material.COMPASS;
     public static final Material FREEZE_TOOL   = Material.BLAZE_ROD;
     public static final Material INSPECT_TOOL  = Material.BOOK;
+    public static final Material RANDOMTP_TOOL = Material.FEATHER;
 
     private final MineStaff plugin;
 
@@ -31,10 +32,14 @@ public class ToolManager {
         int frSlot  = cfg.getConfig().getInt("tools.slots.freeze", 1);
         int inSlot  = cfg.getConfig().getInt("tools.slots.inspect", 2);
         int vaSlot  = cfg.getConfig().getInt("tools.slots.vanish", 8);
+        int rtSlot  = cfg.getConfig().getInt("tools.slots.randomtp", 4);
 
         p.getInventory().setItem(tpSlot,  named(TELEPORT_TOOL, ChatColor.AQUA + "Teleport"));
         p.getInventory().setItem(frSlot,  named(FREEZE_TOOL,   ChatColor.RED + "Freeze"));
         p.getInventory().setItem(inSlot,  named(INSPECT_TOOL,  ChatColor.GOLD + "Inspect"));
+        if (p.hasPermission("staffmode.randomtp")) {
+            p.getInventory().setItem(rtSlot, named(RANDOMTP_TOOL, ChatColor.AQUA + "Random TP"));
+        }
 
         boolean vanished = data.isVanished(p);
         Material dye = vanished ? Material.LIME_DYE : Material.LIGHT_GRAY_DYE;

@@ -57,5 +57,6 @@ public class AlertFormatter {
             }
         }
         plugin.getLogger().info("[StaffAlert] " + content);
+        try { plugin.getDiscordBridge().sendAlert(content); } catch (Throwable ignored) {}
     }
 }

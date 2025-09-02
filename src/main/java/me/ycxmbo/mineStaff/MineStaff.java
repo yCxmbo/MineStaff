@@ -8,6 +8,13 @@ import me.ycxmbo.mineStaff.papi.MineStaffExpansion;
 import me.ycxmbo.mineStaff.storage.VanishStore;
 import me.ycxmbo.mineStaff.tools.InspectorGUI;
 import me.ycxmbo.mineStaff.tools.ToolManager;
+import me.ycxmbo.mineStaff.messaging.ProxyMessenger;
+import me.ycxmbo.mineStaff.messaging.RedisBridge;
+import me.ycxmbo.mineStaff.messaging.DiscordBridge;
+import me.ycxmbo.mineStaff.spy.SpyManager;
+import me.ycxmbo.mineStaff.audit.JsonAuditLogger;
+import me.ycxmbo.mineStaff.util.ActivityTracker;
+import me.ycxmbo.mineStaff.storage.SqlStorage;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,6 +38,14 @@ public class MineStaff extends JavaPlugin {
     private RollbackManager rollbackManager;
     private CPSCheckManager cpsCheckManager;
     private StaffChatManager staffChatManager;
+    private ProxyMessenger proxyMessenger;
+    private RedisBridge redisBridge;
+    private DiscordBridge discordBridge;
+    private SpyManager spyManager;
+    private JsonAuditLogger auditLogger;
+    private ActivityTracker activityTracker;
+    private SqlStorage sqlStorage;
+    private me.ycxmbo.mineStaff.evidence.EvidenceManager evidenceManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -50,8 +65,16 @@ public class MineStaff extends JavaPlugin {
     public CPSCheckManager getCPSManager() { return cpsCheckManager; } // legacy name
     public CPSCheckManager getCpsCheckManager() { return cpsCheckManager; }
     public StaffChatManager getStaffChatManager() { return staffChatManager; }
+    public ProxyMessenger getProxyMessenger() { return proxyMessenger; }
+    public RedisBridge getRedisBridge() { return redisBridge; }
+    public DiscordBridge getDiscordBridge() { return discordBridge; }
+    public SpyManager getSpyManager() { return spyManager; }
+    public JsonAuditLogger getAuditLogger() { return auditLogger; }
+    public ActivityTracker getActivityTracker() { return activityTracker; }
+    public SqlStorage getStorage() { return sqlStorage; }
     public InspectorGUI getInspectorGUI() { return inspectorGUI; }
     public StaffChatCommand getStaffChatCommand() { return staffChatCommand; }
+    public me.ycxmbo.mineStaff.evidence.EvidenceManager getEvidenceManager() { return evidenceManager; }
 
     @Override
     public void onEnable() {
@@ -68,8 +91,26 @@ public class MineStaff extends JavaPlugin {
         this.reportManager     = new ReportManager(this);
         this.infractionManager = new InfractionManager(this);
         this.rollbackManager   = new RollbackManager(this);
-        this.cpsCheckManager   = new CPSCheckManager();
-        this.staffChatManager  = new StaffChatManager();
+        this.cpsCheckManager   = new CPSCheckManager(this);
+        this.staffChatManager  = new StaffChatManager(this);
+        this.proxyMessenger    = new ProxyMessenger(this);
+        this.redisBridge       = new RedisBridge(this);
+        this.discordBridge     = new DiscordBridge(this);
+        this.spyManager        = new SpyManager();
+        this.auditLogger       = new JsonAuditLogger(this);
+        this.activityTracker   = new ActivityTracker();
+        this.evidenceManager   = new me.ycxmbo.mineStaff.evidence.EvidenceManager(this);
+        // Optional SQL storage
+        try {
+            String mode = getConfigManager().getConfig().getString("storage.mode", "yaml");
+            if (!"yaml".equalsIgnoreCase(mode)) {
+                this.sqlStorage = new SqlStorage(this);
+                getLogger().info("SQL storage initialized using mode: " + mode);
+            }
+        } catch (Throwable t) {
+            getLogger().warning("SQL storage init failed; falling back to YAML: " + t.getMessage());
+            this.sqlStorage = null;
+        }
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
@@ -84,6 +125,19 @@ public class MineStaff extends JavaPlugin {
         }
         if (getCommand("rollback") != null) getCommand("rollback").setExecutor(new RollbackCommand(this));
         if (getCommand("cpscheck") != null) getCommand("cpscheck").setExecutor(new CPSCheckCommand(this));
+        if (getCommand("inspect") != null) getCommand("inspect").setExecutor(new InspectCommand(this));
+        if (getCommand("freeze") != null) getCommand("freeze").setExecutor(new FreezeCommand(this));
+        if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
+        if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
+        if (getCommand("staffduty") != null) getCommand("staffduty").setExecutor(new StaffDutyCommand(this));
+        if (getCommand("duty") != null) getCommand("duty").setExecutor(new StaffDutyCommand(this));
+        if (getCommand("commandspy") != null) getCommand("commandspy").setExecutor(new me.ycxmbo.mineStaff.commands.CommandSpyCommand(this));
+        if (getCommand("socialspy") != null) getCommand("socialspy").setExecutor(new me.ycxmbo.mineStaff.commands.SocialSpyCommand(this));
+        if (getCommand("notes") != null) getCommand("notes").setExecutor(new me.ycxmbo.mineStaff.commands.NotesCommand(this));
+        if (getCommand("profile") != null) getCommand("profile").setExecutor(new me.ycxmbo.mineStaff.commands.ProfileCommand(this));
+        if (getCommand("inspectoffline") != null) getCommand("inspectoffline").setExecutor(new me.ycxmbo.mineStaff.commands.InspectOfflineCommand(this));
+        if (getCommand("staff2fa") != null) getCommand("staff2fa").setExecutor(new me.ycxmbo.mineStaff.commands.Staff2FACommand(this));
+        if (getCommand("evidence") != null) getCommand("evidence").setExecutor(new me.ycxmbo.mineStaff.commands.EvidenceCommand(this));
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         if (getCommand("stafflistgui") != null) getCommand("stafflistgui").setExecutor(staffListGUICommand);
@@ -92,6 +146,10 @@ public class MineStaff extends JavaPlugin {
         this.staffChatCommand = new StaffChatCommand(this);
         if (getCommand("staffchat") != null) getCommand("staffchat").setExecutor(staffChatCommand);
         if (getCommand("sc") != null) getCommand("sc").setExecutor(staffChatCommand);
+        if (getCommand("inspect") != null) getCommand("inspect").setExecutor(new InspectCommand(this));
+        if (getCommand("freeze") != null) getCommand("freeze").setExecutor(new FreezeCommand(this));
+        if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
+        if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
 
         // Listeners
         Bukkit.getPluginManager().registerEvents(new ToolListener(this), this);
@@ -103,15 +161,26 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InspectorGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffChatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new VanishEffectListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new AlertListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new StaffGameModeGuardListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffListGUIListener(), this);
         Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
         Bukkit.getPluginManager().registerEvents(new FreezeListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CreativeBlockerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffModeListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new SpyListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new ProfileGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.offline.OfflineInventoryManager(this), this);
+        Bukkit.getPluginManager().registerEvents(new ActivityListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new LuckPermsContextListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("LiteBans") != null) {
             Bukkit.getPluginManager().registerEvents(new LiteBansBridgeListener(this), this);
         }
+
+        // Optional: initialize reflection-based bridges for Vulcan/LiteBans alerts
+        try { me.ycxmbo.mineStaff.bridge.BridgeManager.initialize(this); } catch (Throwable ignored) {}
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             try {
@@ -122,6 +191,10 @@ public class MineStaff extends JavaPlugin {
             }
         }
 
+        // Init cross-server messaging (Bungee/Velocity plugin messaging)
+        try { proxyMessenger.init(); } catch (Throwable t) { getLogger().warning("Proxy messenger init failed: " + t.getMessage()); }
+        try { redisBridge.init(); } catch (Throwable t) { getLogger().warning("Redis bridge init failed: " + t.getMessage()); }
+
         // Register API service
         getServer().getServicesManager().register(
                 me.ycxmbo.mineStaff.api.MineStaffAPI.class,
@@ -130,13 +203,27 @@ public class MineStaff extends JavaPlugin {
                 ServicePriority.Normal
         );
 
+        // Re-apply persisted vanish state for online players (e.g., on /reload)
+        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+            if (vanishStore.isVanished(p.getUniqueId())) {
+                staffDataManager.setVanished(p, true);
+                me.ycxmbo.mineStaff.util.VanishUtil.applyVanish(p, true);
+                toolManager.updateVanishDye(p, true);
+            }
+        }
+
         getLogger().info("MineStaff enabled.");
     }
 
     @Override
     public void onDisable() {
-        // Unregister API service
-        getServer().getServicesManager().unregister(me.ycxmbo.mineStaff.api.MineStaffAPI.class, null);
+        // Persist and cleanup
+        try { vanishStore.save(); } catch (Throwable ignored) {}
+        try { configManager.saveStaffAccounts(); } catch (Throwable ignored) {}
+        try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable ignored) {}
+        try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
+        // Unregister API service(s)
+        getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");
     }
 }

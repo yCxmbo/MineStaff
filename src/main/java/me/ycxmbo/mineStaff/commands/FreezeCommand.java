@@ -43,6 +43,11 @@ public class FreezeCommand implements CommandExecutor {
         if (newState) {
             t.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
         }
+        MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                "type","freeze","actor",p.getUniqueId().toString(),
+                "target",t.getUniqueId().toString(),
+                "state",String.valueOf(newState)
+        ));
         plugin.getActionLogger().logCommand(p, "Freeze " + t.getName() + " -> " + newState);
         return true;
     }

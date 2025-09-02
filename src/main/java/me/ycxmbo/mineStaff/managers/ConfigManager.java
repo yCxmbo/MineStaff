@@ -15,6 +15,7 @@ public class ConfigManager {
     private FileConfiguration config;
     private File staffAccountsFile;
     private YamlConfiguration staffAccounts;
+    private YamlConfiguration localeYaml;
 
     private final Map<String, String> defaults = new HashMap<>();
 
@@ -23,6 +24,7 @@ public class ConfigManager {
         this.config = plugin.getConfig();
         loadDefaults();
         ensureDefaults();
+        loadLocale();
         setupStaffAccounts();
     }
 
@@ -37,11 +39,18 @@ public class ConfigManager {
         defaults.put("messages.login_failure", "&cIncorrect password.");
         defaults.put("messages.password_set", "&aPassword set.");
         defaults.put("options.require_login", "true");
+        defaults.put("options.staffmode_gamemode", "CREATIVE");
         defaults.put("options.staffchat_prefix", "@");
         defaults.put("tools.slots.teleport", "0");
         defaults.put("tools.slots.freeze", "1");
         defaults.put("tools.slots.inspect", "2");
         defaults.put("tools.slots.vanish", "8");
+        defaults.put("alerts.use_minimessage", "true");
+        defaults.put("reports.cross_server", "true");
+        defaults.put("staffchat.cross_server", "true");
+        defaults.put("staffchat.console_log", "true");
+        defaults.put("staffchat.format_legacy", "&8[&dStaff&8] &b{name}&7: &f{message}");
+        defaults.put("cps.duration_seconds", "10");
     }
 
     private void ensureDefaults() {
@@ -68,7 +77,12 @@ public class ConfigManager {
 
     public String getMessage(String path, String def) {
         String prefix = ChatColor.translateAlternateColorCodes('&', config.getString("messages.prefix", ""));
-        String raw = ChatColor.translateAlternateColorCodes('&', config.getString("messages." + path, def));
+        String rawMsg = null;
+        if (localeYaml != null && localeYaml.isSet("messages." + path)) {
+            rawMsg = localeYaml.getString("messages." + path, def);
+        }
+        if (rawMsg == null) rawMsg = config.getString("messages." + path, def);
+        String raw = ChatColor.translateAlternateColorCodes('&', rawMsg);
         return prefix + raw;
     }
 
@@ -99,11 +113,24 @@ public class ConfigManager {
     public void reload() {
         plugin.reloadConfig();
         this.config = plugin.getConfig();
+        loadLocale();
         setupStaffAccounts();
         ensureDefaults();
     }
 
     public int getToolSlot(String key, int def) {
         return config.getInt("tools.slots." + key, def);
+    }
+
+    private void loadLocale() {
+        try {
+            String loc = config.getString("options.locale", null);
+            if (loc == null || loc.isBlank()) { localeYaml = null; return; }
+            java.io.File f = new java.io.File(plugin.getDataFolder(), "lang/" + loc + ".yml");
+            if (!f.exists()) { localeYaml = null; return; }
+            localeYaml = YamlConfiguration.loadConfiguration(f);
+        } catch (Throwable t) {
+            localeYaml = null;
+        }
     }
 }

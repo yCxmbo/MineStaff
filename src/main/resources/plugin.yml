@@ -1,6 +1,6 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 2.6
+version: 1.0
 api-version: '1.21'
 author: 'ycxmbo'
 provides: [ "MineStaffAPI" ]
@@ -31,6 +31,52 @@ commands:
     description: Open staff list GUI
   stafflist:
     description: Open staff list GUI (alias)
+  staffreload:
+    description: Reload MineStaff configuration
+    usage: /<command>
+    permission: staffmode.reload
+  freeze:
+    description: Freeze or unfreeze a player
+    usage: /<command> <player>
+    permission: staffmode.freeze
+  inspect:
+    description: Open inspector GUI for a player
+    usage: /<command> <player>
+    permission: staffmode.inspect
+  reports:
+    description: Open reports GUI
+    usage: /<command>
+    permission: staffmode.alerts
+  staffduty:
+    description: Toggle staff duty on/off (enables Staff Mode)
+    aliases: [duty]
+    permission: staffmode.duty
+  notes:
+    description: Manage player notes
+    usage: /<command> <player> add <note> | list | remove <index>
+    permission: staffmode.notes
+  profile:
+    description: Open player profile GUI
+    usage: /<command> <player>
+    permission: staffmode.inspect
+  inspectoffline:
+    description: Inspect offline player's inventory/ender chest
+    usage: /<command> <player> [ec]
+    permission: staffmode.inspect
+  commandspy:
+    description: Toggle command spy
+    permission: staffmode.spy
+  socialspy:
+    description: Toggle social spy for private messages
+    permission: staffmode.spy
+  staff2fa:
+    description: Manage staff 2FA (TOTP)
+    usage: /<command> enable|confirm <otp>|disable|status
+    permission: staffmode.login
+  evidence:
+    description: Attach/list evidence to reports
+    usage: /<command> <reportId> add <url>|list
+    permission: staffmode.alerts
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -47,6 +93,16 @@ permissions:
   staffmode.infractions:   { default: op }
   staffmode.infractions.add: { default: op }
   staffmode.rollback:      { default: op }
+  staffmode.login:         { default: op }
+  staffmode.stafflist:     { default: op }
+  staffmode.cpscheck:      { default: op }
+  staffmode.reload:        { default: op }
+  staffmode.duty:          { default: op }
+  staffmode.notes:         { default: op }
+  staffmode.profile:       { default: op }
+  staffmode.spy:           { default: op }
+  staffmode.randomtp:      { default: op }
+  staffmode.history:       { default: op }
   staffmode.silentchest:
     description: Open containers silently in Staff Mode
     default: op

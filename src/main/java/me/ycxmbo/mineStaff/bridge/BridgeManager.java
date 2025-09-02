@@ -19,6 +19,8 @@ public class BridgeManager {
 
     public static void initialize(MineStaff plugin) {
         tryVulcan(plugin);
+        tryGrim(plugin);
+        tryKauri(plugin);
         tryLiteBans(plugin);
     }
 
@@ -85,6 +87,83 @@ public class BridgeManager {
         } catch (Throwable ignored) {
             // swallow reflection hiccups
         }
+    }
+
+    // -------- Grim --------
+    @SuppressWarnings("unchecked")
+    private static void tryGrim(MineStaff plugin) {
+        org.bukkit.plugin.Plugin p = Bukkit.getPluginManager().getPlugin("GrimAC");
+        if (p == null || !p.isEnabled()) return;
+        java.util.List<String> events = java.util.Arrays.asList(
+                "me.grim.grimac.api.events.FlagEvent",
+                "me.grim.grimac.api.event.PlayerViolationEvent"
+        );
+        for (String name : events) {
+            try {
+                Class<? extends Event> clazz = (Class<? extends Event>) Class.forName(name);
+                Bukkit.getPluginManager().registerEvent(
+                        clazz,
+                        new Listener() {},
+                        EventPriority.MONITOR,
+                        (EventExecutor) (l, e) -> { try { handleGrimFlag(plugin, e); } catch (Throwable ignored) {} },
+                        plugin, true);
+                plugin.getLogger().info("[Bridge] Hooked Grim via " + name);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        plugin.getLogger().warning("[Bridge] Grim present but no compatible event class found.");
+    }
+
+    private static void handleGrimFlag(MineStaff plugin, Object event) {
+        try {
+            Object playerObj = tryGetObj(event, "getPlayer");
+            if (!(playerObj instanceof Player player)) return;
+            String check = tryGet(event, "getCheck", String::valueOf);
+            if (check == null) check = tryGet(event, "getCheckName", String::valueOf);
+            Number vl = tryNum(event, "getViolations");
+            String msg = "Grim flag: " + player.getName()
+                    + (check != null ? (" [" + check + "]") : "")
+                    + (vl != null ? (" VL=" + vl) : "");
+            broadcastToStaff(plugin, msg, player.getName());
+        } catch (Throwable ignored) {}
+    }
+
+    // -------- Kauri --------
+    @SuppressWarnings("unchecked")
+    private static void tryKauri(MineStaff plugin) {
+        org.bukkit.plugin.Plugin p = Bukkit.getPluginManager().getPlugin("Kauri");
+        if (p == null || !p.isEnabled()) return;
+        java.util.List<String> events = java.util.Arrays.asList(
+                "xyz.kauri.KauriAC.api.events.KauriFlagEvent",
+                "cc.fyre.kauri.api.event.KauriFlagEvent"
+        );
+        for (String name : events) {
+            try {
+                Class<? extends Event> clazz = (Class<? extends Event>) Class.forName(name);
+                Bukkit.getPluginManager().registerEvent(
+                        clazz,
+                        new Listener() {},
+                        EventPriority.MONITOR,
+                        (EventExecutor) (l, e) -> { try { handleKauriFlag(plugin, e); } catch (Throwable ignored) {} },
+                        plugin, true);
+                plugin.getLogger().info("[Bridge] Hooked Kauri via " + name);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        plugin.getLogger().warning("[Bridge] Kauri present but API events not found.");
+    }
+
+    private static void handleKauriFlag(MineStaff plugin, Object event) {
+        try {
+            Object playerObj = tryGetObj(event, "getPlayer");
+            if (!(playerObj instanceof Player player)) return;
+            String check = tryGet(event, "getCheck", String::valueOf);
+            Number vl = tryNum(event, "getVl");
+            String msg = "Kauri flag: " + player.getName()
+                    + (check != null ? (" [" + check + "]") : "")
+                    + (vl != null ? (" VL=" + vl) : "");
+            broadcastToStaff(plugin, msg, player.getName());
+        } catch (Throwable ignored) {}
     }
 
     @SuppressWarnings("unchecked")

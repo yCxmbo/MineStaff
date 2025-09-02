@@ -36,11 +36,17 @@ public class ReportsGUIListener implements Listener {
             case LEFT:
                 reports.setClaimed(id, p.getUniqueId());
                 p.sendMessage(ChatColor.AQUA + "Report claimed.");
+                me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                        "type","report","action","claim","id",id.toString(),"actor",p.getUniqueId().toString()
+                ));
                 p.closeInventory();
                 break;
             case RIGHT:
                 reports.setStatus(id, "CLOSED");
                 p.sendMessage(ChatColor.GREEN + "Report closed.");
+                me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                        "type","report","action","close","id",id.toString(),"actor",p.getUniqueId().toString()
+                ));
                 p.closeInventory();
                 break;
             default:

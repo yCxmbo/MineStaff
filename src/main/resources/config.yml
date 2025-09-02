@@ -16,6 +16,8 @@ messages:
 
 options:
   require_login: true
+  staffmode_gamemode: CREATIVE
+  locale: en
   staffchat_prefix: "@"
   teleport_max_range: 60
   teleport_max_range_sneak: 120
@@ -35,11 +37,13 @@ tools:
     inspect: 2
     vanish: 8
     cps: 3
+    randomtp: 4
 
 teleport-to-spawn-on-exit: true
 
 reports:
   notify-staff-permission: "staffmode.alerts"
+  cross_server: true
 
 infractions:
   types: ["WARN","MUTE","BAN"]  # free-form; used for display
@@ -49,3 +53,61 @@ rollback:
 
 silent-chest:
   require-sneak: true
+
+staffchat:
+  cross_server: true
+  console_log: true
+  # Legacy format with color codes
+  format_legacy: "&8[&dStaff&8] &b{name}&7: &f{message}"
+  mention_sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+cps:
+  duration_seconds: 10
+
+randomtp:
+  active_seconds: 60
+  cooldown_ms: 2000
+
+audit:
+  enabled: true
+  file_prefix: "actions-"
+
+storage:
+  mode: yaml   # yaml | sqlite | mysql
+  sqlite:
+    file: minestaff.db
+  mysql:
+    host: localhost
+    port: 3306
+    database: minestaff
+    username: root
+    password: ""
+    useSSL: false
+    params: "useUnicode=true&characterEncoding=utf8"
+
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+  password: ""
+  ssl: false
+  channels:
+    staffchat: "minestaff:sc"
+    reports: "minestaff:reports"
+
+discord:
+  enabled: false
+  alerts_webhook: ""
+  staffchat_webhook: ""
+history:
+  days: 7
+
+luckperms:
+  staffmode_temp_perms: []
+  duty_temp_perms: []
+
+security:
+  2fa:
+    enabled: false
+  session_timeout_minutes: 60
+  bind_ip: true

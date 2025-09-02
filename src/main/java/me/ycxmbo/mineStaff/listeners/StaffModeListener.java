@@ -29,6 +29,13 @@ public class StaffModeListener implements Listener {
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
         login.clearLoginStatus(e.getPlayer());
+        // If player was persisted as vanished, restore state
+        if (MineStaff.getInstance().getVanishStore().isVanished(e.getPlayer().getUniqueId())) {
+            staff.setVanished(e.getPlayer(), true);
+            VanishUtil.applyVanish(e.getPlayer(), true);
+            MineStaff.getInstance().getToolManager().updateVanishDye(e.getPlayer(), true);
+        }
+        // Hide any currently vanished staff from this joiner
         VanishUtil.reapplyForJoin(e.getPlayer());
     }
 
@@ -39,7 +46,6 @@ public class StaffModeListener implements Listener {
         if (staff.isVanished(e.getPlayer())) {
             MineStaff.getInstance().getVanishStore().setVanished(e.getPlayer().getUniqueId(), true);
         }
-        VanishUtil.reapplyForJoin(e.getPlayer());
     }
 
     @EventHandler

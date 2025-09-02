@@ -30,10 +30,11 @@ public class ReportCommand implements CommandExecutor {
         OfflinePlayer t = Bukkit.getOfflinePlayer(args[0]);
         String reason = String.join(" ", java.util.Arrays.copyOfRange(args, 1, args.length));
 
-        // ✔ Use the manager's add() which generates the ID internally
+        // Use the manager's add() which generates the ID internally
         UUID id = reports.add(p.getUniqueId(), t.getUniqueId(), reason);
 
         p.sendMessage(ChatColor.GREEN + "Report submitted. ID: " + ChatColor.YELLOW + id);
         return true;
     }
 }
+

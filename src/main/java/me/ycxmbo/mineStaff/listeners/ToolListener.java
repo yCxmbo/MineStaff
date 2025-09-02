@@ -51,6 +51,13 @@ public class ToolListener implements Listener {
             return;
         }
 
+        if (it.getType() == ToolManager.RANDOMTP_TOOL && p.hasPermission("staffmode.randomtp")) {
+            if (right) {
+                e.setCancelled(true);
+                useRandomTp(p);
+            }
+            return;
+        }
         if ((it.getType() == Material.LIME_DYE || it.getType() == Material.LIGHT_GRAY_DYE) && p.hasPermission("staffmode.vanish")) {
             if (right) {
                 e.setCancelled(true);
@@ -79,6 +86,12 @@ public class ToolListener implements Listener {
             if (state) target.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
             target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
             SoundUtil.playFreeze(p);
+            MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                    "type","freeze","actor",p.getUniqueId().toString(),
+                    "target",target.getUniqueId().toString(),
+                    "state",String.valueOf(state),
+                    "cause","tool"
+            ));
             return;
         }
 
@@ -96,36 +109,65 @@ public class ToolListener implements Listener {
 
         // API + effects
         org.bukkit.Bukkit.getPluginManager().callEvent(new VanishToggleEvent(p, newState, MineStaffAPI.ToggleCause.TOOL));
-        if (newState) {
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Vanish enabled.");
-        } else {
-            p.sendMessage(ChatColor.LIGHT_PURPLE + "Vanish disabled.");
-        }
+        String key = newState ? "vanish_on" : "vanish_off";
+        String raw = plugin.getConfigManager().getConfig().getString("messages." + key, newState ? "&dVanish enabled." : "&dVanish disabled.");
+        p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
     }
 
     private void useTeleport(Player p, int maxRange) {
         String key = "teleport";
         if (!cooldowns.ready(p.getUniqueId(), key)) {
             long ms = cooldowns.remaining(p.getUniqueId(), key);
-            p.sendMessage(ChatColor.RED + "Teleport cooldown: " + String.format(java.util.Locale.US, "%.1f", ms / 1000.0) + "s");
+            String templ = plugin.getConfigManager().getConfig().getString("messages.teleport_cooldown", "&cTeleport cooldown: {seconds}s");
+            String msg = templ.replace("{seconds}", String.format(java.util.Locale.US, "%.1f", ms / 1000.0));
+            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', msg));
             return;
         }
+        int range = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range", 60);
+        int rangeSneak = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range_sneak", 120);
+        int usedRange = p.isSneaking() ? rangeSneak : range;
         Location eye = p.getEyeLocation();
-        BlockIterator it = new BlockIterator(p.getWorld(), eye.toVector(), eye.getDirection(), 0, maxRange);
+        BlockIterator it = new BlockIterator(p.getWorld(), eye.toVector(), eye.getDirection(), 0, usedRange);
         Block last = null;
         while (it.hasNext()) {
             Block b = it.next();
             if (b.getType().isSolid()) { last = b; break; }
             last = b;
         }
-        if (last == null) { p.sendMessage(ChatColor.RED + "No safe spot in sight."); return; }
+        if (last == null) {
+            String raw = plugin.getConfigManager().getConfig().getString("messages.teleport_no_spot", "&cNo safe spot in sight.");
+            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
+            return;
+        }
 
         Location dest = last.getLocation().add(0.5, 1, 0.5);
         if (dest.getBlock().getType().isSolid() || dest.clone().add(0,1,0).getBlock().getType().isSolid()) {
-            p.sendMessage(ChatColor.RED + "Blocked destination.");
+            String raw = plugin.getConfigManager().getConfig().getString("messages.teleport_blocked", "&cBlocked destination.");
+            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
             return;
         }
         p.teleport(dest);
-        cooldowns.set(p.getUniqueId(), key, 1500);
+        int cd = plugin.getConfigManager().getConfig().getInt("options.teleport_cooldown_ms", 1500);
+        cooldowns.set(p.getUniqueId(), key, cd);
+    }
+
+    private void useRandomTp(Player p) {
+        int activeSec = plugin.getConfigManager().getConfig().getInt("randomtp.active_seconds", 60);
+        long cutoff = System.currentTimeMillis() - (activeSec * 1000L);
+        java.util.List<Player> candidates = new java.util.ArrayList<>();
+        for (Player t : org.bukkit.Bukkit.getOnlinePlayers()) {
+            if (t.equals(p)) continue;
+            if (t.hasPermission("staffmode.toggle")) continue; // skip staff
+            long last = MineStaff.getInstance().getActivityTracker().lastActive(t.getUniqueId());
+            if (last == 0L || last < cutoff) continue; // inactive
+            candidates.add(t);
+        }
+        if (candidates.isEmpty()) { p.sendMessage(org.bukkit.ChatColor.RED + "No active non-staff players found."); return; }
+        java.util.Collections.shuffle(candidates);
+        Player target = candidates.get(0);
+        p.teleport(target.getLocation());
+        int cd = plugin.getConfigManager().getConfig().getInt("randomtp.cooldown_ms", 2000);
+        cooldowns.set(p.getUniqueId(), "randomtp", cd);
+        p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
     }
 }

@@ -31,7 +31,7 @@ public class StaffLoginCommand implements CommandExecutor {
             return true;
         }
         if (args.length == 0) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password>|set <newPassword>");
+            p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password> [otp]| set <newPassword>");
             return true;
         }
         if (args[0].equalsIgnoreCase("set")) {
@@ -44,12 +44,21 @@ public class StaffLoginCommand implements CommandExecutor {
             p.sendMessage(cfg.getMessage("password_set", "Password set."));
             return true;
         } else {
-            if (login.checkPassword(p, args[0])) {
-                login.setLoggedIn(p, true);
-                p.sendMessage(cfg.getMessage("login_success", "Logged in."));
-            } else {
-                p.sendMessage(cfg.getMessage("login_failure", "Incorrect password."));
+            String password = args[0];
+            if (!login.checkPassword(p, password)) { p.sendMessage(cfg.getMessage("login_failure", "Incorrect password.")); return true; }
+            boolean require2fa = cfg.getConfig().getBoolean("security.2fa.enabled", false) && login.isTwoFactorEnabled(p);
+            if (require2fa) {
+                if (args.length < 2) { p.sendMessage(ChatColor.RED + "OTP required. Usage: /stafflogin <password> <otp>"); return true; }
+                String otp = args[1];
+                String secret = login.getTwoFactorSecret(p);
+                if (secret == null || !me.ycxmbo.mineStaff.security.TwoFactorManager.verify(secret, otp, 1)) {
+                    p.sendMessage(ChatColor.RED + "Invalid OTP.");
+                    return true;
+                }
             }
+            login.setLoggedIn(p, true);
+            login.startSession(p);
+            p.sendMessage(cfg.getMessage("login_success", "Logged in."));
             return true;
         }
     }

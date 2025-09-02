@@ -42,12 +42,16 @@ public class StaffModeCommand implements CommandExecutor {
             staffManager.rememberGamemode(p);
             staffManager.saveInventory(p);
 
-            // Switch to Creative and give tools
-            p.setGameMode(GameMode.CREATIVE);
+            // Switch to configured gamemode and give tools
+            String gm = config.getConfig().getString("options.staffmode_gamemode", "CREATIVE");
+            try { p.setGameMode(GameMode.valueOf(gm.toUpperCase())); } catch (IllegalArgumentException ignored) { p.setGameMode(GameMode.CREATIVE); }
             p.getInventory().clear();
             plugin.getToolManager().giveStaffTools(p);
 
             p.sendMessage(config.getMessage("staffmode_enabled", "Staff mode enabled."));
+            MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                    "type","staffmode","action","enable","actor",p.getUniqueId().toString()
+            ));
             plugin.getActionLogger().logCommand(p, "StaffMode ON");
         } else {
             staffManager.disableStaffMode(p);
@@ -72,6 +76,9 @@ public class StaffModeCommand implements CommandExecutor {
             }
 
             p.sendMessage(config.getMessage("staffmode_disabled", "Staff mode disabled."));
+            MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                    "type","staffmode","action","disable","actor",p.getUniqueId().toString()
+            ));
             plugin.getActionLogger().logCommand(p, "StaffMode OFF");
         }
         return true;

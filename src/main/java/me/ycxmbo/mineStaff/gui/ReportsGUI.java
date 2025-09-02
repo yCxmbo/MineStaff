@@ -24,9 +24,12 @@ public class ReportsGUI {
             ItemStack it = new ItemStack(Material.PAPER);
             ItemMeta meta = it.getItemMeta();
             meta.setDisplayName(ChatColor.YELLOW + (target.getName() != null ? target.getName() : r.target.toString()));
+            int evid = 0;
+            try { evid = me.ycxmbo.mineStaff.MineStaff.getInstance().getEvidenceManager().count(r.id); } catch (Throwable ignored) {}
             meta.setLore(java.util.List.of(
                     ChatColor.GRAY + "Reason: " + r.reason,
                     ChatColor.GRAY + "Status: " + r.status + (r.claimedBy != null ? " by " + Bukkit.getOfflinePlayer(r.claimedBy).getName() : ""),
+                    ChatColor.GRAY + "Evidence: " + evid,
                     ChatColor.DARK_GRAY + "ID: " + r.id
             ));
             it.setItemMeta(meta);

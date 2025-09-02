@@ -49,6 +49,7 @@ public class VanishStore {
     public boolean isVanished(UUID id) { return vanished.contains(id); }
     public void setVanished(UUID id, boolean v) {
         if (v) vanished.add(id); else vanished.remove(id);
+        save();
     }
     public Set<UUID> all() { return new HashSet<>(vanished); }
 }

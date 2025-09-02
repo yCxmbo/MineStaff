@@ -27,14 +27,15 @@ public class CPSCheckCommand implements CommandExecutor {
         if (!off.isOnline()) { p.sendMessage(ChatColor.RED + "Target must be online."); return true; }
         Player target = off.getPlayer();
 
-        CPSCheckManager cps = plugin.getCPSManager(); // aligned to your existing code
+        CPSCheckManager cps = plugin.getCPSManager();
         if (cps.isChecking(target)) {
             p.sendMessage(ChatColor.RED + "A CPS test is already running for " + target.getName() + ".");
             return true;
         }
         if (cps.begin(p, target)) {
-            p.sendMessage(ChatColor.GREEN + "Started 10s CPS test on " + target.getName() + "…");
-            target.sendMessage(ChatColor.YELLOW + "A staff member is measuring your CPS for 10 seconds.");
+            int secs = plugin.getConfigManager().getConfig().getInt("cps.duration_seconds", 10);
+            p.sendMessage(ChatColor.GREEN + "Started " + secs + "s CPS test on " + target.getName() + ".");
+            target.sendMessage(ChatColor.YELLOW + "A staff member is measuring your CPS for " + secs + " seconds.");
             cps.finishLater(p, target);
         }
         return true;

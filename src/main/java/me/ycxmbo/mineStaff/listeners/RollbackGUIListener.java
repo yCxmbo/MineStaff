@@ -55,6 +55,11 @@ public class RollbackGUIListener implements Listener {
         target.updateInventory();
         p.sendMessage(ChatColor.GREEN + "Restored " + target.getName() + "'s inventory from snapshot.");
         target.sendMessage(ChatColor.YELLOW + "Your inventory was restored by staff.");
+        me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                "type","rollback","actor",p.getUniqueId().toString(),
+                "target",target.getUniqueId().toString(),
+                "timestamp",String.valueOf(ts)
+        ));
         p.closeInventory();
     }
 }

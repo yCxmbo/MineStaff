@@ -17,7 +17,7 @@ public class RollbackCommand implements CommandExecutor {
 
     public RollbackCommand(MineStaff plugin) {
         this.rb = plugin.getRollbackManager();           // reuse the singleton
-        this.gui = new RollbackGUI(this.rb);             // ✔ constructor takes RollbackManager
+        this.gui = new RollbackGUI(this.rb);             // constructor takes RollbackManager
     }
 
     @Override
@@ -31,3 +31,4 @@ public class RollbackCommand implements CommandExecutor {
         return true;
     }
 }
+

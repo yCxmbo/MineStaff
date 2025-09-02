@@ -12,6 +12,7 @@ public class InfractionManager {
     private final MineStaff plugin;
     private final File file;
     private YamlConfiguration yaml;
+    private final boolean useSql;
 
     public static class Infraction {
         public final long ts = Instant.now().toEpochMilli();
@@ -27,7 +28,8 @@ public class InfractionManager {
     public InfractionManager(MineStaff plugin) {
         this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "infractions.yml");
-        reload();
+        this.useSql = plugin.getStorage() != null;
+        if (!useSql) reload();
     }
 
     public void reload() {
@@ -37,6 +39,7 @@ public class InfractionManager {
     }
 
     public synchronized void add(UUID player, Infraction inf) {
+        if (useSql) { plugin.getStorage().addInfraction(player, inf); return; }
         String base = "players." + player + "." + inf.ts;
         yaml.set(base + ".staff", String.valueOf(inf.staff));
         yaml.set(base + ".type", inf.type);
@@ -45,6 +48,7 @@ public class InfractionManager {
     }
 
     public synchronized List<Infraction> get(UUID player) {
+        if (useSql) return plugin.getStorage().listInfractions(player);
         List<Infraction> list = new ArrayList<>();
         if (!yaml.isConfigurationSection("players." + player)) return list;
         for (String key : Objects.requireNonNull(yaml.getConfigurationSection("players." + player)).getKeys(false)) {
