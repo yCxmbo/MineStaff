@@ -24,12 +24,12 @@ public class FreezeCommand implements CommandExecutor {
             sender.sendMessage(ChatColor.RED + "Only players.");
             return true;
         }
-        if (!p.hasPermission("staffmode.freeze")) {
+        if (!(p.hasPermission("staffmode.freeze.use") || p.hasPermission("staffmode.freeze"))) {
             p.sendMessage(ChatColor.RED + "No permission.");
             return true;
         }
         if (args.length < 1) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /freeze <player>");
+            p.sendMessage(ChatColor.YELLOW + "Usage: /freeze <player> [seconds]");
             return true;
         }
         Player t = Bukkit.getPlayerExact(args[0]);
@@ -37,18 +37,14 @@ public class FreezeCommand implements CommandExecutor {
             p.sendMessage(ChatColor.RED + "Player not found.");
             return true;
         }
-        boolean newState = !staff.isFrozen(t);
-        staff.setFrozen(t, newState);
-        p.sendMessage(ChatColor.YELLOW + "Player " + t.getName() + " " + (newState ? "frozen." : "unfrozen."));
-        if (newState) {
-            t.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
+        int seconds = 0;
+        if (args.length >= 2) {
+            try { seconds = Math.max(0, Integer.parseInt(args[1])); } catch (NumberFormatException ignored) {}
+        } else {
+            seconds = plugin.getConfigManager().getConfig().getInt("freeze.default_seconds", 0);
         }
-        MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
-                "type","freeze","actor",p.getUniqueId().toString(),
-                "target",t.getUniqueId().toString(),
-                "state",String.valueOf(newState)
-        ));
-        plugin.getActionLogger().logCommand(p, "Freeze " + t.getName() + " -> " + newState);
+        boolean result = plugin.getFreezeService().toggle(p, t, null, me.ycxmbo.mineStaff.api.MineStaffAPI.ToggleCause.COMMAND, seconds);
+        plugin.getActionLogger().logCommand(p, "Freeze " + t.getName() + " -> " + result + (seconds > 0 && result ? (" for " + seconds + "s") : ""));
         return true;
     }
 }

@@ -6,6 +6,13 @@ author: 'ycxmbo'
 provides: [ "MineStaffAPI" ]
 softdepend: [LiteBans, Vulcan, Essentials, PlaceholderAPI]
 description: A streamlined Staff Mode plugin for Paper 1.21+
+libraries:
+  - net.kyori:adventure-text-minimessage:4.17.0
+  - com.zaxxer:HikariCP:5.1.0
+  - org.xerial:sqlite-jdbc:3.45.2.0
+  - com.mysql:mysql-connector-j:8.4.0
+  - redis.clients:jedis:5.1.2
+  - org.apache.commons:commons-pool2:2.12.0
 
 commands:
   staffmode:
@@ -36,8 +43,8 @@ commands:
     usage: /<command>
     permission: staffmode.reload
   freeze:
-    description: Freeze or unfreeze a player
-    usage: /<command> <player>
+    description: Freeze or unfreeze a player (optionally for seconds)
+    usage: /<command> <player> [seconds]
     permission: staffmode.freeze
   inspect:
     description: Open inspector GUI for a player
@@ -82,6 +89,8 @@ permissions:
   staffmode.toggle:        { default: op }
   staffmode.teleport:      { default: op }
   staffmode.freeze:        { default: op }
+  staffmode.freeze.use:    { default: op }
+  staffmode.freeze.bypass: { default: false }
   staffmode.inspect:       { default: op }
   staffmode.vanish:        { default: op }
   staffmode.see:

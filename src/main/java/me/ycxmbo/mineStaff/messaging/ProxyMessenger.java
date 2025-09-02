@@ -57,7 +57,7 @@ public class ProxyMessenger implements PluginMessageListener {
         try {
             ByteArrayOutputStream msg = new ByteArrayOutputStream();
             DataOutputStream data = new DataOutputStream(msg);
-            data.writeUTF("RP_ADD");
+            data.writeUTF("RP_ADD2");
             data.writeUTF(r.id.toString());
             data.writeUTF(r.reporter.toString());
             data.writeUTF(r.target.toString());
@@ -65,6 +65,9 @@ public class ProxyMessenger implements PluginMessageListener {
             data.writeLong(r.created);
             data.writeUTF(r.status == null ? "OPEN" : r.status);
             data.writeUTF(r.claimedBy == null ? "null" : r.claimedBy.toString());
+            data.writeUTF(r.category == null ? "GENERAL" : r.category);
+            data.writeUTF(r.priority == null ? "MEDIUM" : r.priority);
+            data.writeLong(r.dueBy);
 
             forwardAll(carrier, msg.toByteArray());
         } catch (IOException ignored) {}
@@ -96,7 +99,7 @@ public class ProxyMessenger implements PluginMessageListener {
                     plugin.getStaffChatManager().broadcastLocal(name, msg);
                     break;
                 }
-                case "RP_ADD": {
+                case "RP_ADD": { // backward compat (no category/priority)
                     UUID id = UUID.fromString(in.readUTF());
                     UUID reporter = UUID.fromString(in.readUTF());
                     UUID target = UUID.fromString(in.readUTF());
@@ -106,8 +109,23 @@ public class ProxyMessenger implements PluginMessageListener {
                     String claimedStr = in.readUTF();
                     UUID claimedBy = "null".equalsIgnoreCase(claimedStr) ? null : UUID.fromString(claimedStr);
                     try {
-                        plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy));
+                        plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, "GENERAL", "MEDIUM", 0L));
                     } catch (Throwable ignored) {}
+                    break;
+                }
+                case "RP_ADD2": {
+                    UUID id = UUID.fromString(in.readUTF());
+                    UUID reporter = UUID.fromString(in.readUTF());
+                    UUID target = UUID.fromString(in.readUTF());
+                    String reason = in.readUTF();
+                    long created = in.readLong();
+                    String status = in.readUTF();
+                    String claimedStr = in.readUTF();
+                    UUID claimedBy = "null".equalsIgnoreCase(claimedStr) ? null : UUID.fromString(claimedStr);
+                    String category = in.readUTF();
+                    String priority = in.readUTF();
+                    long dueBy = in.readLong();
+                    try { plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy)); } catch (Throwable ignored) {}
                     break;
                 }
                 default:
@@ -116,4 +134,3 @@ public class ProxyMessenger implements PluginMessageListener {
         } catch (Throwable ignored) {}
     }
 }
-

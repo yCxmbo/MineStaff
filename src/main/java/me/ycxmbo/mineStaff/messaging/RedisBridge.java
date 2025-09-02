@@ -40,14 +40,20 @@ public class RedisBridge {
     }
 
     private void subscribeLoop() {
-        try (Jedis j = pool.getResource()) {
-            j.subscribe(new JedisPubSub() {
-                @Override public void onMessage(String channel, String message) {
-                    try { handle(channel, message); } catch (Throwable ignored) {}
-                }
-            }, chStaff, chReports);
-        } catch (Throwable t) {
-            plugin.getLogger().warning("Redis subscribe failed: " + t.getMessage());
+        int backoff = 1000;
+        while (!Thread.currentThread().isInterrupted()) {
+            try (Jedis j = pool.getResource()) {
+                j.subscribe(new JedisPubSub() {
+                    @Override public void onMessage(String channel, String message) {
+                        try { handle(channel, message); } catch (Throwable ignored) {}
+                    }
+                }, chStaff, chReports);
+                backoff = 1000; // reset when returns normally
+            } catch (Throwable t) {
+                plugin.getLogger().warning("Redis subscribe failed: " + t.getMessage());
+                try { Thread.sleep(backoff); } catch (InterruptedException ie) { Thread.currentThread().interrupt(); }
+                backoff = Math.min(16000, backoff * 2);
+            }
         }
     }
 
@@ -61,8 +67,8 @@ public class RedisBridge {
             return;
         }
         if (channel.equals(chReports)) {
-            // format: ADD|id|reporter|target|reason|created|status|claimed
-            String[] p = message.split("\\|", 8);
+            // format v2: ADD|id|reporter|target|reason|created|status|claimed|category|priority|dueBy
+            String[] p = message.split("\\|", 12);
             if (p.length < 8) return;
             if (!"ADD".equalsIgnoreCase(p[0])) return;
             try {
@@ -73,7 +79,10 @@ public class RedisBridge {
                 long created = Long.parseLong(p[5]);
                 String status = p[6];
                 UUID claimed = "null".equalsIgnoreCase(p[7]) ? null : UUID.fromString(p[7]);
-                plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed));
+                String category = p.length >= 10 ? (p[8].isEmpty() ? "GENERAL" : p[8]) : "GENERAL";
+                String priority = p.length >= 11 ? (p[9].isEmpty() ? "MEDIUM" : p[9]) : "MEDIUM";
+                long dueBy = p.length >= 12 ? Long.parseLong(p[10]) : 0L;
+                plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy));
             } catch (Throwable ignored) {}
         }
     }
@@ -103,10 +112,12 @@ public class RedisBridge {
                     r.reason == null ? "" : r.reason.replace('|', ' '),
                     String.valueOf(r.created),
                     r.status == null ? "OPEN" : r.status,
-                    r.claimedBy == null ? "null" : r.claimedBy.toString()
+                    r.claimedBy == null ? "null" : r.claimedBy.toString(),
+                    r.category == null ? "GENERAL" : r.category,
+                    r.priority == null ? "MEDIUM" : r.priority,
+                    String.valueOf(r.dueBy)
             );
             j.publish(chReports, payload);
         } catch (Throwable ignored) {}
     }
 }
-

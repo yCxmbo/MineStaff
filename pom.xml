@@ -104,42 +104,7 @@
         </configuration>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <version>3.5.1</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals><goal>shade</goal></goals>
-            <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <relocations>
-                <relocation>
-                  <pattern>net.kyori.adventure.text.minimessage</pattern>
-                  <shadedPattern>me.ycxmbo.mineStaff.libs.minimessage</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.zaxxer.hikari</pattern>
-                  <shadedPattern>me.ycxmbo.mineStaff.libs.hikari</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>org.sqlite</pattern>
-                  <shadedPattern>me.ycxmbo.mineStaff.libs.sqlite</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>com.mysql</pattern>
-                  <shadedPattern>me.ycxmbo.mineStaff.libs.mysql</shadedPattern>
-                </relocation>
-                <relocation>
-                  <pattern>redis.clients</pattern>
-                  <shadedPattern>me.ycxmbo.mineStaff.libs.jedis</shadedPattern>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+      <!-- Shade removed; rely on plugin.yml libraries to reduce JAR size -->
     </plugins>
   </build>
 </project>

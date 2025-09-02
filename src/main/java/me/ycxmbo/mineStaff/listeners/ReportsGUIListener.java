@@ -21,8 +21,22 @@ public class ReportsGUIListener implements Listener {
         if (e.getView() == null || e.getView().getTitle() == null) return;
         if (!ChatColor.stripColor(e.getView().getTitle()).equalsIgnoreCase("Reports")) return;
         e.setCancelled(true);
-        if (e.getCurrentItem() == null || e.getCurrentItem().getItemMeta() == null || e.getCurrentItem().getItemMeta().getLore() == null) return;
+        if (e.getCurrentItem() == null || e.getCurrentItem().getItemMeta() == null) return;
 
+        // Top row filter controls
+        int slot = e.getSlot();
+        if (slot >= 0 && slot <= 8) {
+            switch (slot) {
+                case 0: me.ycxmbo.mineStaff.gui.ReportsGUI.cycleStatus(p); break;
+                case 1: me.ycxmbo.mineStaff.gui.ReportsGUI.cycleCategory(p); break;
+                case 2: me.ycxmbo.mineStaff.gui.ReportsGUI.cyclePriority(p); break;
+                case 8: default: break;
+            }
+            new me.ycxmbo.mineStaff.gui.ReportsGUI(reports).open(p);
+            return;
+        }
+
+        if (e.getCurrentItem().getItemMeta().getLore() == null) return;
         String idLine = e.getCurrentItem().getItemMeta().getLore().stream()
                 .map(ChatColor::stripColor)
                 .filter(s -> s.startsWith("ID: "))

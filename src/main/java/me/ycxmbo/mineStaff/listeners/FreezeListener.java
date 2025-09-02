@@ -20,7 +20,6 @@ public class FreezeListener implements Listener {
         Player p = e.getPlayer();
         if (staff.isFrozen(p) && (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getZ() != e.getTo().getZ())) {
             e.setTo(e.getFrom());
-            p.sendActionBar(ChatColor.RED + "You are frozen.");
         }
     }
 }

@@ -41,6 +41,13 @@ public class ToolListener implements Listener {
         if (it == null) return;
         if (!data.isStaffMode(p)) return;
 
+        // scope rules
+        var cfg = plugin.getConfigManager().getConfig();
+        var allowedWorlds = cfg.getStringList("tools.allowed_worlds");
+        if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(p.getWorld().getName())) return;
+        var allowedGm = cfg.getStringList("tools.allowed_gamemodes");
+        if (!allowedGm.isEmpty() && !allowedGm.contains(p.getGameMode().name())) return;
+
         boolean right = e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK;
 
         if (it.getType() == ToolManager.TELEPORT_TOOL && p.hasPermission("staffmode.teleport")) {
@@ -69,29 +76,36 @@ public class ToolListener implements Listener {
 
     @EventHandler
     public void onUseOnPlayer(PlayerInteractEntityEvent e) {
+        if (e.getHand() != EquipmentSlot.HAND) return;
         if (!(e.getRightClicked() instanceof Player target)) return;
         Player p = e.getPlayer();
         if (!data.isStaffMode(p)) return;
+
+        // scope rules
+        var cfg = plugin.getConfigManager().getConfig();
+        var allowedWorlds = cfg.getStringList("tools.allowed_worlds");
+        if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(p.getWorld().getName())) return;
+        var allowedGm = cfg.getStringList("tools.allowed_gamemodes");
+        if (!allowedGm.isEmpty() && !allowedGm.contains(p.getGameMode().name())) return;
         ItemStack it = p.getInventory().getItemInMainHand();
         if (it == null) return;
 
         if (it.getType() == ToolManager.FREEZE_TOOL && p.hasPermission("staffmode.freeze")) {
             e.setCancelled(true);
-            boolean state = !data.isFrozen(target);
-            data.setFrozen(target, state);
-            // API event
-            org.bukkit.Bukkit.getPluginManager().callEvent(new FreezeToggleEvent(target, state, MineStaffAPI.ToggleCause.TOOL));
+            // Cooldown
+            int cd = cfg.getInt("freeze.cooldown_ms", 500);
+            if (!cooldowns.ready(p.getUniqueId(), "freeze")) return;
+            cooldowns.set(p.getUniqueId(), "freeze", cd);
 
-            p.sendMessage(ChatColor.YELLOW + "Player " + target.getName() + " " + (state ? "frozen." : "unfrozen."));
-            if (state) target.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
+            // Permission granularity
+            boolean allowed = p.hasPermission("staffmode.freeze.use") || p.hasPermission("staffmode.freeze");
+            if (!allowed) { p.sendMessage(ChatColor.RED + "No permission."); return; }
+
+            int dur = cfg.getInt("freeze.default_seconds", 0);
+            if (p.isSneaking()) dur = cfg.getInt("freeze.shift_seconds", dur);
+            plugin.getFreezeService().toggle(p, target, null, MineStaffAPI.ToggleCause.TOOL, dur);
             target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
             SoundUtil.playFreeze(p);
-            MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
-                    "type","freeze","actor",p.getUniqueId().toString(),
-                    "target",target.getUniqueId().toString(),
-                    "state",String.valueOf(state),
-                    "cause","tool"
-            ));
             return;
         }
 
@@ -127,6 +141,21 @@ public class ToolListener implements Listener {
         int rangeSneak = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range_sneak", 120);
         int usedRange = p.isSneaking() ? rangeSneak : range;
         Location eye = p.getEyeLocation();
+
+        // Optional: teleport to player in crosshair
+        boolean tpToPlayer = plugin.getConfigManager().getConfig().getBoolean("options.teleport_to_player", true);
+        if (tpToPlayer) {
+            try {
+                var ray = p.getWorld().rayTraceEntities(eye, eye.getDirection(), usedRange, entity -> entity instanceof Player && !entity.equals(p));
+                if (ray != null && ray.getHitEntity() instanceof Player target) {
+                    p.teleport(target.getLocation());
+                    int cd = plugin.getConfigManager().getConfig().getInt("options.teleport_cooldown_ms", 1500);
+                    cooldowns.set(p.getUniqueId(), key, cd);
+                    p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
+                    return;
+                }
+            } catch (Throwable ignored) {}
+        }
         BlockIterator it = new BlockIterator(p.getWorld(), eye.toVector(), eye.getDirection(), 0, usedRange);
         Block last = null;
         while (it.hasNext()) {

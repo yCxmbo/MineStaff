@@ -29,6 +29,7 @@ public class ConfigManager {
     }
 
     private void loadDefaults() {
+        defaults.put("config_version", "2");
         defaults.put("messages.prefix", "&8[&aMineStaff&8]&r ");
         defaults.put("messages.no_permission", "&cYou don't have permission.");
         defaults.put("messages.only_players", "&cOnly players can use this.");
@@ -51,6 +52,26 @@ public class ConfigManager {
         defaults.put("staffchat.console_log", "true");
         defaults.put("staffchat.format_legacy", "&8[&dStaff&8] &b{name}&7: &f{message}");
         defaults.put("cps.duration_seconds", "10");
+
+        // Freeze options
+        defaults.put("freeze.cooldown_ms", "500");
+        defaults.put("freeze.default_seconds", "0");
+        defaults.put("freeze.shift_seconds", "0");
+        defaults.put("freeze.logout_flag_enabled", "true");
+        defaults.put("freeze.visual_cage.enabled", "true");
+        defaults.put("freeze.visual_cage.particle", "SNOWFLAKE");
+        defaults.put("freeze.visual_cage.radius", "0.7");
+
+        // Teleport options
+        defaults.put("options.teleport_to_player", "true");
+
+        // Reports
+        defaults.put("reports.claim_timeout_seconds", "0");
+        defaults.put("reports.notify_reporter_on_claim", "true");
+        defaults.put("reports.notify_reporter_on_close", "true");
+        defaults.put("reports.notify_reporter_on_needs_info", "true");
+        defaults.put("reports.default_category", "GENERAL");
+        defaults.put("reports.default_priority", "MEDIUM");
     }
 
     private void ensureDefaults() {

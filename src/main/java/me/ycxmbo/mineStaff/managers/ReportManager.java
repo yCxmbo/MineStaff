@@ -20,12 +20,17 @@ public class ReportManager {
         public final UUID target;
         public final String reason;
         public final long created;
-        public String status; // OPEN, CLAIMED, CLOSED
+        public String status; // OPEN, CLAIMED, CLOSED, NEEDS_INFO
         public UUID claimedBy;
+        public String category; // e.g., GENERAL, CHEATING, CHAT
+        public String priority; // LOW, MEDIUM, HIGH, CRITICAL
+        public long dueBy;      // epoch millis when SLA expires (0 if none)
 
-        public Report(UUID id, UUID reporter, UUID target, String reason, long created, String status, UUID claimedBy) {
+        public Report(UUID id, UUID reporter, UUID target, String reason, long created, String status, UUID claimedBy,
+                      String category, String priority, long dueBy) {
             this.id = id; this.reporter = reporter; this.target = target; this.reason = reason;
             this.created = created; this.status = status; this.claimedBy = claimedBy;
+            this.category = category; this.priority = priority; this.dueBy = dueBy;
         }
     }
 
@@ -50,14 +55,17 @@ public class ReportManager {
         UUID id;
         long created = Instant.now().toEpochMilli();
         String status = "OPEN";
+        String category = defaultCategory();
+        String priority = defaultPriority();
+        long dueBy = computeSlaDue(created, priority);
         if (useSql) {
-            id = plugin.getStorage().addReport(reporter, target, reason, created, status, null);
+            id = plugin.getStorage().addReport(reporter, target, reason, created, status, null, category, priority, dueBy);
         } else {
             id = UUID.randomUUID();
-            setInternal(id, new Report(id, reporter, target, reason, created, status, null));
+            setInternal(id, new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy));
         }
-        try { plugin.getProxyMessenger().sendReportAdded(new Report(id, reporter, target, reason, created, status, null)); } catch (Throwable ignored) {}
-        try { plugin.getRedisBridge().publishReportAdd(new Report(id, reporter, target, reason, created, status, null)); } catch (Throwable ignored) {}
+        try { plugin.getProxyMessenger().sendReportAdded(new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy)); } catch (Throwable ignored) {}
+        try { plugin.getRedisBridge().publishReportAdd(new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy)); } catch (Throwable ignored) {}
         try { plugin.getAuditLogger().log(java.util.Map.of(
                 "type","report","id",id.toString(),
                 "reporter", String.valueOf(reporter),
@@ -75,6 +83,9 @@ public class ReportManager {
         yaml.set(base + ".created", r.created);
         yaml.set(base + ".status", r.status);
         yaml.set(base + ".claimedBy", r.claimedBy == null ? null : String.valueOf(r.claimedBy));
+        yaml.set(base + ".category", r.category);
+        yaml.set(base + ".priority", r.priority);
+        yaml.set(base + ".dueBy", r.dueBy);
         save();
     }
 
@@ -82,6 +93,9 @@ public class ReportManager {
     public synchronized void addNetwork(Report r) {
         String base = "reports." + r.id;
         if (yaml.isSet(base)) return; // already have it
+        if (r.dueBy == 0L) r.dueBy = computeSlaDue(r.created, r.priority == null ? defaultPriority() : r.priority);
+        if (r.category == null) r.category = defaultCategory();
+        if (r.priority == null) r.priority = defaultPriority();
         setInternal(r.id, r);
     }
 
@@ -100,7 +114,11 @@ public class ReportManager {
                 String status = yaml.getString(base + ".status", "OPEN");
                 String claimed = yaml.getString(base + ".claimedBy", null);
                 UUID claimedBy = claimed == null ? null : UUID.fromString(claimed);
-                list.add(new Report(id, reporter, target, reason, created, status, claimedBy));
+                String category = yaml.getString(base + ".category", defaultCategory());
+                String priority = yaml.getString(base + ".priority", defaultPriority());
+                long dueBy = yaml.getLong(base + ".dueBy", 0L);
+                if (dueBy == 0L) dueBy = computeSlaDue(created, priority);
+                list.add(new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy));
             } catch (Exception ignored) {}
         }
         return list;
@@ -118,16 +136,61 @@ public class ReportManager {
             String status = yaml.getString(base + ".status", "OPEN");
             String claimed = yaml.getString(base + ".claimedBy", null);
             UUID claimedBy = claimed == null ? null : UUID.fromString(claimed);
-            return new Report(id, reporter, target, reason, created, status, claimedBy);
+            String category = yaml.getString(base + ".category", defaultCategory());
+            String priority = yaml.getString(base + ".priority", defaultPriority());
+            long dueBy = yaml.getLong(base + ".dueBy", 0L);
+            if (dueBy == 0L) dueBy = computeSlaDue(created, priority);
+            return new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy);
         } catch (Exception ignored) { return null; }
     }
 
+    private String defaultCategory() {
+        String def = plugin.getConfigManager().getConfig().getString("reports.default_category", "GENERAL");
+        return (def == null || def.isBlank()) ? "GENERAL" : def.toUpperCase(java.util.Locale.ROOT);
+    }
+    private String defaultPriority() {
+        String def = plugin.getConfigManager().getConfig().getString("reports.default_priority", "MEDIUM");
+        return (def == null || def.isBlank()) ? "MEDIUM" : def.toUpperCase(java.util.Locale.ROOT);
+    }
+    private long computeSlaDue(long created, String priority) {
+        // SLA seconds mapping from config: reports.sla_seconds.<PRIORITY>
+        int seconds = 0;
+        try { seconds = plugin.getConfigManager().getConfig().getInt("reports.sla_seconds." + priority.toUpperCase(java.util.Locale.ROOT), 0); } catch (Throwable ignored) {}
+        if (seconds <= 0) {
+            // fallback defaults
+            switch (priority.toUpperCase(java.util.Locale.ROOT)) {
+                case "CRITICAL": seconds = 3600; break; // 1h
+                case "HIGH": seconds = 2 * 3600; break;   // 2h
+                case "MEDIUM": seconds = 6 * 3600; break; // 6h
+                case "LOW": seconds = 24 * 3600; break;   // 24h
+                default: seconds = 0; break;
+            }
+        }
+        return seconds <= 0 ? 0L : created + seconds * 1000L;
+    }
+
     public synchronized void setStatus(UUID id, String status) {
-        if (useSql) { plugin.getStorage().setReportStatus(id, status.toUpperCase(Locale.ROOT)); return; }
+        String upper = status.toUpperCase(Locale.ROOT);
+        if (useSql) { plugin.getStorage().setReportStatus(id, upper); return; }
         String base = "reports." + id;
         if (!yaml.isSet(base)) return;
-        yaml.set(base + ".status", status.toUpperCase(Locale.ROOT));
+        yaml.set(base + ".status", upper);
         save();
+        try {
+            Report r = get(id);
+            if (r != null) {
+                // Notify reporter on close or needs info
+                boolean notifyClose = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_close", true);
+                boolean notifyNeeds = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_needs_info", true);
+                if (("CLOSED".equals(upper) && notifyClose) || ("NEEDS_INFO".equals(upper) && notifyNeeds)) {
+                    org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
+                    if (reporter != null) {
+                        reporter.sendMessage(org.bukkit.ChatColor.AQUA + "Your report (" + id + ") is now " + upper + ".");
+                    }
+                    try { plugin.getDiscordBridge().sendAlert("Report " + id + " status -> " + upper); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 
     public synchronized void setClaimed(UUID id, UUID staff) {
@@ -137,5 +200,20 @@ public class ReportManager {
         yaml.set(base + ".claimedBy", staff == null ? null : String.valueOf(staff));
         yaml.set(base + ".status", staff == null ? "OPEN" : "CLAIMED");
         save();
+        // Notify
+        try {
+            Report r = get(id);
+            if (r != null) {
+                boolean notify = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_claim", true);
+                if (notify && staff != null) {
+                    org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
+                    org.bukkit.entity.Player claimer = org.bukkit.Bukkit.getPlayer(staff);
+                    if (reporter != null && claimer != null) {
+                        reporter.sendMessage(org.bukkit.ChatColor.AQUA + "Your report (" + id + ") was claimed by " + claimer.getName() + ".");
+                    }
+                    try { plugin.getDiscordBridge().sendAlert("Report " + id + " claimed by " + (claimer == null ? staff : claimer.getName())); } catch (Throwable ignored) {}
+                }
+            }
+        } catch (Throwable ignored) {}
     }
 }

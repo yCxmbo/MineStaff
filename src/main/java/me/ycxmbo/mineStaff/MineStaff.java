@@ -12,6 +12,7 @@ import me.ycxmbo.mineStaff.messaging.ProxyMessenger;
 import me.ycxmbo.mineStaff.messaging.RedisBridge;
 import me.ycxmbo.mineStaff.messaging.DiscordBridge;
 import me.ycxmbo.mineStaff.spy.SpyManager;
+import me.ycxmbo.mineStaff.services.FreezeService;
 import me.ycxmbo.mineStaff.audit.JsonAuditLogger;
 import me.ycxmbo.mineStaff.util.ActivityTracker;
 import me.ycxmbo.mineStaff.storage.SqlStorage;
@@ -46,6 +47,7 @@ public class MineStaff extends JavaPlugin {
     private ActivityTracker activityTracker;
     private SqlStorage sqlStorage;
     private me.ycxmbo.mineStaff.evidence.EvidenceManager evidenceManager;
+    private FreezeService freezeService;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -68,6 +70,7 @@ public class MineStaff extends JavaPlugin {
     public ProxyMessenger getProxyMessenger() { return proxyMessenger; }
     public RedisBridge getRedisBridge() { return redisBridge; }
     public DiscordBridge getDiscordBridge() { return discordBridge; }
+    public FreezeService getFreezeService() { return freezeService; }
     public SpyManager getSpyManager() { return spyManager; }
     public JsonAuditLogger getAuditLogger() { return auditLogger; }
     public ActivityTracker getActivityTracker() { return activityTracker; }
@@ -96,6 +99,7 @@ public class MineStaff extends JavaPlugin {
         this.proxyMessenger    = new ProxyMessenger(this);
         this.redisBridge       = new RedisBridge(this);
         this.discordBridge     = new DiscordBridge(this);
+        this.freezeService     = new FreezeService(this);
         this.spyManager        = new SpyManager();
         this.auditLogger       = new JsonAuditLogger(this);
         this.activityTracker   = new ActivityTracker();
@@ -167,6 +171,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new StaffListGUIListener(), this);
         Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
         Bukkit.getPluginManager().registerEvents(new FreezeListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new FreezeQuitListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CreativeBlockerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffModeListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SpyListener(this), this);
@@ -222,6 +227,7 @@ public class MineStaff extends JavaPlugin {
         try { configManager.saveStaffAccounts(); } catch (Throwable ignored) {}
         try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable ignored) {}
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
+        try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");
