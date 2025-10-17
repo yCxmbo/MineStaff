@@ -3,6 +3,8 @@
 **The ultimate staff management plugin for Minecraft servers.**  
 MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines moderation tools, GUIs, alerts, and integrations into a single lightweight plugin designed for performance and extensibility.
 
+> ✅ Compatible with Paper, Purpur, and Spigot servers running Minecraft **1.20.x – 1.21.x**.
+
 ---
 
 ## ✨ Features
@@ -107,7 +109,7 @@ The `config.yml` lets you customize:
 
 ## 🔌 Dependencies
 
-- [PaperMC / Spigot 1.20.x–1.21.x+](https://papermc.io/)
+- [PaperMC / Purpur / Spigot 1.20.x – 1.21.x](https://papermc.io/)
 - [LiteBans (optional)](https://www.spigotmc.org/resources/litebans.3715/) for punishment integration
 - [PlaceholderAPI (optional)](https://www.spigotmc.org/resources/placeholderapi.6245/) for placeholders
 

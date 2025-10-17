@@ -20,6 +20,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Locale;
+import java.util.Set;
+
 public class MineStaff extends JavaPlugin {
 
     private static MineStaff instance;
@@ -79,9 +82,14 @@ public class MineStaff extends JavaPlugin {
     public StaffChatCommand getStaffChatCommand() { return staffChatCommand; }
     public me.ycxmbo.mineStaff.evidence.EvidenceManager getEvidenceManager() { return evidenceManager; }
 
+    private static final Set<String> SUPPORTED_SERVER_BRANDS = Set.of("Paper", "Purpur", "Spigot", "CraftBukkit");
+    private static final String SUPPORTED_VERSION_RANGE = "1.20.x-1.21.x";
+
     @Override
     public void onEnable() {
         instance = this;
+
+        logServerCompatibility();
 
         // Instantiate managers
         this.configManager     = new ConfigManager(this);
@@ -231,5 +239,29 @@ public class MineStaff extends JavaPlugin {
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");
+    }
+
+    private void logServerCompatibility() {
+        String versionInfo = Bukkit.getVersion();
+        String minecraftVersion = Bukkit.getMinecraftVersion();
+
+        boolean supportedBrand = SUPPORTED_SERVER_BRANDS.stream()
+            .anyMatch(brand -> versionInfo.toLowerCase(Locale.ROOT).contains(brand.toLowerCase(Locale.ROOT)));
+        boolean supportedVersion = minecraftVersion.startsWith("1.20") || minecraftVersion.startsWith("1.21");
+
+        if (supportedBrand && supportedVersion) {
+            getLogger().info("Detected supported server environment: " + versionInfo + " (Minecraft " + minecraftVersion + ")");
+            return;
+        }
+
+        if (!supportedBrand) {
+            getLogger().warning("Detected server implementation '" + versionInfo + "'. MineStaff officially supports Paper, Purpur, and Spigot.");
+        }
+
+        if (supportedVersion) {
+            getLogger().info("Minecraft version " + minecraftVersion + " is within the supported range (" + SUPPORTED_VERSION_RANGE + ").");
+        } else {
+            getLogger().severe("Minecraft version " + minecraftVersion + " is outside the supported range (" + SUPPORTED_VERSION_RANGE + ").");
+        }
     }
 }
