@@ -39,6 +39,8 @@ public class ConfigManager {
         defaults.put("messages.login_success", "&aLogin successful.");
         defaults.put("messages.login_failure", "&cIncorrect password.");
         defaults.put("messages.password_set", "&aPassword set.");
+        defaults.put("messages.staff_login_disabled", "&cStaff login is disabled.");
+        defaults.put("options.staff_login_enabled", "true");
         defaults.put("options.require_login", "true");
         defaults.put("options.staffmode_gamemode", "CREATIVE");
         defaults.put("options.staffchat_prefix", "@");
@@ -111,8 +113,12 @@ public class ConfigManager {
         return config;
     }
 
+    public boolean isStaffLoginEnabled() {
+        return config.getBoolean("options.staff_login_enabled", true);
+    }
+
     public boolean isLoginRequired() {
-        return config.getBoolean("options.require_login", true);
+        return isStaffLoginEnabled() && config.getBoolean("options.require_login", true);
     }
 
     public String getStaffchatPrefix() {
