@@ -30,6 +30,10 @@ public class StaffLoginCommand implements CommandExecutor {
             p.sendMessage(ChatColor.RED + "No permission.");
             return true;
         }
+        if (!cfg.isStaffLoginEnabled()) {
+            p.sendMessage(cfg.getMessage("staff_login_disabled", "Staff login is disabled."));
+            return true;
+        }
         if (args.length == 0) {
             p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password> [otp]| set <newPassword>");
             return true;

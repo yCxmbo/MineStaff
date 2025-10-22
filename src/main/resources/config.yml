@@ -8,6 +8,7 @@ messages:
   login_success: "&aLogin successful."
   login_failure: "&cIncorrect password."
   password_set: "&aPassword set."
+  staff_login_disabled: "&cStaff login is disabled."
   vanish_on: "&dVanish enabled."
   vanish_off: "&dVanish disabled."
   teleport_cooldown: "&cTeleport cooldown: {seconds}s"
@@ -15,6 +16,7 @@ messages:
   teleport_no_spot: "&cNo safe spot in sight."
 
 options:
+  staff_login_enabled: true
   require_login: true
   staffmode_gamemode: CREATIVE
   locale: en

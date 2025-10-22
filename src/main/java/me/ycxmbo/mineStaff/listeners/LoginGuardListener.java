@@ -31,6 +31,7 @@ public class LoginGuardListener implements Listener {
     }
 
     private boolean requiresLogin(Player p) {
+        if (!config.isStaffLoginEnabled()) return false;
         if (!config.isLoginRequired()) return false;
         return p.hasPermission("staffmode.toggle") && !login.isLoggedIn(p);
     }
