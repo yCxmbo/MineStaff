@@ -122,11 +122,19 @@ public class ConfigManager {
     }
 
     public boolean isStaffLoginEnabled() {
-        return config.getBoolean("options.staff_login_enabled", true);
+        // Support legacy locations while preferring the current options.* layout.
+        if (config.isSet("options.staff_login_enabled")) {
+            return config.getBoolean("options.staff_login_enabled");
+        }
+        return config.getBoolean("staff_login_enabled", true);
     }
 
     public boolean isLoginRequired() {
-        return isStaffLoginEnabled() && config.getBoolean("options.require_login", true);
+        boolean requireLogin = config.getBoolean(
+                config.isSet("options.require_login") ? "options.require_login" : "require_login",
+                true
+        );
+        return isStaffLoginEnabled() && requireLogin;
     }
 
     public String getStaffchatPrefix() {
