@@ -15,6 +15,10 @@ import org.bukkit.entity.Player;
 public class AlertFormatter {
 
     public static void broadcast(MineStaff plugin, String content, String tpTarget) {
+        broadcast(plugin, content, tpTarget, true);
+    }
+
+    public static void broadcast(MineStaff plugin, String content, String tpTarget, boolean forward) {
         FileConfiguration cfg = plugin.getConfigManager().getConfig();
 
         boolean useMM = cfg.getBoolean("alerts.use_minimessage", false);
@@ -58,5 +62,9 @@ public class AlertFormatter {
         }
         plugin.getLogger().info("[StaffAlert] " + content);
         try { plugin.getDiscordBridge().sendAlert(content); } catch (Throwable ignored) {}
+        if (forward) {
+            try { plugin.getProxyMessenger().sendStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
+            try { plugin.getRedisBridge().publishStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
+        }
     }
 }

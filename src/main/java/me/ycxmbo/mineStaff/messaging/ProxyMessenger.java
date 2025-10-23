@@ -2,12 +2,12 @@ package me.ycxmbo.mineStaff.messaging;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.ReportManager;
+import me.ycxmbo.mineStaff.util.AlertFormatter;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 /** Cross-server messaging via Plugin Messaging Channel (Bungee/Velocity compatible). */
@@ -44,6 +44,26 @@ public class ProxyMessenger implements PluginMessageListener {
             data.writeUTF(senderId.toString());
             data.writeUTF(name);
             data.writeUTF(message);
+
+            forwardAll(carrier, msg.toByteArray());
+        } catch (IOException ignored) {}
+    }
+
+    // ---- Staff alerts ----
+    public void sendStaffAlert(String content, String tpTarget) {
+        if (!plugin.getConfigManager().getConfig().getBoolean("alerts.cross_server", true)) return;
+        Player carrier = anyOnline();
+        if (carrier == null) return;
+        try {
+            ByteArrayOutputStream msg = new ByteArrayOutputStream();
+            DataOutputStream data = new DataOutputStream(msg);
+            data.writeUTF("AL");
+            data.writeUTF(content);
+            boolean hasTarget = tpTarget != null && !tpTarget.isBlank();
+            data.writeBoolean(hasTarget);
+            if (hasTarget) {
+                data.writeUTF(tpTarget);
+            }
 
             forwardAll(carrier, msg.toByteArray());
         } catch (IOException ignored) {}
@@ -97,6 +117,14 @@ public class ProxyMessenger implements PluginMessageListener {
                     String msg = in.readUTF();
                     // rebroadcast locally without proxy forwarding
                     plugin.getStaffChatManager().broadcastLocal(name, msg);
+                    break;
+                }
+                case "AL": {
+                    String content = in.readUTF();
+                    boolean hasTarget = in.readBoolean();
+                    String target = hasTarget ? in.readUTF() : null;
+                    if (!plugin.getConfigManager().getConfig().getBoolean("alerts.cross_server", true)) break;
+                    AlertFormatter.broadcast(plugin, content, target, false);
                     break;
                 }
                 case "RP_ADD": { // backward compat (no category/priority)
