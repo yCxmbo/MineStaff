@@ -2,6 +2,7 @@ package me.ycxmbo.mineStaff.messaging;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.ReportManager;
+import me.ycxmbo.mineStaff.util.AlertFormatter;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
@@ -16,6 +17,7 @@ public class RedisBridge {
     private Thread subThread;
     private String chStaff;
     private String chReports;
+    private String chAlerts;
 
     public RedisBridge(MineStaff plugin) { this.plugin = plugin; }
 
@@ -28,6 +30,7 @@ public class RedisBridge {
         boolean ssl = cfg.getBoolean("redis.ssl", false);
         chStaff = cfg.getString("redis.channels.staffchat", "minestaff:sc");
         chReports = cfg.getString("redis.channels.reports", "minestaff:reports");
+        chAlerts = cfg.getString("redis.channels.alerts", "minestaff:alerts");
         JedisPoolConfig pc = new JedisPoolConfig();
         pc.setMaxTotal(8);
         if (pass != null && !pass.isEmpty()) pool = new JedisPool(pc, host, port, 2000, pass, ssl);
@@ -47,7 +50,7 @@ public class RedisBridge {
                     @Override public void onMessage(String channel, String message) {
                         try { handle(channel, message); } catch (Throwable ignored) {}
                     }
-                }, chStaff, chReports);
+                }, chStaff, chReports, chAlerts);
                 backoff = 1000; // reset when returns normally
             } catch (Throwable t) {
                 plugin.getLogger().warning("Redis subscribe failed: " + t.getMessage());
@@ -84,6 +87,15 @@ public class RedisBridge {
                 long dueBy = p.length >= 12 ? Long.parseLong(p[10]) : 0L;
                 plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy));
             } catch (Throwable ignored) {}
+            return;
+        }
+        if (channel.equals(chAlerts)) {
+            int i = message.indexOf('|');
+            String content = i >= 0 ? message.substring(0, i) : message;
+            String target = i >= 0 ? message.substring(i + 1) : null;
+            if (target != null && target.isBlank()) target = null;
+            if (!plugin.getConfigManager().getConfig().getBoolean("alerts.cross_server", true)) return;
+            AlertFormatter.broadcast(plugin, content, target, false);
         }
     }
 
@@ -95,14 +107,27 @@ public class RedisBridge {
     public void publishStaffChat(String name, String message) {
         var cfg = plugin.getConfigManager().getConfig();
         if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (pool == null) return;
         try (Jedis j = pool.getResource()) {
             j.publish(chStaff, name + '|' + message);
+        } catch (Throwable ignored) {}
+    }
+
+    public void publishStaffAlert(String content, String tpTarget) {
+        var cfg = plugin.getConfigManager().getConfig();
+        if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (!cfg.getBoolean("alerts.cross_server", true)) return;
+        if (pool == null) return;
+        try (Jedis j = pool.getResource()) {
+            String payload = content + '|' + (tpTarget == null ? "" : tpTarget);
+            j.publish(chAlerts, payload);
         } catch (Throwable ignored) {}
     }
 
     public void publishReportAdd(ReportManager.Report r) {
         var cfg = plugin.getConfigManager().getConfig();
         if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (pool == null) return;
         try (Jedis j = pool.getResource()) {
             String payload = String.join("|",
                     "ADD",

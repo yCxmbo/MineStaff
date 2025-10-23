@@ -49,6 +49,13 @@ public class ConfigManager {
         defaults.put("tools.slots.inspect", "2");
         defaults.put("tools.slots.vanish", "8");
         defaults.put("alerts.use_minimessage", "true");
+        defaults.put("alerts.notify_on_join", "true");
+        defaults.put("alerts.notify_on_quit", "false");
+        defaults.put("alerts.join_template", "{player} joined at {world} ({x}, {y}, {z}).");
+        defaults.put("alerts.quit_template", "{player} left from {world} ({x}, {y}, {z}).");
+        defaults.put("alerts.join_include_tp", "true");
+        defaults.put("alerts.quit_include_tp", "false");
+        defaults.put("alerts.cross_server", "true");
         defaults.put("reports.cross_server", "true");
         defaults.put("staffchat.cross_server", "true");
         defaults.put("staffchat.console_log", "true");
@@ -74,6 +81,7 @@ public class ConfigManager {
         defaults.put("reports.notify_reporter_on_needs_info", "true");
         defaults.put("reports.default_category", "GENERAL");
         defaults.put("reports.default_priority", "MEDIUM");
+        defaults.put("redis.channels.alerts", "minestaff:alerts");
     }
 
     private void ensureDefaults() {

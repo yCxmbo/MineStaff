@@ -31,6 +31,13 @@ alerts:
   hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
   click_tp: true
   sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  notify_on_join: true
+  notify_on_quit: false
+  join_template: "{player} joined at {world} ({x}, {y}, {z})."
+  quit_template: "{player} left from {world} ({x}, {y}, {z})."
+  join_include_tp: true
+  quit_include_tp: false
+  cross_server: true
 
 tools:
   slots:
@@ -96,6 +103,7 @@ redis:
   channels:
     staffchat: "minestaff:sc"
     reports: "minestaff:reports"
+    alerts: "minestaff:alerts"
 
 discord:
   enabled: false
