@@ -52,6 +52,8 @@ teleport-to-spawn-on-exit: true
 
 reports:
   notify-staff-permission: "staffmode.alerts"
+  # Placeholders: {reporter}, {target}, {reason}, {id}
+  notify_staff_message: "New report filed by {reporter} against {target}: {reason}"
   cross_server: true
 
 infractions:

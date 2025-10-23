@@ -4,7 +4,6 @@ import me.ycxmbo.mineStaff.MineStaff;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import org.bukkit.Bukkit;
@@ -19,6 +18,28 @@ public class AlertFormatter {
     }
 
     public static void broadcast(MineStaff plugin, String content, String tpTarget, boolean forward) {
+        Component base = format(plugin, content, tpTarget);
+        FileConfiguration cfg = plugin.getConfigManager().getConfig();
+        String soundName = cfg.getString("alerts.sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+
+        Sound s = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
+        try { s = Sound.valueOf(soundName); } catch (IllegalArgumentException ignored) {}
+
+        for (Player pl : Bukkit.getOnlinePlayers()) {
+            if (pl.hasPermission("staffmode.alerts") || pl.hasPermission("staffmode.chat")) {
+                pl.sendMessage(base);
+                try { pl.playSound(pl.getLocation(), s, 0.6f, 1.2f); } catch (Throwable ignored) {}
+            }
+        }
+        plugin.getLogger().info("[StaffAlert] " + content);
+        try { plugin.getDiscordBridge().sendAlert(content); } catch (Throwable ignored) {}
+        if (forward) {
+            try { plugin.getProxyMessenger().sendStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
+            try { plugin.getRedisBridge().publishStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
+        }
+    }
+
+    public static Component format(MineStaff plugin, String content, String tpTarget) {
         FileConfiguration cfg = plugin.getConfigManager().getConfig();
 
         boolean useMM = cfg.getBoolean("alerts.use_minimessage", false);
@@ -27,7 +48,6 @@ public class AlertFormatter {
         String hoverTemplate = cfg.getString("alerts.hover_template",
                 "<green>Click to teleport to <yellow>{target}</yellow>");
         boolean clickTp = cfg.getBoolean("alerts.click_tp", true);
-        String soundName = cfg.getString("alerts.sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
 
         Component base;
         if (useMM) {
@@ -50,21 +70,6 @@ public class AlertFormatter {
                            .clickEvent(ClickEvent.runCommand("/tp " + tpTarget));
             }
         }
-
-        Sound s = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
-        try { s = Sound.valueOf(soundName); } catch (IllegalArgumentException ignored) {}
-
-        for (Player pl : Bukkit.getOnlinePlayers()) {
-            if (pl.hasPermission("staffmode.alerts") || pl.hasPermission("staffmode.chat")) {
-                pl.sendMessage(base);
-                try { pl.playSound(pl.getLocation(), s, 0.6f, 1.2f); } catch (Throwable ignored) {}
-            }
-        }
-        plugin.getLogger().info("[StaffAlert] " + content);
-        try { plugin.getDiscordBridge().sendAlert(content); } catch (Throwable ignored) {}
-        if (forward) {
-            try { plugin.getProxyMessenger().sendStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
-            try { plugin.getRedisBridge().publishStaffAlert(content, tpTarget); } catch (Throwable ignored) {}
-        }
+        return base;
     }
 }
