@@ -1,7 +1,13 @@
 package me.ycxmbo.mineStaff.managers;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.util.AlertFormatter;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
+import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,20 +64,24 @@ public class ReportManager {
         String category = defaultCategory();
         String priority = defaultPriority();
         long dueBy = computeSlaDue(created, priority);
+        Report report;
         if (useSql) {
             id = plugin.getStorage().addReport(reporter, target, reason, created, status, null, category, priority, dueBy);
+            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy);
         } else {
             id = UUID.randomUUID();
-            setInternal(id, new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy));
+            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy);
+            setInternal(id, report);
         }
-        try { plugin.getProxyMessenger().sendReportAdded(new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy)); } catch (Throwable ignored) {}
-        try { plugin.getRedisBridge().publishReportAdd(new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy)); } catch (Throwable ignored) {}
+        try { plugin.getProxyMessenger().sendReportAdded(report); } catch (Throwable ignored) {}
+        try { plugin.getRedisBridge().publishReportAdd(report); } catch (Throwable ignored) {}
         try { plugin.getAuditLogger().log(java.util.Map.of(
                 "type","report","id",id.toString(),
                 "reporter", String.valueOf(reporter),
                 "target", String.valueOf(target),
                 "reason", reason
         )); } catch (Throwable ignored) {}
+        notifyStaffOfNewReport(report, true);
         return id;
     }
 
@@ -97,6 +107,7 @@ public class ReportManager {
         if (r.category == null) r.category = defaultCategory();
         if (r.priority == null) r.priority = defaultPriority();
         setInternal(r.id, r);
+        notifyStaffOfNewReport(r, false);
     }
 
     public synchronized List<Report> all() {
@@ -191,6 +202,54 @@ public class ReportManager {
                 }
             }
         } catch (Throwable ignored) {}
+    }
+
+    private void notifyStaffOfNewReport(Report report, boolean includeExternalChannels) {
+        if (report == null) return;
+        var cfg = plugin.getConfigManager().getConfig();
+        String permission = cfg.getString("reports.notify-staff-permission", "staffmode.alerts");
+        if (permission == null || permission.isBlank()) return;
+
+        String template = cfg.getString("reports.notify_staff_message",
+                "New report filed by {reporter} against {target}: {reason}");
+        String reporterName = resolveName(report.reporter);
+        String targetName = resolveName(report.target);
+        String reason = (report.reason == null || report.reason.isBlank()) ? "No reason" : report.reason;
+        String idText = report.id == null ? "" : report.id.toString();
+        String content = template
+                .replace("{reporter}", reporterName)
+                .replace("{target}", targetName)
+                .replace("{reason}", reason)
+                .replace("{id}", idText);
+
+        Component message = AlertFormatter.format(plugin, content, null);
+        String soundName = cfg.getString("alerts.sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
+        Sound notifySound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
+        try { notifySound = Sound.valueOf(soundName); } catch (IllegalArgumentException ignored) {}
+
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            if (online.hasPermission(permission)) {
+                online.sendMessage(message);
+                try { online.playSound(online.getLocation(), notifySound, 0.6f, 1.2f); } catch (Throwable ignored) {}
+            }
+        }
+
+        if (includeExternalChannels) {
+            try { plugin.getDiscordBridge().sendAlert(content); } catch (Throwable ignored) {}
+        }
+    }
+
+    private String resolveName(UUID uuid) {
+        if (uuid == null) return "Unknown";
+        try {
+            Player player = plugin.getServer().getPlayer(uuid);
+            if (player != null) return player.getName();
+            OfflinePlayer offline = plugin.getServer().getOfflinePlayer(uuid);
+            if (offline != null && offline.getName() != null && !offline.getName().isBlank()) {
+                return offline.getName();
+            }
+        } catch (Throwable ignored) {}
+        return uuid.toString();
     }
 
     public synchronized void setClaimed(UUID id, UUID staff) {
