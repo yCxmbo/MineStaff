@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.*;
 
 public class RollbackManager {
+    private final MineStaff plugin;
     private final File file;
     private YamlConfiguration yaml;
 
@@ -22,6 +23,7 @@ public class RollbackManager {
     }
 
     public RollbackManager(MineStaff plugin) {
+        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "rollbacks.yml");
         reload();
     }
@@ -33,6 +35,30 @@ public class RollbackManager {
     }
 
     public synchronized void saveSnapshot(UUID player, Snapshot snap) {
+        int maxSnapshots = plugin.getConfig().getInt("rollback.max-snapshots-per-player", 25);
+        if (maxSnapshots > 0) {
+            String playerPath = "players." + player;
+            if (yaml.isConfigurationSection(playerPath)) {
+                List<String> keys = new ArrayList<>(Objects.requireNonNull(yaml.getConfigurationSection(playerPath)).getKeys(false));
+                List<Long> timestamps = new ArrayList<>();
+                List<String> invalid = new ArrayList<>();
+                for (String key : keys) {
+                    try {
+                        timestamps.add(Long.parseLong(key));
+                    } catch (NumberFormatException ignored) {
+                        invalid.add(key);
+                    }
+                }
+                for (String key : invalid) {
+                    yaml.set(playerPath + "." + key, null);
+                }
+                timestamps.sort(Long::compare);
+                int allowedExisting = Math.max(0, maxSnapshots - 1);
+                for (int i = 0; i < timestamps.size() - allowedExisting; i++) {
+                    yaml.set(playerPath + "." + timestamps.get(i), null);
+                }
+            }
+        }
         String base = "players." + player + "." + snap.ts;
         yaml.set(base + ".inv", snap.inv);
         yaml.set(base + ".ec", snap.ec);
