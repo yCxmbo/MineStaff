@@ -18,7 +18,7 @@ public class NotesCommand implements CommandExecutor {
     private final PlayerNotesManager notes;
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
-    public NotesCommand(MineStaff plugin) { this.notes = new PlayerNotesManager(plugin); }
+    public NotesCommand(MineStaff plugin) { this.notes = plugin.getPlayerNotesManager(); }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {

@@ -35,6 +35,7 @@ public class PlayerNotesManager {
             me.ycxmbo.mineStaff.MineStaff.getInstance().getStorage().addNote(target, staff, text, ts);
             return;
         }
+        reload();
         List<String> list = yaml.getStringList("players." + target);
         list.add(ts + "|" + staff + "|" + text.replace('\n',' ').trim());
         yaml.set("players." + target, list);
@@ -43,6 +44,7 @@ public class PlayerNotesManager {
 
     public synchronized List<Note> get(UUID target) {
         if (useSql) return me.ycxmbo.mineStaff.MineStaff.getInstance().getStorage().listNotes(target);
+        reload();
         List<String> raw = yaml.getStringList("players." + target);
         List<Note> out = new ArrayList<>();
         for (String s : raw) {
@@ -59,6 +61,7 @@ public class PlayerNotesManager {
 
     public synchronized boolean remove(UUID target, int index) {
         if (useSql) return me.ycxmbo.mineStaff.MineStaff.getInstance().getStorage().removeNoteByIndex(target, index);
+        reload();
         List<String> list = yaml.getStringList("players." + target);
         if (index < 0 || index >= list.size()) return false;
         list.remove(index);

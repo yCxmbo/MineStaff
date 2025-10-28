@@ -17,6 +17,7 @@ import me.ycxmbo.mineStaff.services.FreezeService;
 import me.ycxmbo.mineStaff.audit.JsonAuditLogger;
 import me.ycxmbo.mineStaff.util.ActivityTracker;
 import me.ycxmbo.mineStaff.storage.SqlStorage;
+import me.ycxmbo.mineStaff.notes.PlayerNotesManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -52,6 +53,7 @@ public class MineStaff extends JavaPlugin {
     private SqlStorage sqlStorage;
     private me.ycxmbo.mineStaff.evidence.EvidenceManager evidenceManager;
     private FreezeService freezeService;
+    private PlayerNotesManager playerNotesManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -82,6 +84,7 @@ public class MineStaff extends JavaPlugin {
     public InspectorGUI getInspectorGUI() { return inspectorGUI; }
     public StaffChatCommand getStaffChatCommand() { return staffChatCommand; }
     public me.ycxmbo.mineStaff.evidence.EvidenceManager getEvidenceManager() { return evidenceManager; }
+    public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
 
     private static final Set<String> SUPPORTED_SERVER_BRANDS = Set.of("Paper", "Purpur", "Spigot", "CraftBukkit");
     private static final String SUPPORTED_VERSION_RANGE = "1.20.x-1.21.x";
@@ -124,6 +127,8 @@ public class MineStaff extends JavaPlugin {
             getLogger().warning("SQL storage init failed; falling back to YAML: " + t.getMessage());
             this.sqlStorage = null;
         }
+
+        this.playerNotesManager = new PlayerNotesManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
