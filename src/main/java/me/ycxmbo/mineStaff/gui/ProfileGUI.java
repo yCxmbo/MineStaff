@@ -20,7 +20,7 @@ public class ProfileGUI {
     private final MineStaff plugin;
     private final PlayerNotesManager notes;
 
-    public ProfileGUI(MineStaff plugin) { this.plugin = plugin; this.notes = new PlayerNotesManager(plugin); }
+    public ProfileGUI(MineStaff plugin) { this.plugin = plugin; this.notes = plugin.getPlayerNotesManager(); }
 
     public void open(Player viewer, UUID targetId) {
         OfflinePlayer off = Bukkit.getOfflinePlayer(targetId);
