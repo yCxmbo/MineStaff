@@ -127,9 +127,21 @@ public class MineStaff extends JavaPlugin {
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
 
+        boolean staffLoginEnabled = configManager.isStaffLoginEnabled();
+        boolean loginRequired = configManager.isLoginRequired();
+
         // Commands
         if (getCommand("staffmode") != null) getCommand("staffmode").setExecutor(new StaffModeCommand(this));
-        if (getCommand("stafflogin") != null) getCommand("stafflogin").setExecutor(new StaffLoginCommand(this));
+        if (getCommand("stafflogin") != null) {
+            if (staffLoginEnabled) {
+                getCommand("stafflogin").setExecutor(new StaffLoginCommand(this));
+            } else {
+                getCommand("stafflogin").setExecutor((sender, command, label, args) -> {
+                    sender.sendMessage(configManager.getMessage("staff_login_disabled", "Staff login is disabled."));
+                    return true;
+                });
+            }
+        }
         if (getCommand("report") != null) getCommand("report").setExecutor(new ReportCommand(this));
         if (getCommand("infractions") != null) {
             getCommand("infractions").setExecutor(new InfractionsCommand(this));
@@ -167,7 +179,9 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ToolListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffToolGuardListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SilentChestListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new LoginGuardListener(this), this);
+        if (loginRequired) {
+            Bukkit.getPluginManager().registerEvents(new LoginGuardListener(this), this);
+        }
         Bukkit.getPluginManager().registerEvents(new CPSClickListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ReportsGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
