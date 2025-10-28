@@ -3,6 +3,7 @@ package me.ycxmbo.mineStaff;
 import me.ycxmbo.mineStaff.api.internal.MineStaffApiProvider;
 import me.ycxmbo.mineStaff.commands.*;
 import me.ycxmbo.mineStaff.listeners.*;
+import me.ycxmbo.mineStaff.listeners.StaffAlertListener;
 import me.ycxmbo.mineStaff.managers.*;
 import me.ycxmbo.mineStaff.papi.MineStaffExpansion;
 import me.ycxmbo.mineStaff.storage.VanishStore;
@@ -187,6 +188,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InspectorGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffChatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new StaffAlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new VanishEffectListener(this), this);
         Bukkit.getPluginManager().registerEvents(new AlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffGameModeGuardListener(this), this);
