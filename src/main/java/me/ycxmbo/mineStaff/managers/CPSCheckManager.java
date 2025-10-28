@@ -1,6 +1,8 @@
 package me.ycxmbo.mineStaff.managers;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.api.events.CPSCheckFinishEvent;
+import me.ycxmbo.mineStaff.api.events.CPSCheckStartEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
@@ -25,7 +27,13 @@ public class CPSCheckManager {
     public CPSCheckManager(MineStaff plugin) { this.plugin = plugin; }
 
     public boolean begin(Player staff, Player target) {
-        return active.putIfAbsent(target.getUniqueId(), new Session(staff.getUniqueId())) == null;
+        Session session = new Session(staff.getUniqueId());
+        Session existing = active.putIfAbsent(target.getUniqueId(), session);
+        if (existing == null) {
+            Bukkit.getPluginManager().callEvent(new CPSCheckStartEvent(staff, target));
+            return true;
+        }
+        return false;
     }
 
     public void tickClick(Player target) {
@@ -44,6 +52,7 @@ public class CPSCheckManager {
             Session s = active.remove(target.getUniqueId());
             if (s == null) return;
             double cps = seconds <= 0 ? s.clicks : (s.clicks / (double) seconds);
+            Bukkit.getPluginManager().callEvent(new CPSCheckFinishEvent(staff, target, cps));
             if (staff != null && staff.isOnline()) {
                 staff.sendMessage(ChatColor.GREEN + "[CPS] " + ChatColor.WHITE + target.getName() + ": " + ChatColor.YELLOW + String.format(java.util.Locale.US, "%.2f", cps) + " CPS");
             }
