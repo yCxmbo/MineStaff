@@ -182,11 +182,14 @@ public class ReportManager {
 
     public synchronized void setStatus(UUID id, String status) {
         String upper = status.toUpperCase(Locale.ROOT);
-        if (useSql) { plugin.getStorage().setReportStatus(id, upper); return; }
-        String base = "reports." + id;
-        if (!yaml.isSet(base)) return;
-        yaml.set(base + ".status", upper);
-        save();
+        if (useSql) {
+            plugin.getStorage().setReportStatus(id, upper);
+        } else {
+            String base = "reports." + id;
+            if (!yaml.isSet(base)) return;
+            yaml.set(base + ".status", upper);
+            save();
+        }
         try {
             Report r = get(id);
             if (r != null) {
@@ -253,12 +256,15 @@ public class ReportManager {
     }
 
     public synchronized void setClaimed(UUID id, UUID staff) {
-        if (useSql) { plugin.getStorage().setReportClaim(id, staff); return; }
-        String base = "reports." + id;
-        if (!yaml.isSet(base)) return;
-        yaml.set(base + ".claimedBy", staff == null ? null : String.valueOf(staff));
-        yaml.set(base + ".status", staff == null ? "OPEN" : "CLAIMED");
-        save();
+        if (useSql) {
+            plugin.getStorage().setReportClaim(id, staff);
+        } else {
+            String base = "reports." + id;
+            if (!yaml.isSet(base)) return;
+            yaml.set(base + ".claimedBy", staff == null ? null : String.valueOf(staff));
+            yaml.set(base + ".status", staff == null ? "OPEN" : "CLAIMED");
+            save();
+        }
         // Notify
         try {
             Report r = get(id);
