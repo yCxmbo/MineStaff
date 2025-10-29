@@ -1,6 +1,5 @@
 package me.ycxmbo.mineStaff.gui;
 
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.InfractionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -15,9 +14,10 @@ import java.util.UUID;
 public class InfractionsGUI {
     private final InfractionManager infractions;
 
-    public InfractionsGUI(MineStaff plugin) { this.infractions = new InfractionManager(plugin); }
+    public InfractionsGUI(InfractionManager infractions) { this.infractions = infractions; }
 
     public void open(Player viewer, UUID target) {
+        if (!infractions.isSqlBacked()) infractions.reload();
         List<InfractionManager.Infraction> list = infractions.get(target);
         Inventory inv = Bukkit.createInventory(viewer, 54, ChatColor.GOLD + "Infractions");
         for (InfractionManager.Infraction i : list) {
