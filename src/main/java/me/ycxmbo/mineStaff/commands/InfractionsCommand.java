@@ -14,8 +14,8 @@ public class InfractionsCommand implements CommandExecutor {
     private final InfractionsGUI gui;
 
     public InfractionsCommand(MineStaff plugin) {
-        this.manager = new InfractionManager(plugin);
-        this.gui = new InfractionsGUI(plugin);
+        this.manager = plugin.getInfractionManager();
+        this.gui = new InfractionsGUI(manager);
     }
 
     @Override

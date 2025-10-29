@@ -32,7 +32,10 @@ public class InfractionManager {
         if (!useSql) reload();
     }
 
+    public boolean isSqlBacked() { return useSql; }
+
     public void reload() {
+        if (useSql) return;
         try { if (!file.exists()) { file.getParentFile().mkdirs(); file.createNewFile(); } }
         catch (IOException e) { e.printStackTrace(); }
         yaml = YamlConfiguration.loadConfiguration(file);
