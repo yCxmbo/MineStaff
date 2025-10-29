@@ -1,6 +1,5 @@
 package me.ycxmbo.mineStaff.commands;
 
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.offline.OfflineInventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -12,7 +11,7 @@ import org.bukkit.entity.Player;
 
 public class InspectOfflineCommand implements CommandExecutor {
     private final OfflineInventoryManager offInv;
-    public InspectOfflineCommand(MineStaff plugin) { this.offInv = new OfflineInventoryManager(plugin); }
+    public InspectOfflineCommand(OfflineInventoryManager offInv) { this.offInv = offInv; }
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Only players."); return true; }

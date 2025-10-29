@@ -18,6 +18,7 @@ import me.ycxmbo.mineStaff.audit.JsonAuditLogger;
 import me.ycxmbo.mineStaff.util.ActivityTracker;
 import me.ycxmbo.mineStaff.storage.SqlStorage;
 import me.ycxmbo.mineStaff.notes.PlayerNotesManager;
+import me.ycxmbo.mineStaff.offline.OfflineInventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -54,6 +55,7 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.evidence.EvidenceManager evidenceManager;
     private FreezeService freezeService;
     private PlayerNotesManager playerNotesManager;
+    private OfflineInventoryManager offlineInventoryManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -85,6 +87,7 @@ public class MineStaff extends JavaPlugin {
     public StaffChatCommand getStaffChatCommand() { return staffChatCommand; }
     public me.ycxmbo.mineStaff.evidence.EvidenceManager getEvidenceManager() { return evidenceManager; }
     public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
+    public OfflineInventoryManager getOfflineInventoryManager() { return offlineInventoryManager; }
 
     private static final Set<String> SUPPORTED_SERVER_BRANDS = Set.of("Paper", "Purpur", "Spigot", "CraftBukkit");
     private static final String SUPPORTED_VERSION_RANGE = "1.20.x-1.21.x";
@@ -129,6 +132,7 @@ public class MineStaff extends JavaPlugin {
         }
 
         this.playerNotesManager = new PlayerNotesManager(this);
+        this.offlineInventoryManager = new OfflineInventoryManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
@@ -165,7 +169,7 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("socialspy") != null) getCommand("socialspy").setExecutor(new me.ycxmbo.mineStaff.commands.SocialSpyCommand(this));
         if (getCommand("notes") != null) getCommand("notes").setExecutor(new me.ycxmbo.mineStaff.commands.NotesCommand(this));
         if (getCommand("profile") != null) getCommand("profile").setExecutor(new me.ycxmbo.mineStaff.commands.ProfileCommand(this));
-        if (getCommand("inspectoffline") != null) getCommand("inspectoffline").setExecutor(new me.ycxmbo.mineStaff.commands.InspectOfflineCommand(this));
+        if (getCommand("inspectoffline") != null) getCommand("inspectoffline").setExecutor(new me.ycxmbo.mineStaff.commands.InspectOfflineCommand(offlineInventoryManager));
         if (getCommand("staff2fa") != null) getCommand("staff2fa").setExecutor(new me.ycxmbo.mineStaff.commands.Staff2FACommand(this));
         if (getCommand("evidence") != null) getCommand("evidence").setExecutor(new me.ycxmbo.mineStaff.commands.EvidenceCommand(this));
 
@@ -204,8 +208,8 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new CreativeBlockerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffModeListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SpyListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new ProfileGUIListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.offline.OfflineInventoryManager(this), this);
+        Bukkit.getPluginManager().registerEvents(new ProfileGUIListener(offlineInventoryManager), this);
+        Bukkit.getPluginManager().registerEvents(offlineInventoryManager, this);
         Bukkit.getPluginManager().registerEvents(new ActivityListener(this), this);
         Bukkit.getPluginManager().registerEvents(new LuckPermsContextListener(this), this);
 
