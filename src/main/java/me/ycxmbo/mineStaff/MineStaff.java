@@ -202,7 +202,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new AlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffGameModeGuardListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffListGUIListener(), this);
-        Bukkit.getPluginManager().registerEvents(new DeathListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new DeathListener(getRollbackManager()), this);
         Bukkit.getPluginManager().registerEvents(new FreezeListener(this), this);
         Bukkit.getPluginManager().registerEvents(new FreezeQuitListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CreativeBlockerListener(this), this);
