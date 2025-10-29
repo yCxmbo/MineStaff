@@ -1,6 +1,5 @@
 package me.ycxmbo.mineStaff.listeners;
 
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.offline.OfflineInventoryManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,7 +15,7 @@ import java.util.UUID;
 public class ProfileGUIListener implements Listener {
     private final OfflineInventoryManager offInv;
 
-    public ProfileGUIListener(MineStaff plugin) { this.offInv = new OfflineInventoryManager(plugin); }
+    public ProfileGUIListener(OfflineInventoryManager offInv) { this.offInv = offInv; }
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
