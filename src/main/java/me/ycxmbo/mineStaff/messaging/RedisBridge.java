@@ -70,9 +70,9 @@ public class RedisBridge {
             return;
         }
         if (channel.equals(chReports)) {
-            // format v2: ADD|id|reporter|target|reason|created|status|claimed|category|priority|dueBy
-            // updates: UPDATE|id|status|claimed|category|priority|dueBy
-            String[] p = message.split("\\|", 12);
+            // format v3: ADD|id|reporter|target|reason|created|status|claimed|category|priority|dueBy|claimedAt
+            // updates: UPDATE|id|status|claimed|category|priority|dueBy|claimedAt
+            String[] p = message.split("\\|", 13);
             if (p.length == 0) return;
             String type = p[0];
             if ("ADD".equalsIgnoreCase(type)) {
@@ -88,7 +88,8 @@ public class RedisBridge {
                     String category = p.length >= 10 ? (p[8].isEmpty() ? "GENERAL" : p[8]) : "GENERAL";
                     String priority = p.length >= 11 ? (p[9].isEmpty() ? "MEDIUM" : p[9]) : "MEDIUM";
                     long dueBy = p.length >= 12 ? Long.parseLong(p[10]) : 0L;
-                    plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy));
+                    long claimedAt = p.length >= 13 ? Long.parseLong(p[11]) : 0L;
+                    plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy, claimedAt));
                 } catch (Throwable ignored) {}
             } else if ("UPDATE".equalsIgnoreCase(type)) {
                 if (p.length < 3) return;
@@ -100,7 +101,8 @@ public class RedisBridge {
                     String category = p.length >= 5 ? p[4] : null;
                     String priority = p.length >= 6 ? p[5] : null;
                     long dueBy = p.length >= 7 && !p[6].isEmpty() ? Long.parseLong(p[6]) : 0L;
-                    plugin.getReportManager().applyNetworkUpdate(id, status, claimed, category, priority, dueBy);
+                    long claimedAt = p.length >= 8 && !p[7].isEmpty() ? Long.parseLong(p[7]) : 0L;
+                    plugin.getReportManager().applyNetworkUpdate(id, status, claimed, category, priority, dueBy, claimedAt);
                 } catch (Throwable ignored) {}
             }
             return;
@@ -162,7 +164,8 @@ public class RedisBridge {
                     r.claimedBy == null ? "null" : r.claimedBy.toString(),
                     r.category == null ? "GENERAL" : r.category,
                     r.priority == null ? "MEDIUM" : r.priority,
-                    String.valueOf(r.dueBy)
+                    String.valueOf(r.dueBy),
+                    String.valueOf(r.claimedAt)
             );
             j.publish(chReports, payload);
         } catch (Throwable ignored) {}
@@ -180,7 +183,8 @@ public class RedisBridge {
                     r.claimedBy == null ? "null" : r.claimedBy.toString(),
                     r.category == null ? "GENERAL" : r.category,
                     r.priority == null ? "MEDIUM" : r.priority,
-                    String.valueOf(r.dueBy)
+                    String.valueOf(r.dueBy),
+                    String.valueOf(r.claimedAt)
             );
             j.publish(chReports, payload);
         } catch (Throwable ignored) {}

@@ -52,10 +52,11 @@ public class SqlStorage {
 
     private void initSchema() {
         exec("CREATE TABLE IF NOT EXISTS reports (" +
-                "id TEXT PRIMARY KEY, reporter TEXT, target TEXT, reason TEXT, created BIGINT, status TEXT, claimed_by TEXT, category TEXT, priority TEXT, due_by BIGINT)");
+                "id TEXT PRIMARY KEY, reporter TEXT, target TEXT, reason TEXT, created BIGINT, status TEXT, claimed_by TEXT, category TEXT, priority TEXT, due_by BIGINT, claimed_at BIGINT)");
         try { exec("ALTER TABLE reports ADD COLUMN category TEXT"); } catch (Throwable ignored) {}
         try { exec("ALTER TABLE reports ADD COLUMN priority TEXT"); } catch (Throwable ignored) {}
         try { exec("ALTER TABLE reports ADD COLUMN due_by BIGINT"); } catch (Throwable ignored) {}
+        try { exec("ALTER TABLE reports ADD COLUMN claimed_at BIGINT"); } catch (Throwable ignored) {}
         exec("CREATE TABLE IF NOT EXISTS infractions (" +
                 "id TEXT PRIMARY KEY, player TEXT, ts BIGINT, staff TEXT, type TEXT, reason TEXT)");
         exec("CREATE TABLE IF NOT EXISTS notes (" +
@@ -71,9 +72,9 @@ public class SqlStorage {
 
     // -------- Reports --------
     public UUID addReport(UUID reporter, UUID target, String reason, long created, String status, UUID claimedBy,
-                          String category, String priority, long dueBy) {
+                          String category, String priority, long dueBy, long claimedAt) {
         UUID id = UUID.randomUUID();
-        String sql = "INSERT INTO reports (id, reporter, target, reason, created, status, claimed_by, category, priority, due_by) VALUES (?,?,?,?,?,?,?,?,?,?)";
+        String sql = "INSERT INTO reports (id, reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
         try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, id.toString());
             ps.setString(2, String.valueOf(reporter));
@@ -85,6 +86,7 @@ public class SqlStorage {
             ps.setString(8, category);
             ps.setString(9, priority);
             ps.setLong(10, dueBy);
+            ps.setLong(11, claimedAt);
             ps.executeUpdate();
         } catch (SQLException e) { plugin.getLogger().warning("SQL addReport: " + e.getMessage()); }
         return id;
@@ -92,7 +94,7 @@ public class SqlStorage {
 
     public java.util.List<ReportManager.Report> listReports() {
         java.util.List<ReportManager.Report> out = new java.util.ArrayList<>();
-        String sql = "SELECT id, reporter, target, reason, created, status, claimed_by, category, priority, due_by FROM reports";
+        String sql = "SELECT id, reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at FROM reports";
         try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 java.util.UUID id = java.util.UUID.fromString(rs.getString(1));
@@ -106,14 +108,16 @@ public class SqlStorage {
                 String category = safeGet(rs, 8, "GENERAL");
                 String priority = safeGet(rs, 9, "MEDIUM");
                 long dueBy = safeGetLong(rs, 10, 0L);
-                out.add(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy));
+                long claimedAt = safeGetLong(rs, 11, 0L);
+                if (claimedBy != null && claimedAt <= 0L) claimedAt = System.currentTimeMillis();
+                out.add(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy, claimedAt));
             }
         } catch (SQLException e) { plugin.getLogger().warning("SQL listReports: " + e.getMessage()); }
         return out;
     }
 
     public ReportManager.Report getReport(java.util.UUID id) {
-        String sql = "SELECT reporter, target, reason, created, status, claimed_by, category, priority, due_by FROM reports WHERE id=?";
+        String sql = "SELECT reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at FROM reports WHERE id=?";
         try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, id.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -128,7 +132,9 @@ public class SqlStorage {
                 String category = safeGet(rs, 7, "GENERAL");
                 String priority = safeGet(rs, 8, "MEDIUM");
                 long dueBy = safeGetLong(rs, 9, 0L);
-                return new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy);
+                long claimedAt = safeGetLong(rs, 10, 0L);
+                if (claimedBy != null && claimedAt <= 0L) claimedAt = System.currentTimeMillis();
+                return new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy, claimedAt);
             }
         } catch (SQLException e) { plugin.getLogger().warning("SQL getReport: " + e.getMessage()); return null; }
     }
@@ -142,12 +148,17 @@ public class SqlStorage {
         } catch (SQLException e) { plugin.getLogger().warning("SQL setReportStatus: " + e.getMessage()); }
     }
 
-    public void setReportClaim(UUID id, UUID staff) {
-        String sql = "UPDATE reports SET claimed_by=?, status=? WHERE id=?";
+    public void setReportClaim(UUID id, UUID staff, long claimedAt) {
+        String sql = "UPDATE reports SET claimed_by=?, status=?, claimed_at=? WHERE id=?";
         try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, staff == null ? null : staff.toString());
             ps.setString(2, staff == null ? "OPEN" : "CLAIMED");
-            ps.setString(3, id.toString());
+            if (staff == null) {
+                ps.setNull(3, java.sql.Types.BIGINT);
+            } else {
+                ps.setLong(3, claimedAt);
+            }
+            ps.setString(4, id.toString());
             ps.executeUpdate();
         } catch (SQLException e) { plugin.getLogger().warning("SQL setReportClaim: " + e.getMessage()); }
     }
