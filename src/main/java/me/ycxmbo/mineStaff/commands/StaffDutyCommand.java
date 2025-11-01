@@ -1,6 +1,5 @@
 package me.ycxmbo.mineStaff.commands;
 
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.StaffDutyManager;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -11,7 +10,7 @@ import org.bukkit.entity.Player;
 public class StaffDutyCommand implements CommandExecutor {
     private final StaffDutyManager duty;
 
-    public StaffDutyCommand(MineStaff plugin) { this.duty = new StaffDutyManager(plugin); }
+    public StaffDutyCommand(StaffDutyManager dutyManager) { this.duty = dutyManager; }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args) {
