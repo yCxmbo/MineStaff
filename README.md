@@ -11,7 +11,7 @@ MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines m
 
 - **Staff Mode**
     - Toggle with `/staffmode` (alias: `/staff`)
-    - Customizable staff tools: Teleport, Inspect, Freeze, Vanish
+    - Customizable staff tools: Teleport, Inspect, Freeze, Vanish, CPS Check (Clock)
     - Prevents moving/removing staff tools (guarded)
 
 - **Staff Chat**
@@ -25,7 +25,7 @@ MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines m
     - Integration with **LiteBans** to show punishments in GUI
 
 - **CPS Checker**
-    - `/cpscheck <player>` to measure clicks per second over 10s
+    - `/cpscheck <player>` to measure clicks per second over 10s, or right-click players with the CPS Check staff tool
     - Staff alert events when checks finish
 
 - **Staff List GUI**
