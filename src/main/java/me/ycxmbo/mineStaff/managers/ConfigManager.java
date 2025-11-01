@@ -40,6 +40,10 @@ public class ConfigManager {
         defaults.put("messages.login_failure", "&cIncorrect password.");
         defaults.put("messages.password_set", "&aPassword set.");
         defaults.put("messages.staff_login_disabled", "&cStaff login is disabled.");
+        defaults.put("messages.cps_started", "&aStarted {seconds}s CPS test on {target}.");
+        defaults.put("messages.cps_target_notify", "&eA staff member is measuring your CPS for {seconds} seconds.");
+        defaults.put("messages.cps_tool_cooldown", "&cCPS checker cooldown: {seconds}s");
+        defaults.put("messages.cps_already_running", "&cA CPS test is already running for {target}.");
         defaults.put("options.staff_login_enabled", "true");
         defaults.put("options.require_login", "true");
         defaults.put("options.staffmode_gamemode", "CREATIVE");
@@ -48,6 +52,8 @@ public class ConfigManager {
         defaults.put("tools.slots.freeze", "1");
         defaults.put("tools.slots.inspect", "2");
         defaults.put("tools.slots.vanish", "8");
+        defaults.put("tools.slots.cps", "3");
+        defaults.put("tools.slots.randomtp", "4");
         defaults.put("alerts.use_minimessage", "true");
         defaults.put("alerts.notify_on_join", "true");
         defaults.put("alerts.notify_on_quit", "false");
@@ -61,6 +67,7 @@ public class ConfigManager {
         defaults.put("staffchat.console_log", "true");
         defaults.put("staffchat.format_legacy", "&8[&dStaff&8] &b{name}&7: &f{message}");
         defaults.put("cps.duration_seconds", "10");
+        defaults.put("cps.cooldown_ms", "2000");
 
         // Freeze options
         defaults.put("freeze.cooldown_ms", "500");

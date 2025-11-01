@@ -4,6 +4,7 @@ import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.MineStaffAPI;
 import me.ycxmbo.mineStaff.api.events.FreezeToggleEvent;
 import me.ycxmbo.mineStaff.api.events.VanishToggleEvent;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.tools.ToolManager;
 import me.ycxmbo.mineStaff.util.CooldownManager;
@@ -42,7 +43,8 @@ public class ToolListener implements Listener {
         if (!data.isStaffMode(p)) return;
 
         // scope rules
-        var cfg = plugin.getConfigManager().getConfig();
+        ConfigManager configManager = plugin.getConfigManager();
+        var cfg = configManager.getConfig();
         var allowedWorlds = cfg.getStringList("tools.allowed_worlds");
         if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(p.getWorld().getName())) return;
         var allowedGm = cfg.getStringList("tools.allowed_gamemodes");
@@ -82,7 +84,8 @@ public class ToolListener implements Listener {
         if (!data.isStaffMode(p)) return;
 
         // scope rules
-        var cfg = plugin.getConfigManager().getConfig();
+        ConfigManager configManager = plugin.getConfigManager();
+        var cfg = configManager.getConfig();
         var allowedWorlds = cfg.getStringList("tools.allowed_worlds");
         if (!allowedWorlds.isEmpty() && !allowedWorlds.contains(p.getWorld().getName())) return;
         var allowedGm = cfg.getStringList("tools.allowed_gamemodes");
@@ -106,6 +109,42 @@ public class ToolListener implements Listener {
             plugin.getFreezeService().toggle(p, target, null, MineStaffAPI.ToggleCause.TOOL, dur);
             target.getWorld().spawnParticle(Particle.SNOWFLAKE, target.getLocation().add(0, 1, 0), 40, 0.6, 0.8, 0.6);
             SoundUtil.playFreeze(p);
+            return;
+        }
+
+        if (it.getType() == ToolManager.CPS_TOOL && p.hasPermission("staffmode.cpscheck")) {
+            e.setCancelled(true);
+
+            String cdKey = "cps-tool";
+            int cd = cfg.getInt("cps.cooldown_ms", 2000);
+            if (!cooldowns.ready(p.getUniqueId(), cdKey)) {
+                long remaining = cooldowns.remaining(p.getUniqueId(), cdKey);
+                double seconds = remaining / 1000.0;
+                String raw = configManager.getMessage("cps_tool_cooldown", "&cCPS checker cooldown: {seconds}s");
+                String msg = raw.replace("{seconds}", String.format(java.util.Locale.US, "%.1f", seconds));
+                p.sendMessage(msg);
+                return;
+            }
+
+            var cps = plugin.getCPSManager();
+            if (cps.isChecking(target)) {
+                int secs = cfg.getInt("cps.duration_seconds", 10);
+                p.sendMessage(formatCpsMessage("cps_already_running", "&cA CPS test is already running for {target}.", target, secs));
+                return;
+            }
+
+            if (cps.begin(p, target)) {
+                if (cd > 0) {
+                    cooldowns.set(p.getUniqueId(), cdKey, cd);
+                }
+                int secs = cfg.getInt("cps.duration_seconds", 10);
+                p.sendMessage(formatCpsMessage("cps_started", "&aStarted {seconds}s CPS test on {target}.", target, secs));
+                target.sendMessage(formatCpsMessage("cps_target_notify", "&eA staff member is measuring your CPS for {seconds} seconds.", target, secs));
+                cps.finishLater(p, target);
+            } else {
+                int secs = cfg.getInt("cps.duration_seconds", 10);
+                p.sendMessage(formatCpsMessage("cps_already_running", "&cA CPS test is already running for {target}.", target, secs));
+            }
             return;
         }
 
@@ -198,5 +237,14 @@ public class ToolListener implements Listener {
         int cd = plugin.getConfigManager().getConfig().getInt("randomtp.cooldown_ms", 2000);
         cooldowns.set(p.getUniqueId(), "randomtp", cd);
         p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
+    }
+
+    private String formatCpsMessage(String key, String def, Player target, int seconds) {
+        String msg = plugin.getConfigManager().getMessage(key, def);
+        if (target != null) {
+            msg = msg.replace("{target}", target.getName());
+        }
+        msg = msg.replace("{seconds}", Integer.toString(seconds));
+        return msg;
     }
 }

@@ -14,6 +14,10 @@ messages:
   teleport_cooldown: "&cTeleport cooldown: {seconds}s"
   teleport_blocked: "&cBlocked destination."
   teleport_no_spot: "&cNo safe spot in sight."
+  cps_started: "&aStarted {seconds}s CPS test on {target}."
+  cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
+  cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
+  cps_already_running: "&cA CPS test is already running for {target}."
 
 options:
   staff_login_enabled: true
@@ -74,6 +78,7 @@ staffchat:
 
 cps:
   duration_seconds: 10
+  cooldown_ms: 2000
 
 randomtp:
   active_seconds: 60
