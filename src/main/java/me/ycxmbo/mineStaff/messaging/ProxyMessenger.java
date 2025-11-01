@@ -93,6 +93,25 @@ public class ProxyMessenger implements PluginMessageListener {
         } catch (IOException ignored) {}
     }
 
+    public void sendReportUpdate(ReportManager.Report r) {
+        if (!plugin.getConfigManager().getConfig().getBoolean("reports.cross_server", true)) return;
+        Player carrier = anyOnline();
+        if (carrier == null) return;
+        try {
+            ByteArrayOutputStream msg = new ByteArrayOutputStream();
+            DataOutputStream data = new DataOutputStream(msg);
+            data.writeUTF("RP_UPDATE");
+            data.writeUTF(r.id.toString());
+            data.writeUTF(r.status == null ? "OPEN" : r.status);
+            data.writeUTF(r.claimedBy == null ? "null" : r.claimedBy.toString());
+            data.writeUTF(r.category == null ? "GENERAL" : r.category);
+            data.writeUTF(r.priority == null ? "MEDIUM" : r.priority);
+            data.writeLong(r.dueBy);
+
+            forwardAll(carrier, msg.toByteArray());
+        } catch (IOException ignored) {}
+    }
+
     private void forwardAll(Player carrier, byte[] payload) throws IOException {
         // Wrap for Bungee Forward -> our custom channel
         ByteArrayOutputStream b = new ByteArrayOutputStream();
@@ -154,6 +173,18 @@ public class ProxyMessenger implements PluginMessageListener {
                     String priority = in.readUTF();
                     long dueBy = in.readLong();
                     try { plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy)); } catch (Throwable ignored) {}
+                    break;
+                }
+                case "RP_UPDATE": {
+                    if (!plugin.getConfigManager().getConfig().getBoolean("reports.cross_server", true)) break;
+                    UUID id = UUID.fromString(in.readUTF());
+                    String status = in.readUTF();
+                    String claimedStr = in.readUTF();
+                    UUID claimedBy = "null".equalsIgnoreCase(claimedStr) ? null : UUID.fromString(claimedStr);
+                    String category = in.readUTF();
+                    String priority = in.readUTF();
+                    long dueBy = in.readLong();
+                    try { plugin.getReportManager().applyNetworkUpdate(id, status, claimedBy, category, priority, dueBy); } catch (Throwable ignored) {}
                     break;
                 }
                 default:

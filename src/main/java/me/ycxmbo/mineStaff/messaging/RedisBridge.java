@@ -71,22 +71,38 @@ public class RedisBridge {
         }
         if (channel.equals(chReports)) {
             // format v2: ADD|id|reporter|target|reason|created|status|claimed|category|priority|dueBy
+            // updates: UPDATE|id|status|claimed|category|priority|dueBy
             String[] p = message.split("\\|", 12);
-            if (p.length < 8) return;
-            if (!"ADD".equalsIgnoreCase(p[0])) return;
-            try {
-                UUID id = UUID.fromString(p[1]);
-                UUID reporter = UUID.fromString(p[2]);
-                UUID target = UUID.fromString(p[3]);
-                String reason = p[4];
-                long created = Long.parseLong(p[5]);
-                String status = p[6];
-                UUID claimed = "null".equalsIgnoreCase(p[7]) ? null : UUID.fromString(p[7]);
-                String category = p.length >= 10 ? (p[8].isEmpty() ? "GENERAL" : p[8]) : "GENERAL";
-                String priority = p.length >= 11 ? (p[9].isEmpty() ? "MEDIUM" : p[9]) : "MEDIUM";
-                long dueBy = p.length >= 12 ? Long.parseLong(p[10]) : 0L;
-                plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy));
-            } catch (Throwable ignored) {}
+            if (p.length == 0) return;
+            String type = p[0];
+            if ("ADD".equalsIgnoreCase(type)) {
+                if (p.length < 8) return;
+                try {
+                    UUID id = UUID.fromString(p[1]);
+                    UUID reporter = UUID.fromString(p[2]);
+                    UUID target = UUID.fromString(p[3]);
+                    String reason = p[4];
+                    long created = Long.parseLong(p[5]);
+                    String status = p[6];
+                    UUID claimed = "null".equalsIgnoreCase(p[7]) ? null : UUID.fromString(p[7]);
+                    String category = p.length >= 10 ? (p[8].isEmpty() ? "GENERAL" : p[8]) : "GENERAL";
+                    String priority = p.length >= 11 ? (p[9].isEmpty() ? "MEDIUM" : p[9]) : "MEDIUM";
+                    long dueBy = p.length >= 12 ? Long.parseLong(p[10]) : 0L;
+                    plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimed, category, priority, dueBy));
+                } catch (Throwable ignored) {}
+            } else if ("UPDATE".equalsIgnoreCase(type)) {
+                if (p.length < 3) return;
+                try {
+                    UUID id = UUID.fromString(p[1]);
+                    String status = p.length >= 3 ? p[2] : null;
+                    String claimedRaw = p.length >= 4 ? p[3] : "null";
+                    UUID claimed = "null".equalsIgnoreCase(claimedRaw) || claimedRaw.isEmpty() ? null : UUID.fromString(claimedRaw);
+                    String category = p.length >= 5 ? p[4] : null;
+                    String priority = p.length >= 6 ? p[5] : null;
+                    long dueBy = p.length >= 7 && !p[6].isEmpty() ? Long.parseLong(p[6]) : 0L;
+                    plugin.getReportManager().applyNetworkUpdate(id, status, claimed, category, priority, dueBy);
+                } catch (Throwable ignored) {}
+            }
             return;
         }
         if (channel.equals(chAlerts)) {
@@ -136,6 +152,24 @@ public class RedisBridge {
                     r.target.toString(),
                     r.reason == null ? "" : r.reason.replace('|', ' '),
                     String.valueOf(r.created),
+                    r.status == null ? "OPEN" : r.status,
+                    r.claimedBy == null ? "null" : r.claimedBy.toString(),
+                    r.category == null ? "GENERAL" : r.category,
+                    r.priority == null ? "MEDIUM" : r.priority,
+                    String.valueOf(r.dueBy)
+            );
+            j.publish(chReports, payload);
+        } catch (Throwable ignored) {}
+    }
+
+    public void publishReportUpdate(ReportManager.Report r) {
+        var cfg = plugin.getConfigManager().getConfig();
+        if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (pool == null) return;
+        try (Jedis j = pool.getResource()) {
+            String payload = String.join("|",
+                    "UPDATE",
+                    r.id.toString(),
                     r.status == null ? "OPEN" : r.status,
                     r.claimedBy == null ? "null" : r.claimedBy.toString(),
                     r.category == null ? "GENERAL" : r.category,

@@ -110,6 +110,22 @@ public class ReportManager {
         notifyStaffOfNewReport(r, false);
     }
 
+    /** Apply updates received from the network. */
+    public synchronized void applyNetworkUpdate(UUID id, String status, UUID claimedBy, String category, String priority, long dueBy) {
+        Report existing = get(id);
+        if (existing == null) return;
+
+        if (status != null && !status.isBlank()) existing.status = status.toUpperCase(Locale.ROOT);
+        existing.claimedBy = claimedBy;
+        if (category != null && !category.isBlank()) existing.category = category.toUpperCase(Locale.ROOT);
+        if (priority != null && !priority.isBlank()) existing.priority = priority.toUpperCase(Locale.ROOT);
+        existing.dueBy = dueBy > 0L ? dueBy : computeSlaDue(existing.created, existing.priority == null ? defaultPriority() : existing.priority);
+
+        if (!useSql) {
+            setInternal(id, existing);
+        }
+    }
+
     public synchronized List<Report> all() {
         if (useSql) return plugin.getStorage().listReports();
         List<Report> list = new ArrayList<>();
@@ -190,9 +206,11 @@ public class ReportManager {
             yaml.set(base + ".status", upper);
             save();
         }
+        Report r = null;
         try {
-            Report r = get(id);
+            r = get(id);
             if (r != null) {
+                r.status = upper;
                 // Notify reporter on close or needs info
                 boolean notifyClose = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_close", true);
                 boolean notifyNeeds = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_needs_info", true);
@@ -205,6 +223,11 @@ public class ReportManager {
                 }
             }
         } catch (Throwable ignored) {}
+
+        if (r != null) {
+            try { plugin.getProxyMessenger().sendReportUpdate(r); } catch (Throwable ignored) {}
+            try { plugin.getRedisBridge().publishReportUpdate(r); } catch (Throwable ignored) {}
+        }
     }
 
     private void notifyStaffOfNewReport(Report report, boolean includeExternalChannels) {
@@ -266,9 +289,12 @@ public class ReportManager {
             save();
         }
         // Notify
+        Report r = null;
         try {
-            Report r = get(id);
+            r = get(id);
             if (r != null) {
+                r.claimedBy = staff;
+                r.status = staff == null ? "OPEN" : "CLAIMED";
                 boolean notify = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_claim", true);
                 if (notify && staff != null) {
                     org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
@@ -280,5 +306,10 @@ public class ReportManager {
                 }
             }
         } catch (Throwable ignored) {}
+
+        if (r != null) {
+            try { plugin.getProxyMessenger().sendReportUpdate(r); } catch (Throwable ignored) {}
+            try { plugin.getRedisBridge().publishReportUpdate(r); } catch (Throwable ignored) {}
+        }
     }
 }
