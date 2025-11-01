@@ -1,6 +1,8 @@
 package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.api.MineStaffAPI;
+import me.ycxmbo.mineStaff.api.events.StaffModeToggleEvent;
 import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.managers.StaffLoginManager;
@@ -34,9 +36,33 @@ public class StaffModeCommand implements CommandExecutor {
             return true;
         }
 
-        boolean enable = !staffManager.isStaffMode(p);
-        if (enable) {
-            staffManager.enableStaffMode(p);
+        boolean before = staffManager.isStaffMode(p);
+        boolean desiredState = !before;
+        boolean finalState = desiredState;
+
+        var api = MineStaffAPI.get();
+        if (api.isPresent()) {
+            finalState = api.get().setStaffMode(p, desiredState, MineStaffAPI.ToggleCause.COMMAND);
+        } else {
+            if (desiredState) {
+                staffManager.enableStaffMode(p);
+            } else {
+                staffManager.disableStaffMode(p);
+            }
+            finalState = staffManager.isStaffMode(p);
+            if (finalState != before) {
+                Bukkit.getPluginManager().callEvent(new StaffModeToggleEvent(p, finalState, MineStaffAPI.ToggleCause.COMMAND));
+            }
+        }
+
+        if (finalState == before) {
+            p.sendMessage(finalState
+                    ? config.getMessage("staffmode_enabled", "Staff mode enabled.")
+                    : config.getMessage("staffmode_disabled", "Staff mode disabled."));
+            return true;
+        }
+
+        if (finalState) {
 
             // Save player state
             staffManager.rememberGamemode(p);
@@ -54,7 +80,6 @@ public class StaffModeCommand implements CommandExecutor {
             ));
             plugin.getActionLogger().logCommand(p, "StaffMode ON");
         } else {
-            staffManager.disableStaffMode(p);
 
             // Restore previous gamemode
             GameMode prev = staffManager.popPreviousGamemode(p);
