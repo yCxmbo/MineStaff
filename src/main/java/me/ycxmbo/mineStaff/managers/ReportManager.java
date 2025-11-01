@@ -90,6 +90,7 @@ public class ReportManager {
     }
 
     private void setInternal(UUID id, Report r) {
+        if (useSql) return;
         String base = "reports." + id;
         yaml.set(base + ".reporter", String.valueOf(r.reporter));
         yaml.set(base + ".target", String.valueOf(r.target));
@@ -106,6 +107,17 @@ public class ReportManager {
 
     /** Add report received from network. */
     public synchronized void addNetwork(Report r) {
+        if (useSql) {
+            if (plugin.getStorage().getReport(r.id) != null) return;
+            if (r.dueBy == 0L) r.dueBy = computeSlaDue(r.created, r.priority == null ? defaultPriority() : r.priority);
+            if (r.category == null) r.category = defaultCategory();
+            if (r.priority == null) r.priority = defaultPriority();
+            if (r.claimedBy != null && r.claimedAt <= 0L) r.claimedAt = System.currentTimeMillis();
+            plugin.getStorage().upsertReport(r);
+            notifyStaffOfNewReport(r, false);
+            return;
+        }
+
         String base = "reports." + r.id;
         if (yaml.isSet(base)) return; // already have it
         if (r.dueBy == 0L) r.dueBy = computeSlaDue(r.created, r.priority == null ? defaultPriority() : r.priority);
@@ -132,7 +144,9 @@ public class ReportManager {
         if (priority != null && !priority.isBlank()) existing.priority = priority.toUpperCase(Locale.ROOT);
         existing.dueBy = dueBy > 0L ? dueBy : computeSlaDue(existing.created, existing.priority == null ? defaultPriority() : existing.priority);
 
-        if (!useSql) {
+        if (useSql) {
+            plugin.getStorage().upsertReport(existing);
+        } else {
             setInternal(id, existing);
         }
     }
