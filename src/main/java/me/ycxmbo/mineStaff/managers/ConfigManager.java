@@ -44,6 +44,7 @@ public class ConfigManager {
         defaults.put("messages.cps_target_notify", "&eA staff member is measuring your CPS for {seconds} seconds.");
         defaults.put("messages.cps_tool_cooldown", "&cCPS checker cooldown: {seconds}s");
         defaults.put("messages.cps_already_running", "&cA CPS test is already running for {target}.");
+        defaults.put("messages.randomtp_cooldown", "&cRandom TP cooldown: {seconds}s");
         defaults.put("options.staff_login_enabled", "true");
         defaults.put("options.require_login", "true");
         defaults.put("options.staffmode_gamemode", "CREATIVE");
