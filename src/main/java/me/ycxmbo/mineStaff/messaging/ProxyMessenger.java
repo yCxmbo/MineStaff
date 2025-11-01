@@ -25,6 +25,18 @@ public class ProxyMessenger implements PluginMessageListener {
         Bukkit.getMessenger().registerIncomingPluginChannel(plugin, CHANNEL, this);
     }
 
+    public void close() {
+        try {
+            Bukkit.getMessenger().unregisterIncomingPluginChannel(plugin, CHANNEL, this);
+        } catch (Throwable ignored) {}
+        try {
+            Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin, BUNGEE);
+        } catch (Throwable ignored) {}
+        try {
+            Bukkit.getMessenger().unregisterOutgoingPluginChannel(plugin, CHANNEL);
+        } catch (Throwable ignored) {}
+    }
+
     private Player anyOnline() {
         Player p = Bukkit.getOnlinePlayers().stream().findFirst().orElse(null);
         return p;

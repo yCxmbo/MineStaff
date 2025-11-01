@@ -23,6 +23,8 @@ public class DiscordBridge {
     public void sendStaffChat(String name, String message) { if (!enabled || staffchatWebhook == null || staffchatWebhook.isBlank()) return; sendWebhook(staffchatWebhook, "**"+escape(name)+"**: " + escape(message)); }
     public void sendAlert(String content) { if (!enabled || alertsWebhook == null || alertsWebhook.isBlank()) return; sendWebhook(alertsWebhook, escape(content)); }
 
+    public boolean isEnabled() { return enabled; }
+
     private void sendWebhook(String url, String content) {
         try {
             byte[] body = ('{' + "\"content\":\"" + content + "\"}").getBytes(StandardCharsets.UTF_8);

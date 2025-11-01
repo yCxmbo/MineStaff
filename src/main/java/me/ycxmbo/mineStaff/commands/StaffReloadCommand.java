@@ -16,6 +16,7 @@ public class StaffReloadCommand implements CommandExecutor {
             return true;
         }
         plugin.getConfigManager().reload();
+        plugin.reloadConfigDrivenServices();
         sender.sendMessage("MineStaff reloaded.");
         return true;
     }
