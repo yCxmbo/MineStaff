@@ -62,6 +62,7 @@ public class MineStaff extends JavaPlugin {
     private InspectorGUI inspectorGUI;
     private StaffChatCommand staffChatCommand;
     private StaffListGUICommand staffListGUICommand;
+    private StaffListCommand staffListCommand;
 
     // Getters
     public ConfigManager getConfigManager() { return configManager; }
@@ -178,8 +179,9 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("evidence") != null) getCommand("evidence").setExecutor(new me.ycxmbo.mineStaff.commands.EvidenceCommand(this));
 
         this.staffListGUICommand = new StaffListGUICommand(this);
+        this.staffListCommand = new StaffListCommand(this);
         if (getCommand("stafflistgui") != null) getCommand("stafflistgui").setExecutor(staffListGUICommand);
-        if (getCommand("stafflist") != null) getCommand("stafflist").setExecutor(staffListGUICommand);
+        if (getCommand("stafflist") != null) getCommand("stafflist").setExecutor(staffListCommand);
 
         this.staffChatCommand = new StaffChatCommand(this);
         if (getCommand("staffchat") != null) getCommand("staffchat").setExecutor(staffChatCommand);

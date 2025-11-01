@@ -36,8 +36,11 @@ commands:
     description: Check clicks-per-second over 10s
   stafflistgui:
     description: Open staff list GUI
+    permission: staffmode.stafflist.gui
   stafflist:
-    description: Open staff list GUI (alias)
+    description: Show staff list in chat
+    usage: /<command>
+    permission: staffmode.stafflist.text
   staffreload:
     description: Reload MineStaff configuration
     usage: /<command>
@@ -103,7 +106,18 @@ permissions:
   staffmode.infractions.add: { default: op }
   staffmode.rollback:      { default: op }
   staffmode.login:         { default: op }
-  staffmode.stafflist:     { default: op }
+  staffmode.stafflist:
+    description: Access any staff list command
+    default: op
+    children:
+      staffmode.stafflist.gui: true
+      staffmode.stafflist.text: true
+  staffmode.stafflist.gui:
+    description: Open the staff list GUI
+    default: op
+  staffmode.stafflist.text:
+    description: View the staff list in chat
+    default: op
   staffmode.cpscheck:      { default: op }
   staffmode.reload:        { default: op }
   staffmode.duty:          { default: op }

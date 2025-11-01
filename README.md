@@ -28,10 +28,10 @@ MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines m
     - `/cpscheck <player>` to measure clicks per second over 10s, or right-click players with the CPS Check staff tool
     - Staff alert events when checks finish
 
-- **Staff List GUI**
-    - `/stafflist` or `/stafflistgui`
-    - Displays online staff with ping and world info
-    - Fully read-only (no item stealing)
+- **Staff Lists**
+    - `/stafflistgui` – Interactive GUI with ping and world info (`staffmode.stafflist.gui`)
+    - `/stafflist` – Quick text summary in chat (`staffmode.stafflist.text`)
+    - Both views are read-only (no item stealing)
 
 - **Inventory Inspector**
     - Inspect player inventory, ender chest, health, potion effects
@@ -74,7 +74,8 @@ MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines m
 | `/infractions`       | View/issue infractions                     | `staffmode.infractions`   |
 | `/rollback`          | Open rollback GUI                          | `staffmode.rollback`      |
 | `/cpscheck`          | Run a CPS check on a player                | `staffmode.cpscheck`      |
-| `/stafflist(gui)`    | Open staff list GUI                        | `staffmode.stafflist`     |
+| `/stafflistgui`      | Open staff list GUI                        | `staffmode.stafflist.gui` |
+| `/stafflist`         | Show staff list in chat                    | `staffmode.stafflist.text` |
 
 ---
 
@@ -90,7 +91,8 @@ MineStaff provides a powerful, all-in-one toolkit for staff teams. It combines m
 - `staffmode.infractions` – Manage infractions
 - `staffmode.rollback` – Rollback inventories
 - `staffmode.cpscheck` – Run CPS checks
-- `staffmode.stafflist` – View staff list GUI
+- `staffmode.stafflist.gui` – Open the staff list GUI
+- `staffmode.stafflist.text` – View the staff list in chat
 
 ---
 
