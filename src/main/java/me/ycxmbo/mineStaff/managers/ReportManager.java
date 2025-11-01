@@ -8,6 +8,7 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +20,7 @@ public class ReportManager {
     private final File file;
     private YamlConfiguration yaml;
     private final boolean useSql;
+    private BukkitTask claimMonitorTask;
 
     public static class Report {
         public UUID id;
@@ -31,12 +33,14 @@ public class ReportManager {
         public String category; // e.g., GENERAL, CHEATING, CHAT
         public String priority; // LOW, MEDIUM, HIGH, CRITICAL
         public long dueBy;      // epoch millis when SLA expires (0 if none)
+        public long claimedAt;  // epoch millis when report was claimed (0 if unclaimed)
 
         public Report(UUID id, UUID reporter, UUID target, String reason, long created, String status, UUID claimedBy,
-                      String category, String priority, long dueBy) {
+                      String category, String priority, long dueBy, long claimedAt) {
             this.id = id; this.reporter = reporter; this.target = target; this.reason = reason;
             this.created = created; this.status = status; this.claimedBy = claimedBy;
             this.category = category; this.priority = priority; this.dueBy = dueBy;
+            this.claimedAt = claimedAt;
         }
     }
 
@@ -66,11 +70,11 @@ public class ReportManager {
         long dueBy = computeSlaDue(created, priority);
         Report report;
         if (useSql) {
-            id = plugin.getStorage().addReport(reporter, target, reason, created, status, null, category, priority, dueBy);
-            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy);
+            id = plugin.getStorage().addReport(reporter, target, reason, created, status, null, category, priority, dueBy, 0L);
+            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy, 0L);
         } else {
             id = UUID.randomUUID();
-            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy);
+            report = new Report(id, reporter, target, reason, created, status, null, category, priority, dueBy, 0L);
             setInternal(id, report);
         }
         try { plugin.getProxyMessenger().sendReportAdded(report); } catch (Throwable ignored) {}
@@ -96,6 +100,7 @@ public class ReportManager {
         yaml.set(base + ".category", r.category);
         yaml.set(base + ".priority", r.priority);
         yaml.set(base + ".dueBy", r.dueBy);
+        yaml.set(base + ".claimedAt", r.claimedAt);
         save();
     }
 
@@ -106,17 +111,23 @@ public class ReportManager {
         if (r.dueBy == 0L) r.dueBy = computeSlaDue(r.created, r.priority == null ? defaultPriority() : r.priority);
         if (r.category == null) r.category = defaultCategory();
         if (r.priority == null) r.priority = defaultPriority();
+        if (r.claimedBy != null && r.claimedAt <= 0L) r.claimedAt = System.currentTimeMillis();
         setInternal(r.id, r);
         notifyStaffOfNewReport(r, false);
     }
 
     /** Apply updates received from the network. */
-    public synchronized void applyNetworkUpdate(UUID id, String status, UUID claimedBy, String category, String priority, long dueBy) {
+    public synchronized void applyNetworkUpdate(UUID id, String status, UUID claimedBy, String category, String priority, long dueBy, long claimedAt) {
         Report existing = get(id);
         if (existing == null) return;
 
         if (status != null && !status.isBlank()) existing.status = status.toUpperCase(Locale.ROOT);
         existing.claimedBy = claimedBy;
+        if (claimedBy != null) {
+            existing.claimedAt = claimedAt > 0L ? claimedAt : System.currentTimeMillis();
+        } else {
+            existing.claimedAt = 0L;
+        }
         if (category != null && !category.isBlank()) existing.category = category.toUpperCase(Locale.ROOT);
         if (priority != null && !priority.isBlank()) existing.priority = priority.toUpperCase(Locale.ROOT);
         existing.dueBy = dueBy > 0L ? dueBy : computeSlaDue(existing.created, existing.priority == null ? defaultPriority() : existing.priority);
@@ -145,7 +156,9 @@ public class ReportManager {
                 String priority = yaml.getString(base + ".priority", defaultPriority());
                 long dueBy = yaml.getLong(base + ".dueBy", 0L);
                 if (dueBy == 0L) dueBy = computeSlaDue(created, priority);
-                list.add(new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy));
+                long claimedAt = yaml.getLong(base + ".claimedAt", 0L);
+                if (claimedBy != null && claimedAt <= 0L) claimedAt = System.currentTimeMillis();
+                list.add(new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy, claimedAt));
             } catch (Exception ignored) {}
         }
         return list;
@@ -167,7 +180,9 @@ public class ReportManager {
             String priority = yaml.getString(base + ".priority", defaultPriority());
             long dueBy = yaml.getLong(base + ".dueBy", 0L);
             if (dueBy == 0L) dueBy = computeSlaDue(created, priority);
-            return new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy);
+            long claimedAt = yaml.getLong(base + ".claimedAt", 0L);
+            if (claimedBy != null && claimedAt <= 0L) claimedAt = System.currentTimeMillis();
+            return new Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy, claimedAt);
         } catch (Exception ignored) { return null; }
     }
 
@@ -279,13 +294,15 @@ public class ReportManager {
     }
 
     public synchronized void setClaimed(UUID id, UUID staff) {
+        long claimTs = staff == null ? 0L : System.currentTimeMillis();
         if (useSql) {
-            plugin.getStorage().setReportClaim(id, staff);
+            plugin.getStorage().setReportClaim(id, staff, claimTs);
         } else {
             String base = "reports." + id;
             if (!yaml.isSet(base)) return;
             yaml.set(base + ".claimedBy", staff == null ? null : String.valueOf(staff));
             yaml.set(base + ".status", staff == null ? "OPEN" : "CLAIMED");
+            yaml.set(base + ".claimedAt", claimTs);
             save();
         }
         // Notify
@@ -295,6 +312,7 @@ public class ReportManager {
             if (r != null) {
                 r.claimedBy = staff;
                 r.status = staff == null ? "OPEN" : "CLAIMED";
+                r.claimedAt = claimTs;
                 boolean notify = plugin.getConfigManager().getConfig().getBoolean("reports.notify_reporter_on_claim", true);
                 if (notify && staff != null) {
                     org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
@@ -310,6 +328,53 @@ public class ReportManager {
         if (r != null) {
             try { plugin.getProxyMessenger().sendReportUpdate(r); } catch (Throwable ignored) {}
             try { plugin.getRedisBridge().publishReportUpdate(r); } catch (Throwable ignored) {}
+        }
+
+        ensureClaimMonitor();
+    }
+
+    public synchronized void ensureClaimMonitor() {
+        long timeoutSeconds = 0L;
+        try {
+            timeoutSeconds = plugin.getConfigManager().getConfig().getLong("reports.claim_timeout_seconds", 0L);
+        } catch (Throwable ignored) {}
+        if (timeoutSeconds <= 0L) {
+            if (claimMonitorTask != null) {
+                claimMonitorTask.cancel();
+                claimMonitorTask = null;
+            }
+            return;
+        }
+
+        if (claimMonitorTask != null && !claimMonitorTask.isCancelled()) {
+            return;
+        }
+
+        long intervalSeconds = Math.max(10L, Math.min(timeoutSeconds, 60L));
+        long period = intervalSeconds * 20L;
+        claimMonitorTask = plugin.getServer().getScheduler().runTaskTimer(plugin, this::runClaimTimeoutCheck, period, period);
+    }
+
+    private void runClaimTimeoutCheck() {
+        long timeoutSeconds = plugin.getConfigManager().getConfig().getLong("reports.claim_timeout_seconds", 0L);
+        if (timeoutSeconds <= 0L) return;
+        long timeoutMillis = timeoutSeconds * 1000L;
+        long now = System.currentTimeMillis();
+        List<Report> snapshot = all();
+        for (Report report : snapshot) {
+            if (report == null || report.claimedBy == null) continue;
+            long claimedAt = report.claimedAt;
+            if (claimedAt <= 0L) continue;
+            if (now - claimedAt >= timeoutMillis) {
+                setClaimed(report.id, null);
+            }
+        }
+    }
+
+    public synchronized void shutdown() {
+        if (claimMonitorTask != null) {
+            claimMonitorTask.cancel();
+            claimMonitorTask = null;
         }
     }
 }

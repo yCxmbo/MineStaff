@@ -100,6 +100,7 @@ public class ProxyMessenger implements PluginMessageListener {
             data.writeUTF(r.category == null ? "GENERAL" : r.category);
             data.writeUTF(r.priority == null ? "MEDIUM" : r.priority);
             data.writeLong(r.dueBy);
+            data.writeLong(r.claimedAt);
 
             forwardAll(carrier, msg.toByteArray());
         } catch (IOException ignored) {}
@@ -119,6 +120,7 @@ public class ProxyMessenger implements PluginMessageListener {
             data.writeUTF(r.category == null ? "GENERAL" : r.category);
             data.writeUTF(r.priority == null ? "MEDIUM" : r.priority);
             data.writeLong(r.dueBy);
+            data.writeLong(r.claimedAt);
 
             forwardAll(carrier, msg.toByteArray());
         } catch (IOException ignored) {}
@@ -168,7 +170,7 @@ public class ProxyMessenger implements PluginMessageListener {
                     String claimedStr = in.readUTF();
                     UUID claimedBy = "null".equalsIgnoreCase(claimedStr) ? null : UUID.fromString(claimedStr);
                     try {
-                        plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, "GENERAL", "MEDIUM", 0L));
+                        plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, "GENERAL", "MEDIUM", 0L, 0L));
                     } catch (Throwable ignored) {}
                     break;
                 }
@@ -184,7 +186,13 @@ public class ProxyMessenger implements PluginMessageListener {
                     String category = in.readUTF();
                     String priority = in.readUTF();
                     long dueBy = in.readLong();
-                    try { plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy)); } catch (Throwable ignored) {}
+                    long claimedAt = 0L;
+                    try {
+                        if (in.available() >= Long.BYTES) {
+                            claimedAt = in.readLong();
+                        }
+                    } catch (IOException ignored) {}
+                    try { plugin.getReportManager().addNetwork(new ReportManager.Report(id, reporter, target, reason, created, status, claimedBy, category, priority, dueBy, claimedAt)); } catch (Throwable ignored) {}
                     break;
                 }
                 case "RP_UPDATE": {
@@ -196,7 +204,13 @@ public class ProxyMessenger implements PluginMessageListener {
                     String category = in.readUTF();
                     String priority = in.readUTF();
                     long dueBy = in.readLong();
-                    try { plugin.getReportManager().applyNetworkUpdate(id, status, claimedBy, category, priority, dueBy); } catch (Throwable ignored) {}
+                    long claimedAt = 0L;
+                    try {
+                        if (in.available() >= Long.BYTES) {
+                            claimedAt = in.readLong();
+                        }
+                    } catch (IOException ignored) {}
+                    try { plugin.getReportManager().applyNetworkUpdate(id, status, claimedBy, category, priority, dueBy, claimedAt); } catch (Throwable ignored) {}
                     break;
                 }
                 default:

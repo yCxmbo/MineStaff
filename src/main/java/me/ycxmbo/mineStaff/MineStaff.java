@@ -271,6 +271,8 @@ public class MineStaff extends JavaPlugin {
             }
         }
 
+        try { reportManager.ensureClaimMonitor(); } catch (Throwable ignored) {}
+
         getLogger().info("MineStaff enabled.");
     }
 
@@ -279,6 +281,7 @@ public class MineStaff extends JavaPlugin {
         // Persist and cleanup
         try { vanishStore.save(); } catch (Throwable ignored) {}
         try { configManager.saveStaffAccounts(); } catch (Throwable ignored) {}
+        try { if (reportManager != null) reportManager.shutdown(); } catch (Throwable ignored) {}
         try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable ignored) {}
         try { if (proxyMessenger != null) proxyMessenger.close(); } catch (Throwable ignored) {}
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
