@@ -92,6 +92,25 @@ public class MineStaff extends JavaPlugin {
     public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
     public OfflineInventoryManager getOfflineInventoryManager() { return offlineInventoryManager; }
 
+    public synchronized void reloadConfigDrivenServices() {
+        ProxyMessenger oldProxy = this.proxyMessenger;
+        RedisBridge oldRedis = this.redisBridge;
+
+        if (oldProxy != null) {
+            try { oldProxy.close(); } catch (Throwable t) { getLogger().warning("Proxy messenger shutdown failed: " + t.getMessage()); }
+        }
+        if (oldRedis != null) {
+            try { oldRedis.close(); } catch (Throwable t) { getLogger().warning("Redis bridge shutdown failed: " + t.getMessage()); }
+        }
+
+        this.discordBridge = new DiscordBridge(this);
+        this.proxyMessenger = new ProxyMessenger(this);
+        this.redisBridge = new RedisBridge(this);
+
+        try { proxyMessenger.init(); } catch (Throwable t) { getLogger().warning("Proxy messenger init failed: " + t.getMessage()); }
+        try { redisBridge.init(); } catch (Throwable t) { getLogger().warning("Redis bridge init failed: " + t.getMessage()); }
+    }
+
     private static final Set<String> SUPPORTED_SERVER_BRANDS = Set.of("Paper", "Purpur", "Spigot", "CraftBukkit");
     private static final String SUPPORTED_VERSION_RANGE = "1.20.x-1.21.x";
 
@@ -115,9 +134,6 @@ public class MineStaff extends JavaPlugin {
         this.rollbackManager   = new RollbackManager(this);
         this.cpsCheckManager   = new CPSCheckManager(this);
         this.staffChatManager  = new StaffChatManager(this);
-        this.proxyMessenger    = new ProxyMessenger(this);
-        this.redisBridge       = new RedisBridge(this);
-        this.discordBridge     = new DiscordBridge(this);
         this.freezeService     = new FreezeService(this);
         this.spyManager        = new SpyManager();
         this.auditLogger       = new JsonAuditLogger(this);
@@ -235,9 +251,8 @@ public class MineStaff extends JavaPlugin {
             }
         }
 
-        // Init cross-server messaging (Bungee/Velocity plugin messaging)
-        try { proxyMessenger.init(); } catch (Throwable t) { getLogger().warning("Proxy messenger init failed: " + t.getMessage()); }
-        try { redisBridge.init(); } catch (Throwable t) { getLogger().warning("Redis bridge init failed: " + t.getMessage()); }
+        // Init config-driven bridges (proxy, redis, discord)
+        reloadConfigDrivenServices();
 
         // Register API service
         getServer().getServicesManager().register(
@@ -265,6 +280,7 @@ public class MineStaff extends JavaPlugin {
         try { vanishStore.save(); } catch (Throwable ignored) {}
         try { configManager.saveStaffAccounts(); } catch (Throwable ignored) {}
         try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable ignored) {}
+        try { if (proxyMessenger != null) proxyMessenger.close(); } catch (Throwable ignored) {}
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
         try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
         // Unregister API service(s)

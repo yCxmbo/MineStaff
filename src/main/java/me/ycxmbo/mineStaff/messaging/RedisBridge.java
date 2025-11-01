@@ -118,6 +118,12 @@ public class RedisBridge {
     public void close() {
         try { if (subThread != null) subThread.interrupt(); } catch (Throwable ignored) {}
         try { if (pool != null) pool.close(); } catch (Throwable ignored) {}
+        subThread = null;
+        pool = null;
+    }
+
+    public boolean isInitialized() {
+        return pool != null && !pool.isClosed();
     }
 
     public void publishStaffChat(String name, String message) {
