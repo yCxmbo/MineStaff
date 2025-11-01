@@ -220,7 +220,18 @@ public class ToolListener implements Listener {
     }
 
     private void useRandomTp(Player p) {
-        int activeSec = plugin.getConfigManager().getConfig().getInt("randomtp.active_seconds", 60);
+        String cdKey = "randomtp";
+        ConfigManager configManager = plugin.getConfigManager();
+
+        if (!cooldowns.ready(p.getUniqueId(), cdKey)) {
+            long remaining = cooldowns.remaining(p.getUniqueId(), cdKey);
+            String msg = configManager.getMessage("randomtp_cooldown", "&cRandom TP cooldown: {seconds}s");
+            msg = msg.replace("{seconds}", String.format(java.util.Locale.US, "%.1f", remaining / 1000.0));
+            p.sendMessage(msg);
+            return;
+        }
+
+        int activeSec = configManager.getConfig().getInt("randomtp.active_seconds", 60);
         long cutoff = System.currentTimeMillis() - (activeSec * 1000L);
         java.util.List<Player> candidates = new java.util.ArrayList<>();
         for (Player t : org.bukkit.Bukkit.getOnlinePlayers()) {
@@ -234,8 +245,8 @@ public class ToolListener implements Listener {
         java.util.Collections.shuffle(candidates);
         Player target = candidates.get(0);
         p.teleport(target.getLocation());
-        int cd = plugin.getConfigManager().getConfig().getInt("randomtp.cooldown_ms", 2000);
-        cooldowns.set(p.getUniqueId(), "randomtp", cd);
+        int cd = configManager.getConfig().getInt("randomtp.cooldown_ms", 2000);
+        cooldowns.set(p.getUniqueId(), cdKey, cd);
         p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
     }
 
