@@ -92,6 +92,48 @@ public class SqlStorage {
         return id;
     }
 
+    public void upsertReport(ReportManager.Report report) {
+        String insert;
+        if ("sqlite".equalsIgnoreCase(dialect)) {
+            insert = "INSERT INTO reports (id, reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET " +
+                    "reporter=excluded.reporter, target=excluded.target, reason=excluded.reason, created=excluded.created, " +
+                    "status=excluded.status, claimed_by=excluded.claimed_by, category=excluded.category, priority=excluded.priority, " +
+                    "due_by=excluded.due_by, claimed_at=excluded.claimed_at";
+        } else {
+            insert = "INSERT INTO reports (id, reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at) " +
+                    "VALUES (?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE " +
+                    "reporter=VALUES(reporter), target=VALUES(target), reason=VALUES(reason), created=VALUES(created), " +
+                    "status=VALUES(status), claimed_by=VALUES(claimed_by), category=VALUES(category), priority=VALUES(priority), " +
+                    "due_by=VALUES(due_by), claimed_at=VALUES(claimed_at)";
+        }
+
+        try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(insert)) {
+            ps.setString(1, report.id.toString());
+            ps.setString(2, report.reporter == null ? null : report.reporter.toString());
+            ps.setString(3, report.target == null ? null : report.target.toString());
+            ps.setString(4, report.reason);
+            ps.setLong(5, report.created);
+            ps.setString(6, report.status);
+            if (report.claimedBy == null) {
+                ps.setNull(7, Types.VARCHAR);
+            } else {
+                ps.setString(7, report.claimedBy.toString());
+            }
+            ps.setString(8, report.category);
+            ps.setString(9, report.priority);
+            ps.setLong(10, report.dueBy);
+            if (report.claimedBy == null || report.claimedAt <= 0L) {
+                ps.setNull(11, Types.BIGINT);
+            } else {
+                ps.setLong(11, report.claimedAt);
+            }
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().warning("SQL upsertReport: " + e.getMessage());
+        }
+    }
+
     public java.util.List<ReportManager.Report> listReports() {
         java.util.List<ReportManager.Report> out = new java.util.ArrayList<>();
         String sql = "SELECT id, reporter, target, reason, created, status, claimed_by, category, priority, due_by, claimed_at FROM reports";
