@@ -38,6 +38,7 @@ public class MineStaff extends JavaPlugin {
     private ToolManager toolManager;
     private ActionLogger actionLogger;
     private VanishStore vanishStore;
+    private StaffDutyManager staffDutyManager;
 
     // Feature
     private ReportManager reportManager;
@@ -69,6 +70,7 @@ public class MineStaff extends JavaPlugin {
     public ToolManager getToolManager() { return toolManager; }
     public ActionLogger getActionLogger() { return actionLogger; }
     public VanishStore getVanishStore() { return vanishStore; }
+    public StaffDutyManager getStaffDutyManager() { return staffDutyManager; }
     public ReportManager getReportManager() { return reportManager; }
     public InfractionManager getInfractionManager() { return infractionManager; }
     public RollbackManager getRollbackManager() { return rollbackManager; }
@@ -105,6 +107,7 @@ public class MineStaff extends JavaPlugin {
         this.toolManager       = new ToolManager(this);
         this.actionLogger      = new ActionLogger(this);
         this.vanishStore       = new VanishStore(this);
+        this.staffDutyManager  = new StaffDutyManager(this);
 
         this.reportManager     = new ReportManager(this);
         this.infractionManager = new InfractionManager(this);
@@ -163,8 +166,9 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("freeze") != null) getCommand("freeze").setExecutor(new FreezeCommand(this));
         if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
         if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
-        if (getCommand("staffduty") != null) getCommand("staffduty").setExecutor(new StaffDutyCommand(this));
-        if (getCommand("duty") != null) getCommand("duty").setExecutor(new StaffDutyCommand(this));
+        StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this.staffDutyManager);
+        if (getCommand("staffduty") != null) getCommand("staffduty").setExecutor(staffDutyCommand);
+        if (getCommand("duty") != null) getCommand("duty").setExecutor(staffDutyCommand);
         if (getCommand("commandspy") != null) getCommand("commandspy").setExecutor(new me.ycxmbo.mineStaff.commands.CommandSpyCommand(this));
         if (getCommand("socialspy") != null) getCommand("socialspy").setExecutor(new me.ycxmbo.mineStaff.commands.SocialSpyCommand(this));
         if (getCommand("notes") != null) getCommand("notes").setExecutor(new me.ycxmbo.mineStaff.commands.NotesCommand(this));
