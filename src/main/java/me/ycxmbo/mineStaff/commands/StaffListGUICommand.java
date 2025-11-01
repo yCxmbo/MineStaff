@@ -18,7 +18,7 @@ public class StaffListGUICommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) { sender.sendMessage("Only players."); return true; }
-        if (!p.hasPermission("staffmode.stafflist")) {
+        if (!p.hasPermission("staffmode.stafflist.gui")) {
             p.sendMessage(ChatColor.RED + "No permission.");
             return true;
         }
