@@ -5,7 +5,7 @@
 
   <groupId>me.ycxmbo</groupId>
   <artifactId>MineStaff</artifactId>
-  <version>1.1</version>
+  <version>1.2</version>
   <name>MineStaff</name>
   <description>Staff mode plugin for Paper, Purpur, and Spigot 1.20.x-1.21.x</description>
   <url>https://example.invalid/MineStaff</url>

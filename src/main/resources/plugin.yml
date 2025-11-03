@@ -1,6 +1,6 @@
 name: MineStaff
 main: me.ycxmbo.mineStaff.MineStaff
-version: 1.1
+version: 1.2
 api-version: '1.20'
 author: 'ycxmbo'
 provides: [ "MineStaffAPI" ]
