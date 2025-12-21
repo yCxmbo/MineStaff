@@ -42,7 +42,8 @@ public class StaffModeListener implements Listener {
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
         staff.disableStaffMode(e.getPlayer());
-        login.clearLoginStatus(e.getPlayer());
+        // Use onPlayerDisconnect to preserve session for reconnection
+        login.onPlayerDisconnect(e.getPlayer());
         if (staff.isVanished(e.getPlayer())) {
             MineStaff.getInstance().getVanishStore().setVanished(e.getPlayer().getUniqueId(), true);
         }

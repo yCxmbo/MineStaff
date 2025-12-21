@@ -31,8 +31,10 @@ public class LoginGuardListener implements Listener {
     }
 
     private boolean requiresLogin(Player p) {
+        // Double-check that staff login is enabled before enforcing any restrictions
         if (!config.isStaffLoginEnabled()) return false;
         if (!config.isLoginRequired()) return false;
+        // Only require login for players with staff permissions who haven't logged in
         return p.hasPermission("staffmode.toggle") && !login.isLoggedIn(p);
     }
 
