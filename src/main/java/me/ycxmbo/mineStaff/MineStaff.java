@@ -118,6 +118,11 @@ public class MineStaff extends JavaPlugin {
     }
 
     private void reloadLoginGuardListener() {
+        // Guard against null configManager (can happen in test environments)
+        if (configManager == null) {
+            return;
+        }
+
         boolean loginRequired = configManager.isLoginRequired();
 
         // Unregister existing listener if present
