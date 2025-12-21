@@ -91,6 +91,13 @@
       <version>5.1.2</version>
     </dependency>
 
+    <!-- Security: BCrypt for password hashing -->
+    <dependency>
+      <groupId>at.favre.lib</groupId>
+      <artifactId>bcrypt</artifactId>
+      <version>0.10.2</version>
+    </dependency>
+
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>

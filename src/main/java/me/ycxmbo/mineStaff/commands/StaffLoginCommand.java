@@ -49,7 +49,21 @@ public class StaffLoginCommand implements CommandExecutor {
             return true;
         } else {
             String password = args[0];
-            if (!login.checkPassword(p, password)) { p.sendMessage(cfg.getMessage("login_failure", "Incorrect password.")); return true; }
+
+            // Check for lockout before attempting password check
+            long lockoutSeconds = login.getRemainingLockoutSeconds(p.getUniqueId());
+            if (lockoutSeconds > 0) {
+                String msg = cfg.getMessage("login_locked_out",
+                    "&cToo many failed attempts. Try again in {seconds} seconds.")
+                    .replace("{seconds}", String.valueOf(lockoutSeconds));
+                p.sendMessage(msg);
+                return true;
+            }
+
+            if (!login.checkPassword(p, password)) {
+                p.sendMessage(cfg.getMessage("login_failure", "Incorrect password."));
+                return true;
+            }
             boolean require2fa = cfg.getConfig().getBoolean("security.2fa.enabled", false) && login.isTwoFactorEnabled(p);
             if (require2fa) {
                 if (args.length < 2) { p.sendMessage(ChatColor.RED + "OTP required. Usage: /stafflogin <password> <otp>"); return true; }

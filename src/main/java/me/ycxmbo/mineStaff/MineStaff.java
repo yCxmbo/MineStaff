@@ -64,6 +64,9 @@ public class MineStaff extends JavaPlugin {
     private StaffListGUICommand staffListGUICommand;
     private StaffListCommand staffListCommand;
 
+    // Listeners that may need to be dynamically registered/unregistered
+    private LoginGuardListener loginGuardListener;
+
     // Getters
     public ConfigManager getConfigManager() { return configManager; }
     public StaffDataManager getStaffDataManager() { return staffDataManager; }
@@ -109,6 +112,28 @@ public class MineStaff extends JavaPlugin {
 
         try { proxyMessenger.init(); } catch (Throwable t) { getLogger().warning("Proxy messenger init failed: " + t.getMessage()); }
         try { redisBridge.init(); } catch (Throwable t) { getLogger().warning("Redis bridge init failed: " + t.getMessage()); }
+
+        // Handle LoginGuardListener registration based on current config
+        reloadLoginGuardListener();
+    }
+
+    private void reloadLoginGuardListener() {
+        boolean loginRequired = configManager.isLoginRequired();
+
+        // Unregister existing listener if present
+        if (loginGuardListener != null) {
+            org.bukkit.event.HandlerList.unregisterAll(loginGuardListener);
+            loginGuardListener = null;
+        }
+
+        // Re-register if login is required
+        if (loginRequired) {
+            loginGuardListener = new LoginGuardListener(this);
+            Bukkit.getPluginManager().registerEvents(loginGuardListener, this);
+            getLogger().info("LoginGuardListener enabled - staff must use /stafflogin");
+        } else {
+            getLogger().info("LoginGuardListener disabled - staff login not required");
+        }
     }
 
     private static final Set<String> SUPPORTED_SERVER_BRANDS = Set.of("Paper", "Purpur", "Spigot", "CraftBukkit");
@@ -211,9 +236,8 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ToolListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffToolGuardListener(this), this);
         Bukkit.getPluginManager().registerEvents(new SilentChestListener(this), this);
-        if (loginRequired) {
-            Bukkit.getPluginManager().registerEvents(new LoginGuardListener(this), this);
-        }
+        // LoginGuardListener is registered via reloadLoginGuardListener()
+        reloadLoginGuardListener();
         Bukkit.getPluginManager().registerEvents(new CPSClickListener(this), this);
         Bukkit.getPluginManager().registerEvents(new ReportsGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);

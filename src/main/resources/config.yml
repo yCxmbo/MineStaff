@@ -7,6 +7,7 @@ messages:
   login_required: "&eYou must /stafflogin before using staff tools."
   login_success: "&aLogin successful."
   login_failure: "&cIncorrect password."
+  login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
   password_set: "&aPassword set."
   staff_login_disabled: "&cStaff login is disabled."
   vanish_on: "&dVanish enabled."

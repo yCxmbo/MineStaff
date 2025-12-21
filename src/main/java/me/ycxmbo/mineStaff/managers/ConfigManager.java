@@ -38,6 +38,7 @@ public class ConfigManager {
         defaults.put("messages.login_required", "&eYou must /stafflogin before using staff tools.");
         defaults.put("messages.login_success", "&aLogin successful.");
         defaults.put("messages.login_failure", "&cIncorrect password.");
+        defaults.put("messages.login_locked_out", "&cToo many failed attempts. Try again in {seconds} seconds.");
         defaults.put("messages.password_set", "&aPassword set.");
         defaults.put("messages.staff_login_disabled", "&cStaff login is disabled.");
         defaults.put("messages.cps_started", "&aStarted {seconds}s CPS test on {target}.");
