@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import java.util.Set;
 import java.util.UUID;
 import java.util.Map;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class StaffLoginManager {
@@ -211,7 +212,13 @@ public class StaffLoginManager {
         // Also log to audit logger if available
         if (plugin.getAuditLogger() != null) {
             try {
-                plugin.getAuditLogger().log("STAFF_LOGIN", p.getName(), event, details);
+                Map<String, Object> auditData = new HashMap<>();
+                auditData.put("action", "STAFF_LOGIN");
+                auditData.put("player", p.getName());
+                auditData.put("event", event);
+                auditData.put("details", details);
+                auditData.put("timestamp", System.currentTimeMillis());
+                plugin.getAuditLogger().log(auditData);
             } catch (Throwable ignored) {}
         }
     }
