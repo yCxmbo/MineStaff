@@ -19,8 +19,7 @@ public class InspectorGUI {
     public InspectorGUI(MineStaff plugin) { this.plugin = plugin; }
 
     public void open(Player viewer, Player target) {
-        String title = ChatColor.DARK_AQUA + "Inspector: " + ChatColor.AQUA + target.getName()
-                + ChatColor.DARK_GRAY + " [" + target.getUniqueId() + "]";
+        String title = ChatColor.DARK_AQUA + "Inspector: " + ChatColor.AQUA + target.getName();
         Inventory inv = Bukkit.createInventory(viewer, 27, title);
 
         inv.setItem(10, named(new ItemStack(Material.PAPER), ChatColor.AQUA + "Info",
