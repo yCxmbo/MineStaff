@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
@@ -30,8 +31,7 @@ public class InspectorGUIListener implements Listener {
         ItemStack clicked = e.getCurrentItem();
         if (clicked == null || clicked.getItemMeta() == null || clicked.getItemMeta().getDisplayName() == null) return;
 
-        UUID targetId = InspectorGUI.extractTargetFromItem(clicked);
-        if (targetId == null) targetId = InspectorGUI.extractTargetFromTitle(title);
+        UUID targetId = InspectorGUI.getTargetForViewer(viewer.getUniqueId());
         if (targetId == null) { viewer.sendMessage(ChatColor.RED + "Unable to resolve target."); return; }
 
         OfflinePlayer off = Bukkit.getOfflinePlayer(targetId);
@@ -42,6 +42,22 @@ public class InspectorGUIListener implements Listener {
 
         if (name.contains("inventory")) { viewer.openInventory(target.getInventory()); return; }
         if (name.contains("ender chest")) { viewer.openInventory(target.getEnderChest()); return; }
-        if (name.contains("close")) { viewer.closeInventory(); return; }
+        if (name.contains("close")) {
+            InspectorGUI.clearTargetForViewer(viewer.getUniqueId());
+            viewer.closeInventory();
+            return;
+        }
+    }
+
+    @EventHandler
+    public void onClose(InventoryCloseEvent e) {
+        if (!(e.getPlayer() instanceof Player viewer)) return;
+        String title = e.getView() == null ? null : e.getView().getTitle();
+        if (title == null) return;
+
+        String stripped = ChatColor.stripColor(title);
+        if (stripped != null && stripped.startsWith("Inspector:")) {
+            InspectorGUI.clearTargetForViewer(viewer.getUniqueId());
+        }
     }
 }
