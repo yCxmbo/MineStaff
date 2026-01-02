@@ -26,8 +26,7 @@ public class InspectorGUI {
                 ChatColor.GRAY + "Name: " + target.getName(),
                 ChatColor.GRAY + "Ping: " + target.getPing() + "ms",
                 ChatColor.GRAY + "Health: " + (int) target.getHealth() + "/" + (int) target.getMaxHealth(),
-                ChatColor.GRAY + "Effects: " + target.getActivePotionEffects().size(),
-                ChatColor.DARK_GRAY + "TARGET:" + target.getUniqueId()));
+                ChatColor.GRAY + "Effects: " + target.getActivePotionEffects().size()));
 
         inv.setItem(12, named(new ItemStack(Material.CHEST), ChatColor.GOLD + "Inventory",
                 ChatColor.GRAY + "Open the player's inventory",
