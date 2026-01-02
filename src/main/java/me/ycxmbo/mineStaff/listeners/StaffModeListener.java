@@ -3,10 +3,15 @@ package me.ycxmbo.mineStaff.listeners;
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.managers.StaffLoginManager;
+import org.bukkit.GameMode;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCreativeEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import me.ycxmbo.mineStaff.util.VanishUtil;
@@ -14,6 +19,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class StaffModeListener implements Listener {
     private final MineStaff plugin;
@@ -76,5 +82,34 @@ public class StaffModeListener implements Listener {
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
         if (staff.isStaffMode(e.getPlayer())) e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryClick(InventoryClickEvent e) {
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        if (!staff.isStaffMode(p)) return;
+        if (p.getGameMode() != GameMode.CREATIVE) return;
+
+        // Prevent taking items in creative mode while in staff mode
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onInventoryDrag(InventoryDragEvent e) {
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        if (!staff.isStaffMode(p)) return;
+        if (p.getGameMode() != GameMode.CREATIVE) return;
+
+        // Prevent dragging items in creative mode while in staff mode
+        e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onCreativeInventory(InventoryCreativeEvent e) {
+        if (!(e.getWhoClicked() instanceof Player p)) return;
+        if (!staff.isStaffMode(p)) return;
+
+        // Prevent creative inventory actions while in staff mode
+        e.setCancelled(true);
     }
 }
