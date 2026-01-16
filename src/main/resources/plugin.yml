@@ -24,70 +24,101 @@ commands:
   stafflogin:
     description: Staff must log in before moving or using commands
     usage: /<command> <password>
+    aliases: [slogin, stafflog, slog]
   staffchat:
     description: Send a message to staff chat
-    aliases: [sc]
+    aliases: [sc, schat]
   report:
     description: Report a player
+    aliases: [rp, reportplayer]
   infractions:
     description: Manage/view infractions
+    aliases: [inf, infraction, warns]
   rollback:
     description: Open rollback GUI
+    aliases: [rb, invrollback]
   cpscheck:
     description: Check clicks-per-second over 10s
+    aliases: [cps]
   stafflistgui:
     description: Open staff list GUI
+    aliases: [slg, staffgui]
     permission: staffmode.stafflist.gui
   stafflist:
     description: Show staff list in chat
     usage: /<command>
+    aliases: [sl, slist]
     permission: staffmode.stafflist.text
   staffreload:
     description: Reload MineStaff configuration
     usage: /<command>
+    aliases: [sr, sreload, minestafreload]
     permission: staffmode.reload
   freeze:
     description: Freeze or unfreeze a player (optionally for seconds)
     usage: /<command> <player> [seconds]
+    aliases: [f, ice]
     permission: staffmode.freeze
   inspect:
     description: Open inspector GUI for a player
     usage: /<command> <player>
+    aliases: [insp, view]
     permission: staffmode.inspect
   reports:
     description: Open reports GUI
     usage: /<command>
+    aliases: [reportsgui, reportlist]
     permission: staffmode.alerts
   staffduty:
     description: Toggle staff duty on/off (enables Staff Mode)
-    aliases: [duty]
+    aliases: [duty, sduty]
     permission: staffmode.duty
   notes:
     description: Manage player notes
     usage: /<command> <player> add <note> | list | remove <index>
+    aliases: [note, playernotes]
     permission: staffmode.notes
   profile:
     description: Open player profile GUI
     usage: /<command> <player>
+    aliases: [p, playerprofile, pprofile]
     permission: staffmode.inspect
   inspectoffline:
     description: Inspect offline player's inventory/ender chest
     usage: /<command> <player> [ec]
+    aliases: [io, offlineinspect, invo]
     permission: staffmode.inspect
   commandspy:
     description: Toggle command spy
+    aliases: [cmdspy, cs]
     permission: staffmode.spy
   socialspy:
     description: Toggle social spy for private messages
+    aliases: [ss, sspy]
     permission: staffmode.spy
   staff2fa:
     description: Manage staff 2FA (TOTP)
     usage: /<command> enable|confirm <otp>|disable|status
+    aliases: [s2fa, 2fa]
     permission: staffmode.login
   evidence:
     description: Attach/list evidence to reports
     usage: /<command> <reportId> add <url>|list
+    aliases: [ev, proof]
     permission: staffmode.alerts
+  backup:
+    description: Request immediate backup from other staff members
+    usage: /<command> [reason]
+    aliases: [requestbackup, callbackup]
+    permission: staffmode.backup
+  staffhelp:
+    description: Show categorized help for all staff commands
+    usage: /<command> [category]
+    aliases: [shelp, staffh, sh]
+  follow:
+    description: Continuously follow a player (teleport to them)
+    usage: /<command> <player>
+    permission: staffmode.follow
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -130,3 +161,15 @@ permissions:
   staffmode.silentchest:
     description: Open containers silently in Staff Mode
     default: op
+  staffmode.backup:
+    description: Request backup from other staff members
+    default: op
+  staffmode.backup.receive:
+    description: Receive backup requests from other staff
+    default: op
+  staffmode.follow:
+    description: Follow other players continuously
+    default: op
+  staffmode.follow.bypass:
+    description: Cannot be followed by staff
+    default: false

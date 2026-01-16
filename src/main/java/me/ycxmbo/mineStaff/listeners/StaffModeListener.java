@@ -18,6 +18,7 @@ import me.ycxmbo.mineStaff.util.VanishUtil;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -82,6 +83,13 @@ public class StaffModeListener implements Listener {
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
         if (staff.isStaffMode(e.getPlayer())) e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onPickup(EntityPickupItemEvent e) {
+        if (e.getEntity() instanceof Player p && staff.isStaffMode(p)) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler

@@ -1,0 +1,165 @@
+# ==========================================
+# MineStaff Configuration - Large Network
+# ==========================================
+# Optimized for networks with 200+ players across multiple servers
+# Features: MySQL, Redis, cross-server sync, 2FA, enhanced security
+# ==========================================
+
+messages:
+  prefix: "&8[&aMineStaff&8]&r "
+  no_permission: "&cYou don't have permission."
+  only_players: "&cOnly players can use this."
+  staffmode_enabled: "&aStaff Mode enabled."
+  staffmode_disabled: "&cStaff Mode disabled."
+  login_required: "&eYou must /stafflogin before using staff tools."
+  login_success: "&aLogin successful."
+  login_failure: "&cIncorrect password."
+  login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
+  password_set: "&aPassword set."
+  staff_login_disabled: "&cStaff login is disabled."
+  vanish_on: "&dVanish enabled."
+  vanish_off: "&dVanish disabled."
+  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
+  teleport_blocked: "&cBlocked destination."
+  teleport_no_spot: "&cNo safe spot in sight."
+  cps_started: "&aStarted {seconds}s CPS test on {target}."
+  cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
+  cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
+  cps_already_running: "&cA CPS test is already running for {target}."
+
+options:
+  # Staff login mandatory for large networks
+  staff_login_enabled: true
+  require_login: true
+  staffmode_gamemode: CREATIVE
+  locale: en
+  staffchat_prefix: "@"
+  # Longer teleport ranges for larger worlds
+  teleport_max_range: 80
+  teleport_max_range_sneak: 150
+  # Slightly higher cooldown to prevent abuse
+  teleport_cooldown_ms: 2000
+
+alerts:
+  use_minimessage: true
+  template: "<gradient:#19E68C:#13B5FF>[StaffAlert]</gradient> <gray>{content}</gray>"
+  hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
+  click_tp: true
+  sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  # Track both joins and quits for security
+  notify_on_join: true
+  notify_on_quit: true
+  join_template: "{player} joined at {world} ({x}, {y}, {z})."
+  quit_template: "{player} left from {world} ({x}, {y}, {z})."
+  join_include_tp: true
+  quit_include_tp: true
+  # Enable cross-server alerts for network-wide monitoring
+  cross_server: true
+
+tools:
+  slots:
+    teleport: 0
+    freeze: 1
+    inspect: 2
+    vanish: 8
+    cps: 3
+    randomtp: 4
+
+teleport-to-spawn-on-exit: true
+
+reports:
+  notify-staff-permission: "staffmode.alerts"
+  notify_staff_message: "[{server}] New report filed by {reporter} against {target}: {reason}"
+  # Enable cross-server reports
+  cross_server: true
+
+infractions:
+  types: ["WARN","MUTE","TEMPMUTE","KICK","BAN","TEMPBAN","IPBAN"]
+
+rollback:
+  # More snapshots for larger networks with more activity
+  max-snapshots-per-player: 50
+
+silent-chest:
+  require-sneak: true
+
+staffchat:
+  # Enable cross-server staff chat via Redis
+  cross_server: true
+  console_log: true
+  format_legacy: "&8[&dStaff&8] &8[&e{server}&8] &b{name}&7: &f{message}"
+  mention_sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+cps:
+  duration_seconds: 10
+  cooldown_ms: 2000
+
+randomtp:
+  active_seconds: 60
+  cooldown_ms: 2000
+
+audit:
+  enabled: true
+  file_prefix: "actions-"
+
+storage:
+  # MySQL required for large networks
+  mode: mysql
+  sqlite:
+    file: minestaff.db
+  mysql:
+    # Use a dedicated MySQL server for best performance
+    host: mysql.yournetwork.com
+    port: 3306
+    database: minestaff
+    username: minestaff_user
+    password: "your_very_secure_password_here"
+    # Enable SSL for production networks
+    useSSL: true
+    params: "useUnicode=true&characterEncoding=utf8&useSSL=true&requireSSL=true"
+
+# Redis required for cross-server communication
+redis:
+  enabled: true
+  # Use a dedicated Redis server
+  host: redis.yournetwork.com
+  port: 6379
+  password: "your_redis_password_here"
+  # Enable SSL for production
+  ssl: true
+  channels:
+    staffchat: "minestaff:sc"
+    reports: "minestaff:reports"
+    alerts: "minestaff:alerts"
+
+# Discord integration highly recommended for large networks
+discord:
+  enabled: true
+  # Separate webhooks for different types of notifications
+  alerts_webhook: "https://discord.com/api/webhooks/YOUR_ALERTS_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+  staffchat_webhook: "https://discord.com/api/webhooks/YOUR_STAFFCHAT_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+
+history:
+  # Keep longer history for auditing purposes
+  days: 14
+
+luckperms:
+  # Example: Grant network-wide permissions while in staff mode
+  staffmode_temp_perms: []
+  # Example: Grant higher permissions while on duty
+  duty_temp_perms: ["some.admin.permission", "another.permission"]
+
+security:
+  # 2FA strongly recommended for large networks
+  2fa:
+    enabled: true
+  # Longer session timeout for convenience
+  session_timeout_minutes: 120
+  # Bind sessions to IP for security (may need to disable for staff with dynamic IPs)
+  bind_ip: true
+
+freeze:
+  visual_cage:
+    enabled: true
+    particle: "SNOWFLAKE"
+    radius: 0.7

@@ -1,0 +1,155 @@
+# ========================================
+# MineStaff Configuration - Medium Server
+# ========================================
+# Optimized for servers with 50-200 players
+# Features: MySQL storage, staff login enabled, more moderation tools
+# ========================================
+
+messages:
+  prefix: "&8[&aMineStaff&8]&r "
+  no_permission: "&cYou don't have permission."
+  only_players: "&cOnly players can use this."
+  staffmode_enabled: "&aStaff Mode enabled."
+  staffmode_disabled: "&cStaff Mode disabled."
+  login_required: "&eYou must /stafflogin before using staff tools."
+  login_success: "&aLogin successful."
+  login_failure: "&cIncorrect password."
+  login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
+  password_set: "&aPassword set."
+  staff_login_disabled: "&cStaff login is disabled."
+  vanish_on: "&dVanish enabled."
+  vanish_off: "&dVanish disabled."
+  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
+  teleport_blocked: "&cBlocked destination."
+  teleport_no_spot: "&cNo safe spot in sight."
+  cps_started: "&aStarted {seconds}s CPS test on {target}."
+  cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
+  cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
+  cps_already_running: "&cA CPS test is already running for {target}."
+
+options:
+  # Staff login recommended for medium servers
+  staff_login_enabled: true
+  require_login: true
+  staffmode_gamemode: CREATIVE
+  locale: en
+  staffchat_prefix: "@"
+  teleport_max_range: 60
+  teleport_max_range_sneak: 120
+  teleport_cooldown_ms: 1500
+
+alerts:
+  use_minimessage: true
+  template: "<gradient:#19E68C:#13B5FF>[StaffAlert]</gradient> <gray>{content}</gray>"
+  hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
+  click_tp: true
+  sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  notify_on_join: true
+  notify_on_quit: false
+  join_template: "{player} joined at {world} ({x}, {y}, {z})."
+  quit_template: "{player} left from {world} ({x}, {y}, {z})."
+  join_include_tp: true
+  quit_include_tp: false
+  cross_server: false
+
+tools:
+  slots:
+    teleport: 0
+    freeze: 1
+    inspect: 2
+    vanish: 8
+    cps: 3
+    randomtp: 4
+
+teleport-to-spawn-on-exit: true
+
+reports:
+  notify-staff-permission: "staffmode.alerts"
+  notify_staff_message: "New report filed by {reporter} against {target}: {reason}"
+  cross_server: false
+
+infractions:
+  types: ["WARN","MUTE","TEMPMUTE","KICK","BAN","TEMPBAN"]
+
+rollback:
+  # Standard snapshot count for medium servers
+  max-snapshots-per-player: 25
+
+silent-chest:
+  require-sneak: true
+
+staffchat:
+  cross_server: false
+  console_log: true
+  format_legacy: "&8[&dStaff&8] &b{name}&7: &f{message}"
+  mention_sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+cps:
+  duration_seconds: 10
+  cooldown_ms: 2000
+
+randomtp:
+  active_seconds: 60
+  cooldown_ms: 2000
+
+audit:
+  enabled: true
+  file_prefix: "actions-"
+
+storage:
+  # MySQL recommended for medium servers for better performance
+  mode: mysql
+  sqlite:
+    file: minestaff.db
+  mysql:
+    # Configure your MySQL credentials here
+    host: localhost
+    port: 3306
+    database: minestaff
+    username: minestaff_user
+    password: "your_secure_password_here"
+    useSSL: false
+    params: "useUnicode=true&characterEncoding=utf8"
+
+# Redis optional for medium servers
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+  password: ""
+  ssl: false
+  channels:
+    staffchat: "minestaff:sc"
+    reports: "minestaff:reports"
+    alerts: "minestaff:alerts"
+
+# Discord integration recommended for better communication
+discord:
+  enabled: true
+  # Add your Discord webhook URLs here
+  alerts_webhook: "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+  staffchat_webhook: "https://discord.com/api/webhooks/YOUR_WEBHOOK_ID/YOUR_WEBHOOK_TOKEN"
+
+history:
+  # Standard history retention
+  days: 7
+
+luckperms:
+  # Example: Grant temporary permissions while in staff mode
+  staffmode_temp_perms: []
+  # Example: Grant temporary permissions while on duty
+  duty_temp_perms: ["some.permission.here"]
+
+security:
+  # 2FA optional but recommended for medium servers
+  2fa:
+    enabled: false
+  session_timeout_minutes: 60
+  # Bind sessions to IP for added security
+  bind_ip: true
+
+freeze:
+  visual_cage:
+    enabled: true
+    particle: "SNOWFLAKE"
+    radius: 0.7
