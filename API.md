@@ -2,32 +2,31 @@
 
 ## Overview
 
-MineStaff provides a comprehensive API for third-party plugins to integrate with staff management features. The API includes methods for managing staff mode, vanish, freeze, reports, infractions, notes, and tickets, along with custom events for listening to key plugin actions.
+MineStaff provides a comprehensive API for third-party plugins to integrate with staff management features. The API uses a service provider pattern and includes methods for managing staff mode, vanish, freeze, reports, infractions, notes, and tickets, along with custom events for listening to key plugin actions.
 
 ## Getting Started
 
 ### Accessing the API
 
 ```java
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.MineStaffAPI;
-import org.bukkit.plugin.Plugin;
 
 public class MyPlugin extends JavaPlugin {
     
-    private MineStaffAPI mineStaffAPI;
+    private MineStaffAPI api;
     
     @Override
     public void onEnable() {
-        Plugin mineStaffPlugin = getServer().getPluginManager().getPlugin("MineStaff");
+        // Get API via service provider pattern
+        var apiOpt = MineStaffAPI.get();
         
-        if (mineStaffPlugin == null || !(mineStaffPlugin instanceof MineStaff)) {
-            getLogger().warning("MineStaff not found!");
+        if (apiOpt.isEmpty()) {
+            getLogger().warning("MineStaff API not available!");
             return;
         }
         
-        this.mineStaffAPI = ((MineStaff) mineStaffPlugin).getAPI();
-        getLogger().info("Successfully hooked into MineStaff API v" + mineStaffAPI.getVersion());
+        this.api = apiOpt.get();
+        getLogger().info("Successfully hooked into MineStaff API");
     }
 }
 ```
@@ -48,16 +47,14 @@ softdepend: [MineStaff]
 
 ```java
 // Check if player is in staff mode
-boolean isStaffMode = api.isInStaffMode(player);
+boolean isStaffMode = api.isStaffMode(player);
+boolean isStaffMode = api.isStaffMode(playerUUID);
 
-// Enable staff mode
-boolean success = api.enableStaffMode(player);
+// Toggle staff mode
+boolean newState = api.setStaffMode(player, true, MineStaffAPI.ToggleCause.API);
 
-// Disable staff mode
-boolean success = api.disableStaffMode(player);
-
-// Get all players in staff mode
-List<Player> staffPlayers = api.getStaffModePlayers();
+// Get snapshot of player's staff state
+MineStaffAPI.StaffSnapshot snapshot = api.snapshot(player);
 ```
 
 ### Vanish Management
@@ -65,13 +62,10 @@ List<Player> staffPlayers = api.getStaffModePlayers();
 ```java
 // Check if player is vanished
 boolean isVanished = api.isVanished(player);
+boolean isVanished = api.isVanished(playerUUID);
 
-// Set vanish state
-api.setVanished(player, true);  // vanish
-api.setVanished(player, false); // unvanish
-
-// Get all vanished players
-List<Player> vanished = api.getVanishedPlayers();
+// Toggle vanish
+boolean newState = api.setVanish(player, true, MineStaffAPI.ToggleCause.API);
 ```
 
 ### Freeze Management
@@ -79,16 +73,17 @@ List<Player> vanished = api.getVanishedPlayers();
 ```java
 // Check if player is frozen
 boolean isFrozen = api.isFrozen(player);
+boolean isFrozen = api.isFrozen(playerUUID);
 
-// Freeze a player
-boolean success = api.freezePlayer(player, staffMember);
-
-// Unfreeze a player
-boolean success = api.unfreezePlayer(player);
-
-// Get all frozen players
-List<UUID> frozenPlayers = api.getFrozenPlayers();
+// Toggle freeze
+boolean newState = api.setFrozen(player, true, MineStaffAPI.ToggleCause.API);
 ```
+
+**Toggle Causes:**
+- `COMMAND` - Triggered by command
+- `TOOL` - Triggered by staff tool
+- `API` - Triggered by API call
+- `OTHER` - Other sources
 
 ### Report Management
 
@@ -181,25 +176,9 @@ boolean success = api.resolveTicket(ticketId, resolver);
 - `HIGH` - High priority
 - `URGENT` - Urgent
 
-### Utility Methods
-
-```java
-// Get plugin version
-String version = api.getVersion();
-
-// Check if feature is enabled
-boolean enabled = api.isFeatureEnabled("staff-mode.enabled");
-
-// Play configured sound
-api.playSound(player, "alert.normal");
-
-// Get plugin instance (use sparingly - prefer API methods)
-MineStaff plugin = api.getPlugin();
-```
-
 ## Events
 
-MineStaff fires custom events that your plugin can listen to. All events are cancellable.
+MineStaff fires custom events that your plugin can listen to.
 
 ### StaffModeToggleEvent
 
@@ -207,6 +186,7 @@ Fired when a player toggles staff mode.
 
 ```java
 import me.ycxmbo.mineStaff.api.events.StaffModeToggleEvent;
+import me.ycxmbo.mineStaff.api.MineStaffAPI;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -215,70 +195,63 @@ public class MyListener implements Listener {
     @EventHandler
     public void onStaffModeToggle(StaffModeToggleEvent event) {
         Player player = event.getPlayer();
+        boolean enabled = event.isEnabled();
+        MineStaffAPI.ToggleCause cause = event.getCause();
         
-        if (event.isEntering()) {
-            // Player is entering staff mode
-            player.sendMessage("Welcome to staff mode!");
+        if (enabled) {
+            player.sendMessage("You entered staff mode via " + cause);
         } else {
-            // Player is leaving staff mode
             player.sendMessage("You left staff mode");
         }
-        
-        // Cancel the event to prevent staff mode toggle
-        // event.setCancelled(true);
     }
 }
 ```
 
-### PlayerVanishEvent
+### VanishToggleEvent
 
 Fired when a player's vanish state changes.
 
 ```java
-import me.ycxmbo.mineStaff.api.events.PlayerVanishEvent;
+import me.ycxmbo.mineStaff.api.events.VanishToggleEvent;
 
 @EventHandler
-public void onVanish(PlayerVanishEvent event) {
+public void onVanish(VanishToggleEvent event) {
     Player player = event.getPlayer();
+    boolean enabled = event.isEnabled();
+    MineStaffAPI.ToggleCause cause = event.getCause();
     
-    if (event.isVanishing()) {
-        // Player is vanishing
+    if (enabled) {
+        // Player is now vanished
     } else {
-        // Player is unvanishing
+        // Player is now visible
     }
-    
-    // Cancel to prevent vanish state change
-    // event.setCancelled(true);
 }
 ```
 
-### PlayerFreezeEvent
+### FreezeToggleEvent
 
 Fired when a player is frozen or unfrozen.
 
 ```java
-import me.ycxmbo.mineStaff.api.events.PlayerFreezeEvent;
+import me.ycxmbo.mineStaff.api.events.FreezeToggleEvent;
 
 @EventHandler
-public void onFreeze(PlayerFreezeEvent event) {
+public void onFreeze(FreezeToggleEvent event) {
     Player player = event.getPlayer();
-    Player staff = event.getStaff(); // May be null if done via API
+    boolean enabled = event.isEnabled();
+    MineStaffAPI.ToggleCause cause = event.getCause();
     
-    if (event.isFreezing()) {
-        // Player is being frozen
-        getLogger().info(staff.getName() + " froze " + player.getName());
+    if (enabled) {
+        // Player is now frozen
     } else {
-        // Player is being unfrozen
+        // Player is now unfrozen
     }
-    
-    // Cancel to prevent freeze action
-    // event.setCancelled(true);
 }
 ```
 
 ### PlayerReportEvent
 
-Fired when a player is reported.
+Fired when a player is reported. **Cancellable**.
 
 ```java
 import me.ycxmbo.mineStaff.api.events.PlayerReportEvent;
@@ -299,7 +272,7 @@ public void onReport(PlayerReportEvent event) {
 
 ### InfractionAddEvent
 
-Fired when an infraction is added to a player.
+Fired when an infraction is added to a player. **Cancellable**.
 
 ```java
 import me.ycxmbo.mineStaff.api.events.InfractionAddEvent;
@@ -323,7 +296,7 @@ public void onInfraction(InfractionAddEvent event) {
 
 ### StaffTicketCreateEvent
 
-Fired when a staff ticket is created.
+Fired when a staff ticket is created. **Cancellable**.
 
 ```java
 import me.ycxmbo.mineStaff.api.events.StaffTicketCreateEvent;
@@ -346,6 +319,29 @@ public void onTicketCreate(StaffTicketCreateEvent event) {
 }
 ```
 
+### CPSCheckStartEvent & CPSCheckFinishEvent
+
+Fired when CPS checks start and finish.
+
+```java
+import me.ycxmbo.mineStaff.api.events.CPSCheckStartEvent;
+import me.ycxmbo.mineStaff.api.events.CPSCheckFinishEvent;
+
+@EventHandler
+public void onCPSCheckStart(CPSCheckStartEvent event) {
+    Player target = event.getTarget();
+    Player staff = event.getStaff();
+    // CPS check started
+}
+
+@EventHandler
+public void onCPSCheckFinish(CPSCheckFinishEvent event) {
+    Player target = event.getTarget();
+    double cps = event.getCPS();
+    // CPS check finished
+}
+```
+
 ## Example Integration
 
 Here's a complete example plugin that integrates with MineStaff:
@@ -353,12 +349,10 @@ Here's a complete example plugin that integrates with MineStaff:
 ```java
 package com.example.minestaff.integration;
 
-import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.MineStaffAPI;
 import me.ycxmbo.mineStaff.api.events.*;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class MineStaffIntegrationPlugin extends JavaPlugin implements Listener {
@@ -368,16 +362,16 @@ public class MineStaffIntegrationPlugin extends JavaPlugin implements Listener {
     @Override
     public void onEnable() {
         // Hook into MineStaff API
-        Plugin mineStaffPlugin = getServer().getPluginManager().getPlugin("MineStaff");
+        var apiOpt = MineStaffAPI.get();
         
-        if (mineStaffPlugin == null || !(mineStaffPlugin instanceof MineStaff)) {
-            getLogger().severe("MineStaff not found! Disabling...");
+        if (apiOpt.isEmpty()) {
+            getLogger().severe("MineStaff API not available! Disabling...");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }
         
-        this.api = ((MineStaff) mineStaffPlugin).getAPI();
-        getLogger().info("Hooked into MineStaff API v" + api.getVersion());
+        this.api = apiOpt.get();
+        getLogger().info("Hooked into MineStaff API");
         
         // Register event listeners
         getServer().getPluginManager().registerEvents(this, this);
@@ -385,11 +379,11 @@ public class MineStaffIntegrationPlugin extends JavaPlugin implements Listener {
     
     @EventHandler
     public void onStaffModeToggle(StaffModeToggleEvent event) {
-        if (event.isEntering()) {
+        if (event.isEnabled()) {
             getLogger().info(event.getPlayer().getName() + " entered staff mode");
             
             // Automatically vanish staff when they enter staff mode
-            api.setVanished(event.getPlayer(), true);
+            api.setVanish(event.getPlayer(), true, MineStaffAPI.ToggleCause.API);
         }
     }
     
@@ -427,9 +421,9 @@ public class MineStaffIntegrationPlugin extends JavaPlugin implements Listener {
 
 ## Best Practices
 
-1. **Always check for null**: Some API methods may return null if the requested data doesn't exist.
+1. **Always check for API availability**: Use `MineStaffAPI.get()` which returns an `Optional`.
 
-2. **Handle exceptions**: Wrap API calls in try-catch blocks to handle potential exceptions gracefully.
+2. **Handle empty results**: Methods may return empty lists or null if data doesn't exist.
 
 3. **Check return values**: Many methods return boolean to indicate success/failure.
 
@@ -437,9 +431,7 @@ public class MineStaffIntegrationPlugin extends JavaPlugin implements Listener {
 
 5. **Respect event cancellation**: If your plugin cancels events, document this behavior clearly.
 
-6. **Prefer API methods**: Use API methods instead of accessing the plugin instance directly when possible.
-
-7. **Check feature availability**: Use `isFeatureEnabled()` to check if features are enabled before using them.
+6. **Use appropriate ToggleCause**: When using the API to toggle states, use `ToggleCause.API`.
 
 ## Thread Safety
 
@@ -454,18 +446,15 @@ Bukkit.getScheduler().runTask(plugin, () -> {
 ## Support
 
 For issues or questions about the API:
-- GitHub Issues: https://github.com/ycxmbo/MineStaff/issues
-- Documentation: https://github.com/ycxmbo/MineStaff/wiki
+- GitHub: https://github.com/ycxmbo/MineStaff
 
 ## Changelog
 
 ### API v1.0
-- Initial API release
-- Staff mode management
-- Vanish management
-- Freeze management
-- Report management
-- Infraction management
-- Note management
-- Ticket management
-- Custom events for all major actions
+- Initial API release with service provider pattern
+- Staff mode, vanish, and freeze management
+- Report management with events
+- Infraction and note management with events
+- Ticket management with events
+- CPS check events
+- All core events are cancellable where appropriate

@@ -1,67 +1,23 @@
 package me.ycxmbo.mineStaff.api.events;
 
+import me.ycxmbo.mineStaff.api.MineStaffAPI;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-/**
- * Called when a player toggles staff mode
- */
-public class StaffModeToggleEvent extends Event implements Cancellable {
-    private static final HandlerList handlers = new HandlerList();
+public class StaffModeToggleEvent extends Event {
+    private static final HandlerList HANDLERS = new HandlerList();
     private final Player player;
-    private final boolean entering;
-    private boolean cancelled = false;
+    private final boolean enabled;
+    private final MineStaffAPI.ToggleCause cause;
 
-    public StaffModeToggleEvent(Player player, boolean entering) {
-        this.player = player;
-        this.entering = entering;
+    public StaffModeToggleEvent(Player player, boolean enabled, MineStaffAPI.ToggleCause cause) {
+        this.player = player; this.enabled = enabled; this.cause = cause;
     }
+    public Player getPlayer() { return player; }
+    public boolean isEnabled() { return enabled; }
+    public MineStaffAPI.ToggleCause getCause() { return cause; }
 
-    /**
-     * Gets the player toggling staff mode
-     *
-     * @return The player
-     */
-    public Player getPlayer() {
-        return player;
-    }
-
-    /**
-     * Checks if the player is entering staff mode
-     *
-     * @return true if entering, false if leaving
-     */
-    public boolean isEntering() {
-        return entering;
-    }
-
-    /**
-     * Checks if the player is leaving staff mode
-     *
-     * @return true if leaving, false if entering
-     */
-    public boolean isLeaving() {
-        return !entering;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
-    }
-
-    @Override
-    public HandlerList getHandlers() {
-        return handlers;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
-    }
+    @Override public HandlerList getHandlers() { return HANDLERS; }
+    public static HandlerList getHandlerList() { return HANDLERS; }
 }

@@ -2,14 +2,17 @@ package me.ycxmbo.mineStaff.api.internal;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.MineStaffAPI;
-import me.ycxmbo.mineStaff.api.events.FreezeToggleEvent;
-import me.ycxmbo.mineStaff.api.events.StaffModeToggleEvent;
-import me.ycxmbo.mineStaff.api.events.VanishToggleEvent;
+import me.ycxmbo.mineStaff.api.events.*;
+import me.ycxmbo.mineStaff.managers.InfractionManager;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
+import me.ycxmbo.mineStaff.reports.ReportedPlayer;
+import me.ycxmbo.mineStaff.tickets.StaffTicket;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.UUID;
 
 public class MineStaffApiProvider implements MineStaffAPI {
@@ -133,5 +136,210 @@ public class MineStaffApiProvider implements MineStaffAPI {
             plugin.getLogger().warning("[API] Failed to toggle staff mode: " + t.getMessage());
         }
         return data.isStaffMode(p);
+    }
+
+    // ========== Reports ==========
+    @Override
+    public ReportedPlayer createReport(Player reporter, OfflinePlayer reported, String reason) {
+        try {
+            // Fire event first
+            PlayerReportEvent event = new PlayerReportEvent(reporter, reported, reason);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return null;
+            }
+            return plugin.getReportManager().reportPlayer(reporter, reported, reason);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] createReport failed: " + t.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<ReportedPlayer> getActiveReports() {
+        try {
+            return plugin.getReportManager().getActiveReports();
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getActiveReports failed: " + t.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public List<ReportedPlayer> getReportsFor(OfflinePlayer player) {
+        try {
+            return plugin.getReportManager().getReportsFor(player);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getReportsFor failed: " + t.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public boolean closeReport(UUID reportId, Player staff) {
+        try {
+            ReportedPlayer report = plugin.getReportManager().getReport(reportId);
+            if (report == null) return false;
+            plugin.getReportManager().closeReport(reportId, staff);
+            return true;
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] closeReport failed: " + t.getMessage());
+            return false;
+        }
+    }
+
+    // ========== Infractions ==========
+    @Override
+    public int addInfraction(OfflinePlayer player, Player staff, String type, String reason) {
+        try {
+            // Fire event first
+            InfractionAddEvent event = new InfractionAddEvent(player, staff, type, reason);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return -1;
+            }
+            return plugin.getInfractionManager().addInfraction(
+                    player.getUniqueId(),
+                    staff.getUniqueId(),
+                    type,
+                    reason
+            );
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] addInfraction failed: " + t.getMessage());
+            return -1;
+        }
+    }
+
+    @Override
+    public List<InfractionManager.Infraction> getInfractions(OfflinePlayer player) {
+        try {
+            return plugin.getInfractionManager().getInfractions(player.getUniqueId());
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getInfractions failed: " + t.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public int getInfractionCount(OfflinePlayer player) {
+        try {
+            return plugin.getInfractionManager().getInfractionCount(player.getUniqueId());
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getInfractionCount failed: " + t.getMessage());
+            return 0;
+        }
+    }
+
+    @Override
+    public boolean removeInfraction(int id) {
+        try {
+            return plugin.getInfractionManager().removeInfraction(id);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] removeInfraction failed: " + t.getMessage());
+            return false;
+        }
+    }
+
+    // ========== Notes ==========
+    @Override
+    public int addNote(OfflinePlayer player, Player staff, String note) {
+        try {
+            return plugin.getInfractionManager().addNote(
+                    player.getUniqueId(),
+                    staff.getUniqueId(),
+                    note
+            );
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] addNote failed: " + t.getMessage());
+            return -1;
+        }
+    }
+
+    @Override
+    public List<InfractionManager.Note> getNotes(OfflinePlayer player) {
+        try {
+            return plugin.getInfractionManager().getNotes(player.getUniqueId());
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getNotes failed: " + t.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public boolean removeNote(int id) {
+        try {
+            return plugin.getInfractionManager().removeNote(id);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] removeNote failed: " + t.getMessage());
+            return false;
+        }
+    }
+
+    // ========== Tickets ==========
+    @Override
+    public UUID createTicket(Player creator, String subject, String description, String category, String priority) {
+        try {
+            UUID ticketId = UUID.randomUUID();
+            // Fire event first
+            StaffTicketCreateEvent event = new StaffTicketCreateEvent(ticketId, creator, subject, category, priority);
+            Bukkit.getPluginManager().callEvent(event);
+            if (event.isCancelled()) {
+                return null;
+            }
+            return plugin.getStaffTicketManager().createTicket(creator, subject, description, category, priority);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] createTicket failed: " + t.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public StaffTicket getTicket(UUID ticketId) {
+        try {
+            return plugin.getStaffTicketManager().getTicket(ticketId);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getTicket failed: " + t.getMessage());
+            return null;
+        }
+    }
+
+    @Override
+    public List<StaffTicket> getOpenTickets() {
+        try {
+            return plugin.getStaffTicketManager().getOpenTickets();
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] getOpenTickets failed: " + t.getMessage());
+            return List.of();
+        }
+    }
+
+    @Override
+    public boolean claimTicket(UUID ticketId, Player staff) {
+        try {
+            return plugin.getStaffTicketManager().claimTicket(ticketId, staff);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] claimTicket failed: " + t.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean addTicketComment(UUID ticketId, Player author, String message) {
+        try {
+            return plugin.getStaffTicketManager().addComment(ticketId, author, message);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] addTicketComment failed: " + t.getMessage());
+            return false;
+        }
+    }
+
+    @Override
+    public boolean resolveTicket(UUID ticketId, Player resolver) {
+        try {
+            return plugin.getStaffTicketManager().resolveTicket(ticketId, resolver);
+        } catch (Throwable t) {
+            plugin.getLogger().warning("[API] resolveTicket failed: " + t.getMessage());
+            return false;
+        }
     }
 }

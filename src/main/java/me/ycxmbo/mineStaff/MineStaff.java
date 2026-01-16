@@ -65,7 +65,6 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.channels.ChannelManager channelManager;
     private me.ycxmbo.mineStaff.tickets.StaffTicketManager staffTicketManager;
     private me.ycxmbo.mineStaff.integrations.CoreProtectIntegration coreProtectIntegration;
-    private me.ycxmbo.mineStaff.api.MineStaffAPI api;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -116,7 +115,6 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.tickets.StaffTicketManager getStaffTicketManager() { return staffTicketManager; }
     public me.ycxmbo.mineStaff.gui.StaffTicketsGUI getStaffTicketsGUI() { return staffTicketsGUI; }
     public me.ycxmbo.mineStaff.integrations.CoreProtectIntegration getCoreProtectIntegration() { return coreProtectIntegration; }
-    public me.ycxmbo.mineStaff.api.MineStaffAPI getAPI() { return api; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -218,7 +216,6 @@ public class MineStaff extends JavaPlugin {
         this.channelManager = new me.ycxmbo.mineStaff.channels.ChannelManager(this);
         this.staffTicketManager = new me.ycxmbo.mineStaff.tickets.StaffTicketManager(this);
         this.coreProtectIntegration = new me.ycxmbo.mineStaff.integrations.CoreProtectIntegration(this);
-        this.api = new me.ycxmbo.mineStaff.api.MineStaffAPI(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
