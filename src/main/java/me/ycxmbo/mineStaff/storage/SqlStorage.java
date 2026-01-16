@@ -324,5 +324,57 @@ public class SqlStorage {
     private long safeGetLong(ResultSet rs, int idx, long def) {
         try { return rs.getLong(idx); } catch (SQLException e) { return def; }
     }
+
+    // -------- Migration Support Methods --------
+
+    public java.util.List<InfractionManager.Infraction> getAllInfractions() {
+        java.util.List<InfractionManager.Infraction> out = new java.util.ArrayList<>();
+        String sql = "SELECT id, player, ts, staff, type, reason FROM infractions";
+        try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String id = rs.getString(1);
+                String player = rs.getString(2);
+                long ts = rs.getLong(3);
+                String staff = rs.getString(4);
+                String type = rs.getString(5);
+                String reason = rs.getString(6);
+                out.add(new InfractionManager.Infraction(id, player, ts, staff, type, reason));
+            }
+        } catch (SQLException e) { plugin.getLogger().warning("SQL getAllInfractions: " + e.getMessage()); }
+        return out;
+    }
+
+    public java.util.Map<UUID, java.util.List<PlayerNotesManager.Note>> getAllNotes() {
+        java.util.Map<UUID, java.util.List<PlayerNotesManager.Note>> out = new java.util.HashMap<>();
+        String sql = "SELECT id, player, ts, staff, text FROM notes";
+        try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                UUID player = UUID.fromString(rs.getString(2));
+                long ts = rs.getLong(3);
+                String staff = rs.getString(4);
+                String text = rs.getString(5);
+                out.computeIfAbsent(player, k -> new java.util.ArrayList<>())
+                        .add(new PlayerNotesManager.Note(ts, staff, text));
+            }
+        } catch (SQLException e) { plugin.getLogger().warning("SQL getAllNotes: " + e.getMessage()); }
+        return out;
+    }
+
+    public java.util.Map<UUID, java.util.List<me.ycxmbo.mineStaff.evidence.EvidenceManager.Evidence>> getAllEvidence() {
+        java.util.Map<UUID, java.util.List<me.ycxmbo.mineStaff.evidence.EvidenceManager.Evidence>> out = new java.util.HashMap<>();
+        String sql = "SELECT id, report_id, ts, staff, url FROM evidence";
+        try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                UUID id = UUID.fromString(rs.getString(1));
+                UUID reportId = UUID.fromString(rs.getString(2));
+                long ts = rs.getLong(3);
+                UUID staff = UUID.fromString(rs.getString(4));
+                String url = rs.getString(5);
+                out.computeIfAbsent(reportId, k -> new java.util.ArrayList<>())
+                        .add(new me.ycxmbo.mineStaff.evidence.EvidenceManager.Evidence(id, reportId, ts, staff, url));
+            }
+        } catch (SQLException e) { plugin.getLogger().warning("SQL getAllEvidence: " + e.getMessage()); }
+        return out;
+    }
 }
 

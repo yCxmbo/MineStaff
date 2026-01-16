@@ -119,6 +119,51 @@ commands:
     description: Continuously follow a player (teleport to them)
     usage: /<command> <player>
     permission: staffmode.follow
+  warn:
+    description: Issue and manage player warnings
+    usage: /<command> <player> <reason> [severity] [duration] | list/remove/clear/gui
+    aliases: [warning, warnings]
+    permission: staffmode.warn
+  reporthistory:
+    description: View report history for a player
+    usage: /<command> <player> [filed|against|all|gui]
+    aliases: [rhistory, rh, reportlog]
+    permission: staffmode.reports.history
+  backupdata:
+    description: Manage plugin data backups
+    usage: /<command> [create|list|restore|auto]
+    aliases: [databackup, staffbackup]
+    permission: staffmode.backup.manage
+  channel:
+    description: Use private staff channels for communication
+    usage: /<command> [list|join|toggle|info] [channel]
+    aliases: [ch, staffchannel, schannel]
+    permission: staffmode.channel
+  migrate:
+    description: Migrate data between YAML and SQL storage
+    usage: /<command> <yaml-to-sql|sql-to-yaml>
+    aliases: [datamigrate, migratedata]
+    permission: staffmode.admin
+  ticket:
+    description: Manage staff support tickets
+    usage: /<command> [create|list|view|claim|comment|resolve|close|stats|gui]
+    aliases: [staffticket, tickets]
+    permission: staffmode.tickets
+  co:
+    description: CoreProtect block logging integration
+    usage: /<command> <block|player|nearby|rollback|restore> [args]
+    aliases: [coreprotect, lookup, blocklog]
+    permission: staffmode.coreprotect
+  csteleport:
+    description: Teleport to a player across the network
+    usage: /<command> <player>
+    aliases: [cstp, networkteleport, ntp]
+    permission: staffmode.teleport.crossserver
+  globalstafflist:
+    description: View all staff across the network
+    usage: /<command>
+    aliases: [gsl, networkstaff, nstaff]
+    permission: staffmode.stafflist.global
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -173,3 +218,48 @@ permissions:
   staffmode.follow.bypass:
     description: Cannot be followed by staff
     default: false
+  staffmode.warn:
+    description: Issue and manage player warnings
+    default: op
+  staffmode.reports.history:
+    description: View player report history
+    default: op
+  staffmode.backup.manage:
+    description: Create and manage data backups
+    default: op
+  staffmode.channel:
+    description: Use private staff channels
+    default: op
+  staffmode.channel.admin:
+    description: Access admin channel
+    default: op
+  staffmode.channel.mod:
+    description: Access moderator channel
+    default: op
+  staffmode.channel.staff:
+    description: Access general staff channel
+    default: op
+  staffmode.admin:
+    description: Access all administrative commands
+    default: op
+  staffmode.tickets:
+    description: Use staff ticket system
+    default: op
+  staffmode.tickets.notify:
+    description: Receive notifications for new tickets
+    default: op
+  staffmode.coreprotect:
+    description: Use CoreProtect integration for block lookups
+    default: op
+  staffmode.coreprotect.rollback:
+    description: Perform rollbacks and restores with CoreProtect
+    default: op
+  staffmode.teleport.crossserver:
+    description: Teleport to players on other servers in the network
+    default: op
+  staffmode.stafflist.global:
+    description: View network-wide staff list
+    default: op
+  staffmode.network.reports:
+    description: View and manage network-wide reports
+    default: op

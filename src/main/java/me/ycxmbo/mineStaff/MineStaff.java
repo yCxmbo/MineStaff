@@ -59,12 +59,26 @@ public class MineStaff extends JavaPlugin {
     private PlayerNotesManager playerNotesManager;
     private OfflineInventoryManager offlineInventoryManager;
     private me.ycxmbo.mineStaff.managers.FollowManager followManager;
+    private me.ycxmbo.mineStaff.util.SoundManager soundManager;
+    private me.ycxmbo.mineStaff.warnings.WarningManager warningManager;
+    private me.ycxmbo.mineStaff.backup.BackupManager backupManager;
+    private me.ycxmbo.mineStaff.channels.ChannelManager channelManager;
+    private me.ycxmbo.mineStaff.tickets.StaffTicketManager staffTicketManager;
+    private me.ycxmbo.mineStaff.integrations.CoreProtectIntegration coreProtectIntegration;
+
+    // Cross-server features
+    private me.ycxmbo.mineStaff.crossserver.CrossServerTeleport crossServerTeleport;
+    private me.ycxmbo.mineStaff.crossserver.GlobalStaffList globalStaffList;
+    private me.ycxmbo.mineStaff.crossserver.NetworkReportSync networkReportSync;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
     private StaffChatCommand staffChatCommand;
     private StaffListGUICommand staffListGUICommand;
     private StaffListCommand staffListCommand;
+    private me.ycxmbo.mineStaff.warnings.WarningsGUI warningsGUI;
+    private me.ycxmbo.mineStaff.gui.ReportHistoryGUI reportHistoryGUI;
+    private me.ycxmbo.mineStaff.gui.StaffTicketsGUI staffTicketsGUI;
 
     // Listeners that may need to be dynamically registered/unregistered
     private LoginGuardListener loginGuardListener;
@@ -97,6 +111,18 @@ public class MineStaff extends JavaPlugin {
     public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
     public OfflineInventoryManager getOfflineInventoryManager() { return offlineInventoryManager; }
     public me.ycxmbo.mineStaff.managers.FollowManager getFollowManager() { return followManager; }
+    public me.ycxmbo.mineStaff.util.SoundManager getSoundManager() { return soundManager; }
+    public me.ycxmbo.mineStaff.warnings.WarningManager getWarningManager() { return warningManager; }
+    public me.ycxmbo.mineStaff.warnings.WarningsGUI getWarningsGUI() { return warningsGUI; }
+    public me.ycxmbo.mineStaff.gui.ReportHistoryGUI getReportHistoryGUI() { return reportHistoryGUI; }
+    public me.ycxmbo.mineStaff.backup.BackupManager getBackupManager() { return backupManager; }
+    public me.ycxmbo.mineStaff.channels.ChannelManager getChannelManager() { return channelManager; }
+    public me.ycxmbo.mineStaff.tickets.StaffTicketManager getStaffTicketManager() { return staffTicketManager; }
+    public me.ycxmbo.mineStaff.gui.StaffTicketsGUI getStaffTicketsGUI() { return staffTicketsGUI; }
+    public me.ycxmbo.mineStaff.integrations.CoreProtectIntegration getCoreProtectIntegration() { return coreProtectIntegration; }
+    public me.ycxmbo.mineStaff.crossserver.CrossServerTeleport getCrossServerTeleport() { return crossServerTeleport; }
+    public me.ycxmbo.mineStaff.crossserver.GlobalStaffList getGlobalStaffList() { return globalStaffList; }
+    public me.ycxmbo.mineStaff.crossserver.NetworkReportSync getNetworkReportSync() { return networkReportSync; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -192,9 +218,25 @@ public class MineStaff extends JavaPlugin {
         this.playerNotesManager = new PlayerNotesManager(this);
         this.offlineInventoryManager = new OfflineInventoryManager(this);
         this.followManager = new me.ycxmbo.mineStaff.managers.FollowManager(this);
+        this.soundManager = new me.ycxmbo.mineStaff.util.SoundManager(this, getConfig());
+        this.warningManager = new me.ycxmbo.mineStaff.warnings.WarningManager(this);
+        this.backupManager = new me.ycxmbo.mineStaff.backup.BackupManager(this);
+        this.channelManager = new me.ycxmbo.mineStaff.channels.ChannelManager(this);
+        this.staffTicketManager = new me.ycxmbo.mineStaff.tickets.StaffTicketManager(this);
+        this.coreProtectIntegration = new me.ycxmbo.mineStaff.integrations.CoreProtectIntegration(this);
+
+        // Cross-server features (only if Redis enabled)
+        if (getConfig().getBoolean("redis.enabled", false)) {
+            this.crossServerTeleport = new me.ycxmbo.mineStaff.crossserver.CrossServerTeleport(this);
+            this.globalStaffList = new me.ycxmbo.mineStaff.crossserver.GlobalStaffList(this);
+            this.networkReportSync = new me.ycxmbo.mineStaff.crossserver.NetworkReportSync(this);
+        }
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
+        this.warningsGUI = new me.ycxmbo.mineStaff.warnings.WarningsGUI(this);
+        this.reportHistoryGUI = new me.ycxmbo.mineStaff.gui.ReportHistoryGUI(this);
+        this.staffTicketsGUI = new me.ycxmbo.mineStaff.gui.StaffTicketsGUI(this);
 
         boolean staffLoginEnabled = configManager.isStaffLoginEnabled();
         boolean loginRequired = configManager.isLoginRequired();
@@ -266,6 +308,36 @@ public class MineStaff extends JavaPlugin {
             getCommand("follow").setExecutor(new me.ycxmbo.mineStaff.commands.FollowCommand(this));
             getCommand("follow").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.FollowTabCompleter());
         }
+        if (getCommand("warn") != null) {
+            getCommand("warn").setExecutor(new me.ycxmbo.mineStaff.commands.WarnCommand(this));
+            getCommand("warn").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.WarnTabCompleter());
+        }
+        if (getCommand("reporthistory") != null) {
+            getCommand("reporthistory").setExecutor(new me.ycxmbo.mineStaff.commands.ReportHistoryCommand(this));
+            getCommand("reporthistory").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.ReportHistoryTabCompleter());
+        }
+        if (getCommand("backupdata") != null) {
+            getCommand("backupdata").setExecutor(new me.ycxmbo.mineStaff.commands.BackupCommand(this));
+        }
+        if (getCommand("channel") != null) {
+            getCommand("channel").setExecutor(new me.ycxmbo.mineStaff.commands.ChannelCommand(this));
+            getCommand("channel").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.ChannelTabCompleter(this));
+        }
+        if (getCommand("migrate") != null) {
+            getCommand("migrate").setExecutor(new me.ycxmbo.mineStaff.commands.MigrateCommand(this));
+        }
+        if (getCommand("ticket") != null) {
+            getCommand("ticket").setExecutor(new me.ycxmbo.mineStaff.commands.StaffTicketCommand(this));
+        }
+        if (getCommand("co") != null) {
+            getCommand("co").setExecutor(new me.ycxmbo.mineStaff.commands.CoreProtectLookupCommand(this));
+        }
+        if (getCommand("csteleport") != null) {
+            getCommand("csteleport").setExecutor(new me.ycxmbo.mineStaff.commands.CrossServerTeleportCommand(this));
+        }
+        if (getCommand("globalstafflist") != null) {
+            getCommand("globalstafflist").setExecutor(new me.ycxmbo.mineStaff.commands.GlobalStaffListCommand(this));
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);
@@ -286,6 +358,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ReportsGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InspectorGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ReportHistoryGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffChatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffAlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new VanishEffectListener(this), this);
@@ -302,6 +375,8 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(offlineInventoryManager, this);
         Bukkit.getPluginManager().registerEvents(new ActivityListener(this), this);
         Bukkit.getPluginManager().registerEvents(new LuckPermsContextListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ChannelChatListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.StaffTicketsGUIListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("LiteBans") != null) {
             Bukkit.getPluginManager().registerEvents(new LiteBansBridgeListener(this), this);
@@ -341,6 +416,9 @@ public class MineStaff extends JavaPlugin {
 
         try { reportManager.ensureClaimMonitor(); } catch (Throwable ignored) {}
 
+        // Start automatic backups
+        backupManager.startAutomaticBackups();
+
         getLogger().info("MineStaff enabled.");
     }
 
@@ -355,6 +433,7 @@ public class MineStaff extends JavaPlugin {
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
         try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
         try { if (followManager != null) followManager.stopAll(); } catch (Throwable ignored) {}
+        try { if (backupManager != null) backupManager.stopAutomaticBackups(); } catch (Throwable ignored) {}
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");
