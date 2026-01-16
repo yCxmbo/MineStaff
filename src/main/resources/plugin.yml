@@ -119,6 +119,11 @@ commands:
     description: Continuously follow a player (teleport to them)
     usage: /<command> <player>
     permission: staffmode.follow
+  warn:
+    description: Issue and manage player warnings
+    usage: /<command> <player> <reason> [severity] [duration] | list/remove/clear/gui
+    aliases: [warning, warnings]
+    permission: staffmode.warn
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -173,3 +178,6 @@ permissions:
   staffmode.follow.bypass:
     description: Cannot be followed by staff
     default: false
+  staffmode.warn:
+    description: Issue and manage player warnings
+    default: op

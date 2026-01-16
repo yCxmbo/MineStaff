@@ -59,12 +59,15 @@ public class MineStaff extends JavaPlugin {
     private PlayerNotesManager playerNotesManager;
     private OfflineInventoryManager offlineInventoryManager;
     private me.ycxmbo.mineStaff.managers.FollowManager followManager;
+    private me.ycxmbo.mineStaff.util.SoundManager soundManager;
+    private me.ycxmbo.mineStaff.warnings.WarningManager warningManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
     private StaffChatCommand staffChatCommand;
     private StaffListGUICommand staffListGUICommand;
     private StaffListCommand staffListCommand;
+    private me.ycxmbo.mineStaff.warnings.WarningsGUI warningsGUI;
 
     // Listeners that may need to be dynamically registered/unregistered
     private LoginGuardListener loginGuardListener;
@@ -97,6 +100,9 @@ public class MineStaff extends JavaPlugin {
     public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
     public OfflineInventoryManager getOfflineInventoryManager() { return offlineInventoryManager; }
     public me.ycxmbo.mineStaff.managers.FollowManager getFollowManager() { return followManager; }
+    public me.ycxmbo.mineStaff.util.SoundManager getSoundManager() { return soundManager; }
+    public me.ycxmbo.mineStaff.warnings.WarningManager getWarningManager() { return warningManager; }
+    public me.ycxmbo.mineStaff.warnings.WarningsGUI getWarningsGUI() { return warningsGUI; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -192,9 +198,12 @@ public class MineStaff extends JavaPlugin {
         this.playerNotesManager = new PlayerNotesManager(this);
         this.offlineInventoryManager = new OfflineInventoryManager(this);
         this.followManager = new me.ycxmbo.mineStaff.managers.FollowManager(this);
+        this.soundManager = new me.ycxmbo.mineStaff.util.SoundManager(this, getConfig());
+        this.warningManager = new me.ycxmbo.mineStaff.warnings.WarningManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
+        this.warningsGUI = new me.ycxmbo.mineStaff.warnings.WarningsGUI(this);
 
         boolean staffLoginEnabled = configManager.isStaffLoginEnabled();
         boolean loginRequired = configManager.isLoginRequired();
@@ -265,6 +274,10 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("follow") != null) {
             getCommand("follow").setExecutor(new me.ycxmbo.mineStaff.commands.FollowCommand(this));
             getCommand("follow").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.FollowTabCompleter());
+        }
+        if (getCommand("warn") != null) {
+            getCommand("warn").setExecutor(new me.ycxmbo.mineStaff.commands.WarnCommand(this));
+            getCommand("warn").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.WarnTabCompleter());
         }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
