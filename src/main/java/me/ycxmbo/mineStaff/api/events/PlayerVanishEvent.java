@@ -6,21 +6,21 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
 /**
- * Called when a player toggles staff mode
+ * Called when a player's vanish state changes
  */
-public class StaffModeToggleEvent extends Event implements Cancellable {
+public class PlayerVanishEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
     private final Player player;
-    private final boolean entering;
+    private final boolean vanishing;
     private boolean cancelled = false;
 
-    public StaffModeToggleEvent(Player player, boolean entering) {
+    public PlayerVanishEvent(Player player, boolean vanishing) {
         this.player = player;
-        this.entering = entering;
+        this.vanishing = vanishing;
     }
 
     /**
-     * Gets the player toggling staff mode
+     * Gets the player whose vanish state is changing
      *
      * @return The player
      */
@@ -29,21 +29,21 @@ public class StaffModeToggleEvent extends Event implements Cancellable {
     }
 
     /**
-     * Checks if the player is entering staff mode
+     * Checks if the player is vanishing
      *
-     * @return true if entering, false if leaving
+     * @return true if vanishing, false if unvanishing
      */
-    public boolean isEntering() {
-        return entering;
+    public boolean isVanishing() {
+        return vanishing;
     }
 
     /**
-     * Checks if the player is leaving staff mode
+     * Checks if the player is unvanishing
      *
-     * @return true if leaving, false if entering
+     * @return true if unvanishing, false if vanishing
      */
-    public boolean isLeaving() {
-        return !entering;
+    public boolean isUnvanishing() {
+        return !vanishing;
     }
 
     @Override
