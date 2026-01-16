@@ -124,6 +124,16 @@ commands:
     usage: /<command> <player> <reason> [severity] [duration] | list/remove/clear/gui
     aliases: [warning, warnings]
     permission: staffmode.warn
+  reporthistory:
+    description: View report history for a player
+    usage: /<command> <player> [filed|against|all|gui]
+    aliases: [rhistory, rh, reportlog]
+    permission: staffmode.reports.history
+  backupdata:
+    description: Manage plugin data backups
+    usage: /<command> [create|list|restore|auto]
+    aliases: [databackup, staffbackup]
+    permission: staffmode.backup.manage
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -180,4 +190,10 @@ permissions:
     default: false
   staffmode.warn:
     description: Issue and manage player warnings
+    default: op
+  staffmode.reports.history:
+    description: View player report history
+    default: op
+  staffmode.backup.manage:
+    description: Create and manage data backups
     default: op

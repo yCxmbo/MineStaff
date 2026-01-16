@@ -282,3 +282,14 @@ warnings:
   default_duration_days: 30
   # Show warnings in player profile GUI
   show_in_profile: true
+
+# Automated backup system
+backup:
+  # Enable automatic backups
+  enabled: true
+  # Backup interval in hours
+  interval_hours: 24
+  # Maximum number of backups to keep
+  max_backups: 7
+  # Maximum age of backups in days (older backups are deleted)
+  max_age_days: 30

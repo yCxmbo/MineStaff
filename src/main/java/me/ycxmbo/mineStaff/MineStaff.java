@@ -61,6 +61,7 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.managers.FollowManager followManager;
     private me.ycxmbo.mineStaff.util.SoundManager soundManager;
     private me.ycxmbo.mineStaff.warnings.WarningManager warningManager;
+    private me.ycxmbo.mineStaff.backup.BackupManager backupManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -68,6 +69,7 @@ public class MineStaff extends JavaPlugin {
     private StaffListGUICommand staffListGUICommand;
     private StaffListCommand staffListCommand;
     private me.ycxmbo.mineStaff.warnings.WarningsGUI warningsGUI;
+    private me.ycxmbo.mineStaff.gui.ReportHistoryGUI reportHistoryGUI;
 
     // Listeners that may need to be dynamically registered/unregistered
     private LoginGuardListener loginGuardListener;
@@ -103,6 +105,8 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.util.SoundManager getSoundManager() { return soundManager; }
     public me.ycxmbo.mineStaff.warnings.WarningManager getWarningManager() { return warningManager; }
     public me.ycxmbo.mineStaff.warnings.WarningsGUI getWarningsGUI() { return warningsGUI; }
+    public me.ycxmbo.mineStaff.gui.ReportHistoryGUI getReportHistoryGUI() { return reportHistoryGUI; }
+    public me.ycxmbo.mineStaff.backup.BackupManager getBackupManager() { return backupManager; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -200,10 +204,12 @@ public class MineStaff extends JavaPlugin {
         this.followManager = new me.ycxmbo.mineStaff.managers.FollowManager(this);
         this.soundManager = new me.ycxmbo.mineStaff.util.SoundManager(this, getConfig());
         this.warningManager = new me.ycxmbo.mineStaff.warnings.WarningManager(this);
+        this.backupManager = new me.ycxmbo.mineStaff.backup.BackupManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
         this.warningsGUI = new me.ycxmbo.mineStaff.warnings.WarningsGUI(this);
+        this.reportHistoryGUI = new me.ycxmbo.mineStaff.gui.ReportHistoryGUI(this);
 
         boolean staffLoginEnabled = configManager.isStaffLoginEnabled();
         boolean loginRequired = configManager.isLoginRequired();
@@ -279,6 +285,13 @@ public class MineStaff extends JavaPlugin {
             getCommand("warn").setExecutor(new me.ycxmbo.mineStaff.commands.WarnCommand(this));
             getCommand("warn").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.WarnTabCompleter());
         }
+        if (getCommand("reporthistory") != null) {
+            getCommand("reporthistory").setExecutor(new me.ycxmbo.mineStaff.commands.ReportHistoryCommand(this));
+            getCommand("reporthistory").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.ReportHistoryTabCompleter());
+        }
+        if (getCommand("backupdata") != null) {
+            getCommand("backupdata").setExecutor(new me.ycxmbo.mineStaff.commands.BackupCommand(this));
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);
@@ -299,6 +312,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ReportsGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new RollbackGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new InspectorGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ReportHistoryGUIListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffChatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new StaffAlertListener(this), this);
         Bukkit.getPluginManager().registerEvents(new VanishEffectListener(this), this);
@@ -354,6 +368,9 @@ public class MineStaff extends JavaPlugin {
 
         try { reportManager.ensureClaimMonitor(); } catch (Throwable ignored) {}
 
+        // Start automatic backups
+        backupManager.startAutomaticBackups();
+
         getLogger().info("MineStaff enabled.");
     }
 
@@ -368,6 +385,7 @@ public class MineStaff extends JavaPlugin {
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
         try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
         try { if (followManager != null) followManager.stopAll(); } catch (Throwable ignored) {}
+        try { if (backupManager != null) backupManager.stopAutomaticBackups(); } catch (Throwable ignored) {}
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");
