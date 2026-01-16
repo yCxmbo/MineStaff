@@ -299,6 +299,9 @@ public class MineStaff extends JavaPlugin {
             getCommand("channel").setExecutor(new me.ycxmbo.mineStaff.commands.ChannelCommand(this));
             getCommand("channel").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.ChannelTabCompleter(this));
         }
+        if (getCommand("migrate") != null) {
+            getCommand("migrate").setExecutor(new me.ycxmbo.mineStaff.commands.MigrateCommand(this));
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);

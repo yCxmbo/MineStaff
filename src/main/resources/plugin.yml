@@ -139,6 +139,11 @@ commands:
     usage: /<command> [list|join|toggle|info] [channel]
     aliases: [ch, staffchannel, schannel]
     permission: staffmode.channel
+  migrate:
+    description: Migrate data between YAML and SQL storage
+    usage: /<command> <yaml-to-sql|sql-to-yaml>
+    aliases: [datamigrate, migratedata]
+    permission: staffmode.admin
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -213,4 +218,7 @@ permissions:
     default: op
   staffmode.channel.staff:
     description: Access general staff channel
+    default: op
+  staffmode.admin:
+    description: Access all administrative commands
     default: op
