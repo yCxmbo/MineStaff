@@ -1,0 +1,154 @@
+# ======================================
+# MineStaff Configuration - Small Server
+# ======================================
+# Optimized for servers with < 50 players
+# Features: Simple YAML storage, basic staff tools, minimal overhead
+# ======================================
+
+messages:
+  prefix: "&8[&aMineStaff&8]&r "
+  no_permission: "&cYou don't have permission."
+  only_players: "&cOnly players can use this."
+  staffmode_enabled: "&aStaff Mode enabled."
+  staffmode_disabled: "&cStaff Mode disabled."
+  login_required: "&eYou must /stafflogin before using staff tools."
+  login_success: "&aLogin successful."
+  login_failure: "&cIncorrect password."
+  login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
+  password_set: "&aPassword set."
+  staff_login_disabled: "&cStaff login is disabled."
+  vanish_on: "&dVanish enabled."
+  vanish_off: "&dVanish disabled."
+  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
+  teleport_blocked: "&cBlocked destination."
+  teleport_no_spot: "&cNo safe spot in sight."
+  cps_started: "&aStarted {seconds}s CPS test on {target}."
+  cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
+  cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
+  cps_already_running: "&cA CPS test is already running for {target}."
+
+options:
+  # Staff login can be disabled for small servers with trusted staff
+  staff_login_enabled: false
+  require_login: false
+  staffmode_gamemode: CREATIVE
+  locale: en
+  staffchat_prefix: "@"
+  # Shorter ranges for smaller worlds
+  teleport_max_range: 50
+  teleport_max_range_sneak: 100
+  teleport_cooldown_ms: 1000
+
+alerts:
+  use_minimessage: true
+  template: "<gradient:#19E68C:#13B5FF>[StaffAlert]</gradient> <gray>{content}</gray>"
+  hover_template: "<green>Click to teleport to <yellow>{target}</yellow>"
+  click_tp: true
+  sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+  # For small servers, you may want to only alert on joins
+  notify_on_join: true
+  notify_on_quit: false
+  join_template: "{player} joined at {world} ({x}, {y}, {z})."
+  quit_template: "{player} left from {world} ({x}, {y}, {z})."
+  join_include_tp: true
+  quit_include_tp: false
+  # No cross-server for single servers
+  cross_server: false
+
+tools:
+  slots:
+    teleport: 0
+    freeze: 1
+    inspect: 2
+    vanish: 8
+    cps: 3
+    randomtp: 4
+
+teleport-to-spawn-on-exit: true
+
+reports:
+  notify-staff-permission: "staffmode.alerts"
+  notify_staff_message: "New report filed by {reporter} against {target}: {reason}"
+  cross_server: false
+
+infractions:
+  types: ["WARN","MUTE","KICK","BAN"]
+
+rollback:
+  # Fewer snapshots for small servers to save disk space
+  max-snapshots-per-player: 15
+
+silent-chest:
+  require-sneak: true
+
+staffchat:
+  cross_server: false
+  console_log: true
+  format_legacy: "&8[&dStaff&8] &b{name}&7: &f{message}"
+  mention_sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+
+cps:
+  duration_seconds: 10
+  cooldown_ms: 2000
+
+randomtp:
+  active_seconds: 60
+  cooldown_ms: 2000
+
+audit:
+  enabled: true
+  file_prefix: "actions-"
+
+storage:
+  # YAML is perfect for small servers - simple and no database setup needed
+  mode: yaml
+  sqlite:
+    file: minestaff.db
+  mysql:
+    host: localhost
+    port: 3306
+    database: minestaff
+    username: root
+    password: ""
+    useSSL: false
+    params: "useUnicode=true&characterEncoding=utf8"
+
+# Redis not needed for single small servers
+redis:
+  enabled: false
+  host: localhost
+  port: 6379
+  password: ""
+  ssl: false
+  channels:
+    staffchat: "minestaff:sc"
+    reports: "minestaff:reports"
+    alerts: "minestaff:alerts"
+
+# Discord webhooks are optional but recommended
+discord:
+  enabled: false
+  alerts_webhook: ""
+  staffchat_webhook: ""
+
+history:
+  # Keep history shorter for small servers
+  days: 3
+
+luckperms:
+  staffmode_temp_perms: []
+  duty_temp_perms: []
+
+security:
+  # 2FA not necessary for small trusted teams
+  2fa:
+    enabled: false
+  # Shorter session timeout
+  session_timeout_minutes: 30
+  bind_ip: true
+
+freeze:
+  visual_cage:
+    enabled: true
+    particle: "SNOWFLAKE"
+    radius: 0.7

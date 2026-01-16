@@ -2,6 +2,7 @@ package me.ycxmbo.mineStaff;
 
 import me.ycxmbo.mineStaff.api.internal.MineStaffApiProvider;
 import me.ycxmbo.mineStaff.commands.*;
+import me.ycxmbo.mineStaff.tabcompleters.*;
 import me.ycxmbo.mineStaff.listeners.*;
 import me.ycxmbo.mineStaff.listeners.StaffAlertListener;
 import me.ycxmbo.mineStaff.managers.*;
@@ -57,6 +58,7 @@ public class MineStaff extends JavaPlugin {
     private FreezeService freezeService;
     private PlayerNotesManager playerNotesManager;
     private OfflineInventoryManager offlineInventoryManager;
+    private me.ycxmbo.mineStaff.managers.FollowManager followManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -94,6 +96,7 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.evidence.EvidenceManager getEvidenceManager() { return evidenceManager; }
     public PlayerNotesManager getPlayerNotesManager() { return playerNotesManager; }
     public OfflineInventoryManager getOfflineInventoryManager() { return offlineInventoryManager; }
+    public me.ycxmbo.mineStaff.managers.FollowManager getFollowManager() { return followManager; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -152,6 +155,11 @@ public class MineStaff extends JavaPlugin {
 
         // Instantiate managers
         this.configManager     = new ConfigManager(this);
+
+        // Validate configuration
+        me.ycxmbo.mineStaff.util.ConfigValidator validator = new me.ycxmbo.mineStaff.util.ConfigValidator(this, getConfig());
+        validator.validate();
+
         this.staffDataManager  = new StaffDataManager(this);
         this.staffLoginManager = new StaffLoginManager(this);
         this.toolManager       = new ToolManager(this);
@@ -183,6 +191,7 @@ public class MineStaff extends JavaPlugin {
 
         this.playerNotesManager = new PlayerNotesManager(this);
         this.offlineInventoryManager = new OfflineInventoryManager(this);
+        this.followManager = new me.ycxmbo.mineStaff.managers.FollowManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
@@ -202,15 +211,27 @@ public class MineStaff extends JavaPlugin {
                 });
             }
         }
-        if (getCommand("report") != null) getCommand("report").setExecutor(new ReportCommand(this));
+        if (getCommand("report") != null) {
+            getCommand("report").setExecutor(new ReportCommand(this));
+            getCommand("report").setTabCompleter(new ReportTabCompleter());
+        }
         if (getCommand("infractions") != null) {
             getCommand("infractions").setExecutor(new InfractionsCommand(this));
             getCommand("infractions").setTabCompleter(new InfractionsTabCompleter());
         }
         if (getCommand("rollback") != null) getCommand("rollback").setExecutor(new RollbackCommand(this));
-        if (getCommand("cpscheck") != null) getCommand("cpscheck").setExecutor(new CPSCheckCommand(this));
-        if (getCommand("inspect") != null) getCommand("inspect").setExecutor(new InspectCommand(this));
-        if (getCommand("freeze") != null) getCommand("freeze").setExecutor(new FreezeCommand(this));
+        if (getCommand("cpscheck") != null) {
+            getCommand("cpscheck").setExecutor(new CPSCheckCommand(this));
+            getCommand("cpscheck").setTabCompleter(new CPSCheckTabCompleter());
+        }
+        if (getCommand("inspect") != null) {
+            getCommand("inspect").setExecutor(new InspectCommand(this));
+            getCommand("inspect").setTabCompleter(new InspectTabCompleter());
+        }
+        if (getCommand("freeze") != null) {
+            getCommand("freeze").setExecutor(new FreezeCommand(this));
+            getCommand("freeze").setTabCompleter(new FreezeTabCompleter());
+        }
         if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
         if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
         StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this.staffDutyManager);
@@ -218,11 +239,33 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("duty") != null) getCommand("duty").setExecutor(staffDutyCommand);
         if (getCommand("commandspy") != null) getCommand("commandspy").setExecutor(new me.ycxmbo.mineStaff.commands.CommandSpyCommand(this));
         if (getCommand("socialspy") != null) getCommand("socialspy").setExecutor(new me.ycxmbo.mineStaff.commands.SocialSpyCommand(this));
-        if (getCommand("notes") != null) getCommand("notes").setExecutor(new me.ycxmbo.mineStaff.commands.NotesCommand(this));
+        if (getCommand("notes") != null) {
+            getCommand("notes").setExecutor(new me.ycxmbo.mineStaff.commands.NotesCommand(this));
+            getCommand("notes").setTabCompleter(new NotesTabCompleter());
+        }
         if (getCommand("profile") != null) getCommand("profile").setExecutor(new me.ycxmbo.mineStaff.commands.ProfileCommand(this));
-        if (getCommand("inspectoffline") != null) getCommand("inspectoffline").setExecutor(new me.ycxmbo.mineStaff.commands.InspectOfflineCommand(offlineInventoryManager));
-        if (getCommand("staff2fa") != null) getCommand("staff2fa").setExecutor(new me.ycxmbo.mineStaff.commands.Staff2FACommand(this));
-        if (getCommand("evidence") != null) getCommand("evidence").setExecutor(new me.ycxmbo.mineStaff.commands.EvidenceCommand(this));
+        if (getCommand("inspectoffline") != null) {
+            getCommand("inspectoffline").setExecutor(new me.ycxmbo.mineStaff.commands.InspectOfflineCommand(offlineInventoryManager));
+            getCommand("inspectoffline").setTabCompleter(new InspectOfflineTabCompleter());
+        }
+        if (getCommand("staff2fa") != null) {
+            getCommand("staff2fa").setExecutor(new me.ycxmbo.mineStaff.commands.Staff2FACommand(this));
+            getCommand("staff2fa").setTabCompleter(new Staff2FATabCompleter());
+        }
+        if (getCommand("evidence") != null) {
+            getCommand("evidence").setExecutor(new me.ycxmbo.mineStaff.commands.EvidenceCommand(this));
+            getCommand("evidence").setTabCompleter(new EvidenceTabCompleter());
+        }
+        if (getCommand("backup") != null) {
+            getCommand("backup").setExecutor(new me.ycxmbo.mineStaff.commands.RequestBackupCommand(this));
+        }
+        if (getCommand("staffhelp") != null) {
+            getCommand("staffhelp").setExecutor(new me.ycxmbo.mineStaff.commands.StaffHelpCommand(this));
+        }
+        if (getCommand("follow") != null) {
+            getCommand("follow").setExecutor(new me.ycxmbo.mineStaff.commands.FollowCommand(this));
+            getCommand("follow").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.FollowTabCompleter());
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);
@@ -232,10 +275,6 @@ public class MineStaff extends JavaPlugin {
         this.staffChatCommand = new StaffChatCommand(this);
         if (getCommand("staffchat") != null) getCommand("staffchat").setExecutor(staffChatCommand);
         if (getCommand("sc") != null) getCommand("sc").setExecutor(staffChatCommand);
-        if (getCommand("inspect") != null) getCommand("inspect").setExecutor(new InspectCommand(this));
-        if (getCommand("freeze") != null) getCommand("freeze").setExecutor(new FreezeCommand(this));
-        if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
-        if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
 
         // Listeners
         Bukkit.getPluginManager().registerEvents(new ToolListener(this), this);
@@ -315,6 +354,7 @@ public class MineStaff extends JavaPlugin {
         try { if (proxyMessenger != null) proxyMessenger.close(); } catch (Throwable ignored) {}
         try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
         try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
+        try { if (followManager != null) followManager.stopAll(); } catch (Throwable ignored) {}
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");

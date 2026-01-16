@@ -1,4 +1,4 @@
-package me.ycxmbo.mineStaff.commands;
+package me.ycxmbo.mineStaff.tabcompleters;
 
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
