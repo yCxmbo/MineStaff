@@ -64,6 +64,7 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.backup.BackupManager backupManager;
     private me.ycxmbo.mineStaff.channels.ChannelManager channelManager;
     private me.ycxmbo.mineStaff.tickets.StaffTicketManager staffTicketManager;
+    private me.ycxmbo.mineStaff.integrations.CoreProtectIntegration coreProtectIntegration;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -113,6 +114,7 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.channels.ChannelManager getChannelManager() { return channelManager; }
     public me.ycxmbo.mineStaff.tickets.StaffTicketManager getStaffTicketManager() { return staffTicketManager; }
     public me.ycxmbo.mineStaff.gui.StaffTicketsGUI getStaffTicketsGUI() { return staffTicketsGUI; }
+    public me.ycxmbo.mineStaff.integrations.CoreProtectIntegration getCoreProtectIntegration() { return coreProtectIntegration; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -213,6 +215,7 @@ public class MineStaff extends JavaPlugin {
         this.backupManager = new me.ycxmbo.mineStaff.backup.BackupManager(this);
         this.channelManager = new me.ycxmbo.mineStaff.channels.ChannelManager(this);
         this.staffTicketManager = new me.ycxmbo.mineStaff.tickets.StaffTicketManager(this);
+        this.coreProtectIntegration = new me.ycxmbo.mineStaff.integrations.CoreProtectIntegration(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
@@ -310,6 +313,9 @@ public class MineStaff extends JavaPlugin {
         }
         if (getCommand("ticket") != null) {
             getCommand("ticket").setExecutor(new me.ycxmbo.mineStaff.commands.StaffTicketCommand(this));
+        }
+        if (getCommand("co") != null) {
+            getCommand("co").setExecutor(new me.ycxmbo.mineStaff.commands.CoreProtectLookupCommand(this));
         }
 
         this.staffListGUICommand = new StaffListGUICommand(this);

@@ -149,6 +149,11 @@ commands:
     usage: /<command> [create|list|view|claim|comment|resolve|close|stats|gui]
     aliases: [staffticket, tickets]
     permission: staffmode.tickets
+  co:
+    description: CoreProtect block logging integration
+    usage: /<command> <block|player|nearby|rollback|restore> [args]
+    aliases: [coreprotect, lookup, blocklog]
+    permission: staffmode.coreprotect
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -232,4 +237,10 @@ permissions:
     default: op
   staffmode.tickets.notify:
     description: Receive notifications for new tickets
+    default: op
+  staffmode.coreprotect:
+    description: Use CoreProtect integration for block lookups
+    default: op
+  staffmode.coreprotect.rollback:
+    description: Perform rollbacks and restores with CoreProtect
     default: op
