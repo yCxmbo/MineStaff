@@ -134,6 +134,11 @@ commands:
     usage: /<command> [create|list|restore|auto]
     aliases: [databackup, staffbackup]
     permission: staffmode.backup.manage
+  channel:
+    description: Use private staff channels for communication
+    usage: /<command> [list|join|toggle|info] [channel]
+    aliases: [ch, staffchannel, schannel]
+    permission: staffmode.channel
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -196,4 +201,16 @@ permissions:
     default: op
   staffmode.backup.manage:
     description: Create and manage data backups
+    default: op
+  staffmode.channel:
+    description: Use private staff channels
+    default: op
+  staffmode.channel.admin:
+    description: Access admin channel
+    default: op
+  staffmode.channel.mod:
+    description: Access moderator channel
+    default: op
+  staffmode.channel.staff:
+    description: Access general staff channel
     default: op

@@ -112,6 +112,7 @@ redis:
     staffchat: "minestaff:sc"
     reports: "minestaff:reports"
     alerts: "minestaff:alerts"
+    staffchannels: "minestaff:channels"
 
 discord:
   enabled: false
@@ -293,3 +294,28 @@ backup:
   max_backups: 7
   # Maximum age of backups in days (older backups are deleted)
   max_age_days: 30
+
+# Private staff channels configuration
+channels:
+  # Enable private staff channels system
+  enabled: true
+  # Default channels (can add custom channels here)
+  default_channels:
+    admin:
+      name: "Admin"
+      display_name: "&4[Admin]"
+      format: "&4[Admin] &b{name}&7: &f{message}"
+      permission: "staffmode.channel.admin"
+      cross_server: true
+    mod:
+      name: "Moderator"
+      display_name: "&6[Mod]"
+      format: "&6[Mod] &b{name}&7: &f{message}"
+      permission: "staffmode.channel.mod"
+      cross_server: true
+    staff:
+      name: "Staff"
+      display_name: "&a[Staff]"
+      format: "&a[Staff] &b{name}&7: &f{message}"
+      permission: "staffmode.channel.staff"
+      cross_server: true

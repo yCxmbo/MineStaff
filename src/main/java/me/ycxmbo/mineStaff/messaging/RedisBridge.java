@@ -18,6 +18,7 @@ public class RedisBridge {
     private String chStaff;
     private String chReports;
     private String chAlerts;
+    private String chChannels;
 
     public RedisBridge(MineStaff plugin) { this.plugin = plugin; }
 
@@ -31,6 +32,7 @@ public class RedisBridge {
         chStaff = cfg.getString("redis.channels.staffchat", "minestaff:sc");
         chReports = cfg.getString("redis.channels.reports", "minestaff:reports");
         chAlerts = cfg.getString("redis.channels.alerts", "minestaff:alerts");
+        chChannels = cfg.getString("redis.channels.staffchannels", "minestaff:channels");
         JedisPoolConfig pc = new JedisPoolConfig();
         pc.setMaxTotal(8);
         if (pass != null && !pass.isEmpty()) pool = new JedisPool(pc, host, port, 2000, pass, ssl);
@@ -50,7 +52,7 @@ public class RedisBridge {
                     @Override public void onMessage(String channel, String message) {
                         try { handle(channel, message); } catch (Throwable ignored) {}
                     }
-                }, chStaff, chReports, chAlerts);
+                }, chStaff, chReports, chAlerts, chChannels);
                 backoff = 1000; // reset when returns normally
             } catch (Throwable t) {
                 plugin.getLogger().warning("Redis subscribe failed: " + t.getMessage());
@@ -114,6 +116,16 @@ public class RedisBridge {
             if (target != null && target.isBlank()) target = null;
             if (!plugin.getConfigManager().getConfig().getBoolean("alerts.cross_server", true)) return;
             AlertFormatter.broadcast(plugin, content, target, false);
+            return;
+        }
+        if (channel.equals(chChannels)) {
+            // format: channelId|senderName|message
+            String[] parts = message.split("\\|", 3);
+            if (parts.length < 3) return;
+            String channelId = parts[0];
+            String senderName = parts[1];
+            String msg = parts[2];
+            plugin.getChannelManager().handleCrossServerMessage(channelId, senderName, msg);
         }
     }
 
@@ -187,6 +199,16 @@ public class RedisBridge {
                     String.valueOf(r.claimedAt)
             );
             j.publish(chReports, payload);
+        } catch (Throwable ignored) {}
+    }
+
+    public void publishChannelMessage(String channelId, String senderName, String message) {
+        var cfg = plugin.getConfigManager().getConfig();
+        if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (pool == null) return;
+        try (Jedis j = pool.getResource()) {
+            String payload = channelId + '|' + senderName + '|' + message;
+            j.publish(chChannels, payload);
         } catch (Throwable ignored) {}
     }
 }

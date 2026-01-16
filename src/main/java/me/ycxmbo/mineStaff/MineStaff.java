@@ -62,6 +62,7 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.util.SoundManager soundManager;
     private me.ycxmbo.mineStaff.warnings.WarningManager warningManager;
     private me.ycxmbo.mineStaff.backup.BackupManager backupManager;
+    private me.ycxmbo.mineStaff.channels.ChannelManager channelManager;
 
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
@@ -107,6 +108,7 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.warnings.WarningsGUI getWarningsGUI() { return warningsGUI; }
     public me.ycxmbo.mineStaff.gui.ReportHistoryGUI getReportHistoryGUI() { return reportHistoryGUI; }
     public me.ycxmbo.mineStaff.backup.BackupManager getBackupManager() { return backupManager; }
+    public me.ycxmbo.mineStaff.channels.ChannelManager getChannelManager() { return channelManager; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -205,6 +207,7 @@ public class MineStaff extends JavaPlugin {
         this.soundManager = new me.ycxmbo.mineStaff.util.SoundManager(this, getConfig());
         this.warningManager = new me.ycxmbo.mineStaff.warnings.WarningManager(this);
         this.backupManager = new me.ycxmbo.mineStaff.backup.BackupManager(this);
+        this.channelManager = new me.ycxmbo.mineStaff.channels.ChannelManager(this);
 
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
@@ -292,6 +295,10 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("backupdata") != null) {
             getCommand("backupdata").setExecutor(new me.ycxmbo.mineStaff.commands.BackupCommand(this));
         }
+        if (getCommand("channel") != null) {
+            getCommand("channel").setExecutor(new me.ycxmbo.mineStaff.commands.ChannelCommand(this));
+            getCommand("channel").setTabCompleter(new me.ycxmbo.mineStaff.tabcompleters.ChannelTabCompleter(this));
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);
@@ -329,6 +336,7 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(offlineInventoryManager, this);
         Bukkit.getPluginManager().registerEvents(new ActivityListener(this), this);
         Bukkit.getPluginManager().registerEvents(new LuckPermsContextListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ChannelChatListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("LiteBans") != null) {
             Bukkit.getPluginManager().registerEvents(new LiteBansBridgeListener(this), this);
