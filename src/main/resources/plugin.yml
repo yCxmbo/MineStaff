@@ -144,6 +144,11 @@ commands:
     usage: /<command> <yaml-to-sql|sql-to-yaml>
     aliases: [datamigrate, migratedata]
     permission: staffmode.admin
+  ticket:
+    description: Manage staff support tickets
+    usage: /<command> [create|list|view|claim|comment|resolve|close|stats|gui]
+    aliases: [staffticket, tickets]
+    permission: staffmode.tickets
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -221,4 +226,10 @@ permissions:
     default: op
   staffmode.admin:
     description: Access all administrative commands
+    default: op
+  staffmode.tickets:
+    description: Use staff ticket system
+    default: op
+  staffmode.tickets.notify:
+    description: Receive notifications for new tickets
     default: op
