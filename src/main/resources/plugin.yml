@@ -154,6 +154,16 @@ commands:
     usage: /<command> <block|player|nearby|rollback|restore> [args]
     aliases: [coreprotect, lookup, blocklog]
     permission: staffmode.coreprotect
+  csteleport:
+    description: Teleport to a player across the network
+    usage: /<command> <player>
+    aliases: [cstp, networkteleport, ntp]
+    permission: staffmode.teleport.crossserver
+  globalstafflist:
+    description: View all staff across the network
+    usage: /<command>
+    aliases: [gsl, networkstaff, nstaff]
+    permission: staffmode.stafflist.global
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -243,4 +253,13 @@ permissions:
     default: op
   staffmode.coreprotect.rollback:
     description: Perform rollbacks and restores with CoreProtect
+    default: op
+  staffmode.teleport.crossserver:
+    description: Teleport to players on other servers in the network
+    default: op
+  staffmode.stafflist.global:
+    description: View network-wide staff list
+    default: op
+  staffmode.network.reports:
+    description: View and manage network-wide reports
     default: op

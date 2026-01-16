@@ -66,6 +66,11 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.tickets.StaffTicketManager staffTicketManager;
     private me.ycxmbo.mineStaff.integrations.CoreProtectIntegration coreProtectIntegration;
 
+    // Cross-server features
+    private me.ycxmbo.mineStaff.crossserver.CrossServerTeleport crossServerTeleport;
+    private me.ycxmbo.mineStaff.crossserver.GlobalStaffList globalStaffList;
+    private me.ycxmbo.mineStaff.crossserver.NetworkReportSync networkReportSync;
+
     // GUIs/Commands singletons
     private InspectorGUI inspectorGUI;
     private StaffChatCommand staffChatCommand;
@@ -115,6 +120,9 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.tickets.StaffTicketManager getStaffTicketManager() { return staffTicketManager; }
     public me.ycxmbo.mineStaff.gui.StaffTicketsGUI getStaffTicketsGUI() { return staffTicketsGUI; }
     public me.ycxmbo.mineStaff.integrations.CoreProtectIntegration getCoreProtectIntegration() { return coreProtectIntegration; }
+    public me.ycxmbo.mineStaff.crossserver.CrossServerTeleport getCrossServerTeleport() { return crossServerTeleport; }
+    public me.ycxmbo.mineStaff.crossserver.GlobalStaffList getGlobalStaffList() { return globalStaffList; }
+    public me.ycxmbo.mineStaff.crossserver.NetworkReportSync getNetworkReportSync() { return networkReportSync; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -217,6 +225,13 @@ public class MineStaff extends JavaPlugin {
         this.staffTicketManager = new me.ycxmbo.mineStaff.tickets.StaffTicketManager(this);
         this.coreProtectIntegration = new me.ycxmbo.mineStaff.integrations.CoreProtectIntegration(this);
 
+        // Cross-server features (only if Redis enabled)
+        if (getConfig().getBoolean("redis.enabled", false)) {
+            this.crossServerTeleport = new me.ycxmbo.mineStaff.crossserver.CrossServerTeleport(this);
+            this.globalStaffList = new me.ycxmbo.mineStaff.crossserver.GlobalStaffList(this);
+            this.networkReportSync = new me.ycxmbo.mineStaff.crossserver.NetworkReportSync(this);
+        }
+
         // GUIs
         this.inspectorGUI      = new InspectorGUI(this);
         this.warningsGUI = new me.ycxmbo.mineStaff.warnings.WarningsGUI(this);
@@ -316,6 +331,12 @@ public class MineStaff extends JavaPlugin {
         }
         if (getCommand("co") != null) {
             getCommand("co").setExecutor(new me.ycxmbo.mineStaff.commands.CoreProtectLookupCommand(this));
+        }
+        if (getCommand("csteleport") != null) {
+            getCommand("csteleport").setExecutor(new me.ycxmbo.mineStaff.commands.CrossServerTeleportCommand(this));
+        }
+        if (getCommand("globalstafflist") != null) {
+            getCommand("globalstafflist").setExecutor(new me.ycxmbo.mineStaff.commands.GlobalStaffListCommand(this));
         }
 
         this.staffListGUICommand = new StaffListGUICommand(this);

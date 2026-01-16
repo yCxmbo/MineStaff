@@ -211,4 +211,16 @@ public class RedisBridge {
             j.publish(chChannels, payload);
         } catch (Throwable ignored) {}
     }
+
+    /**
+     * Generic publish method for custom channels
+     */
+    public void publish(String channel, String message) {
+        var cfg = plugin.getConfigManager().getConfig();
+        if (!cfg.getBoolean("redis.enabled", false)) return;
+        if (pool == null) return;
+        try (Jedis j = pool.getResource()) {
+            j.publish(channel, message);
+        } catch (Throwable ignored) {}
+    }
 }
