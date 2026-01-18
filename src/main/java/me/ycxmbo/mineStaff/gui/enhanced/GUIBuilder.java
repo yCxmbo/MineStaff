@@ -1,6 +1,7 @@
 package me.ycxmbo.mineStaff.gui.enhanced;
 
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
@@ -14,6 +15,12 @@ import java.util.List;
  * Utility for building enhanced GUI controls
  */
 public class GUIBuilder {
+
+    // Get enchantment for glow effect (backward compatible)
+    private static Enchantment getGlowEnchantment() {
+        Enchantment ench = Enchantment.getByKey(NamespacedKey.minecraft("unbreaking"));
+        return ench != null ? ench : Enchantment.getByName("DURABILITY");
+    }
     
     /**
      * Creates a search button
@@ -73,7 +80,7 @@ public class GUIBuilder {
         lore.add("§7Click to cycle options");
         
         if (!currentValue.equalsIgnoreCase("ALL")) {
-            meta.addEnchant(Enchantment.DURABILITY, 1, true);
+            meta.addEnchant(getGlowEnchantment(), 1, true);
             meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
             lore.add("");
             lore.add("§a✓ Active Filter");
@@ -237,9 +244,9 @@ public class GUIBuilder {
         ItemMeta meta = item.getItemMeta();
         if (meta == null) return item;
         
-        meta.addEnchant(Enchantment.DURABILITY, 1, true);
+        meta.addEnchant(getGlowEnchantment(), 1, true);
         meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-        
+
         List<String> lore = meta.hasLore() ? new ArrayList<>(meta.getLore()) : new ArrayList<>();
         lore.add(0, "§a§l✓ SELECTED");
         lore.add(1, "");
