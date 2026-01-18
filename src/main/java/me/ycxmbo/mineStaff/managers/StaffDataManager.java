@@ -32,6 +32,19 @@ public class StaffDataManager {
     public void enableStaffMode(Player p) { staffMode.add(p.getUniqueId()); }
     public void disableStaffMode(Player p) { staffMode.remove(p.getUniqueId()); }
 
+    /**
+     * Completely cleans up all staff mode state for a player.
+     * This should be called when you want to ensure no lingering data remains.
+     * Use this for logout cleanup or safety checks on join.
+     */
+    public void cleanupPlayerState(UUID playerId) {
+        staffMode.remove(playerId);
+        frozen.remove(playerId);
+        vanished.remove(playerId);
+        previousGamemode.remove(playerId);
+        savedInventories.remove(playerId);
+    }
+
     public boolean isFrozen(Player p) { return frozen.contains(p.getUniqueId()); }
     public void setFrozen(Player p, boolean v) { if (v) frozen.add(p.getUniqueId()); else frozen.remove(p.getUniqueId()); }
 

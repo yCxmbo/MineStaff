@@ -35,25 +35,58 @@ public class StaffModeListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent e) {
-        login.clearLoginStatus(e.getPlayer());
-        // If player was persisted as vanished, restore state
-        if (MineStaff.getInstance().getVanishStore().isVanished(e.getPlayer().getUniqueId())) {
-            staff.setVanished(e.getPlayer(), true);
-            VanishUtil.applyVanish(e.getPlayer(), true);
-            MineStaff.getInstance().getToolManager().updateVanishDye(e.getPlayer(), true);
+        Player p = e.getPlayer();
+
+        // Clean up any lingering state from previous sessions
+        // This prevents players from being stuck in staff mode or having corrupted state
+        // (e.g., if server crashed before onQuit could properly clean up)
+        staff.cleanupPlayerState(p.getUniqueId());
+
+        // Clear login status to force re-authentication
+        login.clearLoginStatus(p);
+
+        // If player was persisted as vanished, restore vanish state
+        // (vanish is intentionally persistent across sessions)
+        if (MineStaff.getInstance().getVanishStore().isVanished(p.getUniqueId())) {
+            staff.setVanished(p, true);
+            VanishUtil.applyVanish(p, true);
+            MineStaff.getInstance().getToolManager().updateVanishDye(p, true);
         }
+
         // Hide any currently vanished staff from this joiner
-        VanishUtil.reapplyForJoin(e.getPlayer());
+        VanishUtil.reapplyForJoin(p);
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent e) {
-        staff.disableStaffMode(e.getPlayer());
-        // Use onPlayerDisconnect to preserve session for reconnection
-        login.onPlayerDisconnect(e.getPlayer());
-        if (staff.isVanished(e.getPlayer())) {
-            MineStaff.getInstance().getVanishStore().setVanished(e.getPlayer().getUniqueId(), true);
+        Player p = e.getPlayer();
+
+        // If player is in staff mode, restore their state before they quit
+        // This ensures their player data saves correctly with their original inventory
+        if (staff.isStaffMode(p)) {
+            // Restore gamemode
+            GameMode prev = staff.popPreviousGamemode(p);
+            if (prev != null) {
+                p.setGameMode(prev);
+            }
+
+            // Restore inventory
+            staff.restoreInventory(p);
+
+            // Remove from staff mode
+            staff.disableStaffMode(p);
         }
+
+        // Persist vanish state if player was vanished (vanish persists across sessions)
+        if (staff.isVanished(p)) {
+            MineStaff.getInstance().getVanishStore().setVanished(p.getUniqueId(), true);
+        }
+
+        // Clean up any other lingering state data to prevent getting stuck
+        staff.cleanupPlayerState(p.getUniqueId());
+
+        // Use onPlayerDisconnect to preserve session for reconnection
+        login.onPlayerDisconnect(p);
     }
 
     @EventHandler
