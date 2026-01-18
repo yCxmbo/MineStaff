@@ -351,7 +351,7 @@ public class SqlStorage {
             while (rs.next()) {
                 UUID player = UUID.fromString(rs.getString(2));
                 long ts = rs.getLong(3);
-                String staff = rs.getString(4);
+                UUID staff = UUID.fromString(rs.getString(4));
                 String text = rs.getString(5);
                 out.computeIfAbsent(player, k -> new java.util.ArrayList<>())
                         .add(new PlayerNotesManager.Note(ts, staff, text));
