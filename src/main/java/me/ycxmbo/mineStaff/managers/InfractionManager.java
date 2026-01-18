@@ -128,7 +128,7 @@ public class InfractionManager {
     public synchronized void addNote(UUID player, UUID staff, String text) {
         long ts = Instant.now().toEpochMilli();
         if (useSql) {
-            plugin.getStorage().addNote(player, staff, text);
+            plugin.getStorage().addNote(player, staff, text, ts);
             return;
         }
         String base = "notes." + player + "." + ts;

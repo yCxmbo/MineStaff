@@ -4,6 +4,7 @@ import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.MineStaffAPI;
 import me.ycxmbo.mineStaff.api.events.*;
 import me.ycxmbo.mineStaff.managers.InfractionManager;
+import me.ycxmbo.mineStaff.managers.ReportManager;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.reports.ReportedPlayer;
 import me.ycxmbo.mineStaff.tickets.StaffTicket;
@@ -14,6 +15,7 @@ import org.bukkit.entity.Player;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class MineStaffApiProvider implements MineStaffAPI {
 
@@ -148,7 +150,10 @@ public class MineStaffApiProvider implements MineStaffAPI {
             if (event.isCancelled()) {
                 return null;
             }
-            return plugin.getReportManager().reportPlayer(reporter, reported, reason);
+            UUID reportId = plugin.getReportManager().reportPlayer(reporter, reported, reason);
+            if (reportId == null) return null;
+            ReportManager.Report report = plugin.getReportManager().getReport(reportId);
+            return report != null ? new ReportedPlayer(report) : null;
         } catch (Throwable t) {
             plugin.getLogger().warning("[API] createReport failed: " + t.getMessage());
             return null;
@@ -158,7 +163,9 @@ public class MineStaffApiProvider implements MineStaffAPI {
     @Override
     public List<ReportedPlayer> getActiveReports() {
         try {
-            return plugin.getReportManager().getActiveReports();
+            return plugin.getReportManager().getActiveReports().stream()
+                    .map(ReportedPlayer::new)
+                    .collect(Collectors.toList());
         } catch (Throwable t) {
             plugin.getLogger().warning("[API] getActiveReports failed: " + t.getMessage());
             return List.of();
@@ -168,7 +175,9 @@ public class MineStaffApiProvider implements MineStaffAPI {
     @Override
     public List<ReportedPlayer> getReportsFor(OfflinePlayer player) {
         try {
-            return plugin.getReportManager().getReportsFor(player);
+            return plugin.getReportManager().getReportsFor(player).stream()
+                    .map(ReportedPlayer::new)
+                    .collect(Collectors.toList());
         } catch (Throwable t) {
             plugin.getLogger().warning("[API] getReportsFor failed: " + t.getMessage());
             return List.of();
@@ -178,7 +187,7 @@ public class MineStaffApiProvider implements MineStaffAPI {
     @Override
     public boolean closeReport(UUID reportId, Player staff) {
         try {
-            ReportedPlayer report = plugin.getReportManager().getReport(reportId);
+            ReportManager.Report report = plugin.getReportManager().getReport(reportId);
             if (report == null) return false;
             plugin.getReportManager().closeReport(reportId, staff);
             return true;
@@ -198,12 +207,13 @@ public class MineStaffApiProvider implements MineStaffAPI {
             if (event.isCancelled()) {
                 return -1;
             }
-            return plugin.getInfractionManager().addInfraction(
+            plugin.getInfractionManager().addInfraction(
                     player.getUniqueId(),
                     staff.getUniqueId(),
                     type,
                     reason
             );
+            return 1; // Success
         } catch (Throwable t) {
             plugin.getLogger().warning("[API] addInfraction failed: " + t.getMessage());
             return -1;
@@ -244,11 +254,12 @@ public class MineStaffApiProvider implements MineStaffAPI {
     @Override
     public int addNote(OfflinePlayer player, Player staff, String note) {
         try {
-            return plugin.getInfractionManager().addNote(
+            plugin.getInfractionManager().addNote(
                     player.getUniqueId(),
                     staff.getUniqueId(),
                     note
             );
+            return 1; // Success
         } catch (Throwable t) {
             plugin.getLogger().warning("[API] addNote failed: " + t.getMessage());
             return -1;

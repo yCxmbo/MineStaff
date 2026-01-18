@@ -189,13 +189,15 @@ public class DataMigrationTool {
                 String type = yaml.getString(key + ".type");
                 String reason = yaml.getString(key + ".reason");
 
-                plugin.getStorage().addInfraction(
-                        UUID.fromString(player),
+                InfractionManager.Infraction infraction = new InfractionManager.Infraction(
+                        UUID.randomUUID().toString(),
+                        player,
                         timestamp,
                         staff,
                         type,
                         reason
                 );
+                plugin.getStorage().addInfraction(UUID.fromString(player), infraction);
                 count++;
             } catch (Exception e) {
                 progress.accept("  §cWarning: Failed to migrate infraction " + key + ": " + e.getMessage());
@@ -327,7 +329,7 @@ public class DataMigrationTool {
         for (InfractionManager.Infraction infraction : infractions) {
             String path = String.valueOf(index++);
             yaml.set(path + ".player", infraction.player);
-            yaml.set(path + ".timestamp", infraction.timestamp);
+            yaml.set(path + ".timestamp", infraction.ts);
             yaml.set(path + ".staff", infraction.staff);
             yaml.set(path + ".type", infraction.type);
             yaml.set(path + ".reason", infraction.reason);

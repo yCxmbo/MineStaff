@@ -1,9 +1,10 @@
 package me.ycxmbo.mineStaff.gui.enhanced;
 
 import me.ycxmbo.mineStaff.MineStaff;
-import me.ycxmbo.mineStaff.reports.ReportedPlayer;
+import me.ycxmbo.mineStaff.managers.ReportManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -17,27 +18,33 @@ import java.util.function.Predicate;
  */
 public class EnhancedReportsGUI {
     private final MineStaff plugin;
-    private final Map<UUID, GUIContext<ReportedPlayer>> contexts = new HashMap<>();
+    private final Map<UUID, GUIContext<ReportManager.Report>> contexts = new HashMap<>();
     private final Map<UUID, Boolean> selectionModes = new HashMap<>();
     
     public EnhancedReportsGUI(MineStaff plugin) {
         this.plugin = plugin;
     }
+
+    private String getPlayerName(UUID playerId) {
+        if (playerId == null) return "Unknown";
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+        return player.getName() != null ? player.getName() : playerId.toString().substring(0, 8);
+    }
     
     public void open(Player viewer) {
-        GUIContext<ReportedPlayer> ctx = contexts.computeIfAbsent(viewer.getUniqueId(), 
+        GUIContext<ReportManager.Report> ctx = contexts.computeIfAbsent(viewer.getUniqueId(), 
             id -> new GUIContext<>(viewer, plugin.getReportManager().getActiveReports()));
         
         openWithContext(viewer, ctx);
     }
     
-    private void openWithContext(Player viewer, GUIContext<ReportedPlayer> ctx) {
+    private void openWithContext(Player viewer, GUIContext<ReportManager.Report> ctx) {
         // Build filter predicate
-        Predicate<ReportedPlayer> filter = report -> {
+        Predicate<ReportManager.Report> filter = report -> {
             // Search filter
             String query = ctx.getSearchQuery();
             if (!query.isEmpty()) {
-                String searchable = (report.reportedPlayerName + " " + report.reason).toLowerCase();
+                String searchable = (getPlayerName(report.target) + " " + report.reason).toLowerCase();
                 if (!searchable.contains(query)) {
                     return false;
                 }
@@ -56,15 +63,15 @@ public class EnhancedReportsGUI {
         };
         
         // Build sort comparator
-        Comparator<ReportedPlayer> sorter = getSorter(ctx.getSortOption());
+        Comparator<ReportManager.Report> sorter = getSorter(ctx.getSortOption());
         
         // Get filtered items
-        List<ReportedPlayer> allFiltered = plugin.getReportManager().getActiveReports().stream()
+        List<ReportManager.Report> allFiltered = plugin.getReportManager().getActiveReports().stream()
                 .filter(filter)
                 .sorted(sorter)
                 .toList();
         
-        List<ReportedPlayer> pageItems = ctx.getPageItems(filter, sorter);
+        List<ReportManager.Report> pageItems = ctx.getPageItems(filter, sorter);
         int totalPages = ctx.getTotalPages(allFiltered.size());
         
         // Create inventory
@@ -87,7 +94,7 @@ public class EnhancedReportsGUI {
         
         // Report items (rows 2-6)
         int slot = 9;
-        for (ReportedPlayer report : pageItems) {
+        for (ReportManager.Report report : pageItems) {
             ItemStack item = createReportItem(report);
             
             if (ctx.isSelected(report)) {
@@ -120,30 +127,30 @@ public class EnhancedReportsGUI {
         viewer.openInventory(inv);
     }
     
-    private ItemStack createReportItem(ReportedPlayer report) {
+    private ItemStack createReportItem(ReportManager.Report report) {
         ItemStack item = new ItemStack(Material.PAPER);
         ItemMeta meta = item.getItemMeta();
-        meta.setDisplayName("§e" + report.reportedPlayerName);
-        
+        meta.setDisplayName("§e" + getPlayerName(report.target));
+
         List<String> lore = new ArrayList<>();
-        lore.add("§7Reported by: §f" + report.reporterName);
+        lore.add("§7Reported by: §f" + getPlayerName(report.reporter));
         lore.add("§7Reason: §f" + report.reason);
-        lore.add("§7Time: §f" + formatTime(report.timestamp));
+        lore.add("§7Time: §f" + formatTime(report.created));
         lore.add("");
-        lore.add("§8ID: " + report.reportId.toString().substring(0, 8));
+        lore.add("§8ID: " + report.id.toString().substring(0, 8));
         
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
     }
     
-    private Comparator<ReportedPlayer> getSorter(GUIContext.SortOption option) {
+    private Comparator<ReportManager.Report> getSorter(GUIContext.SortOption option) {
         return switch (option) {
-            case DATE_NEW_FIRST -> Comparator.comparingLong((ReportedPlayer r) -> r.timestamp).reversed();
-            case DATE_OLD_FIRST -> Comparator.comparingLong(r -> r.timestamp);
-            case NAME_ALPHA -> Comparator.comparing(r -> r.reportedPlayerName);
-            case NAME_ALPHA_REV -> Comparator.comparing((ReportedPlayer r) -> r.reportedPlayerName).reversed();
-            default -> Comparator.comparingLong((ReportedPlayer r) -> r.timestamp).reversed();
+            case DATE_NEW_FIRST -> Comparator.comparingLong((ReportManager.Report r) -> r.created).reversed();
+            case DATE_OLD_FIRST -> Comparator.comparingLong(r -> r.created);
+            case NAME_ALPHA -> Comparator.comparing(r -> getPlayerName(r.target));
+            case NAME_ALPHA_REV -> Comparator.comparing((ReportManager.Report r) -> getPlayerName(r.target)).reversed();
+            default -> Comparator.comparingLong((ReportManager.Report r) -> r.created).reversed();
         };
     }
     
@@ -161,7 +168,7 @@ public class EnhancedReportsGUI {
     
     // Event handlers
     public void handleClick(Player viewer, int slot, boolean isShiftClick, boolean isRightClick) {
-        GUIContext<ReportedPlayer> ctx = contexts.get(viewer.getUniqueId());
+        GUIContext<ReportManager.Report> ctx = contexts.get(viewer.getUniqueId());
         if (ctx == null) return;
         
         boolean selectionMode = selectionModes.getOrDefault(viewer.getUniqueId(), false);
@@ -210,7 +217,7 @@ public class EnhancedReportsGUI {
         }
     }
     
-    private void handleSearchClick(Player viewer, GUIContext<ReportedPlayer> ctx, boolean isRightClick) {
+    private void handleSearchClick(Player viewer, GUIContext<ReportManager.Report> ctx, boolean isRightClick) {
         if (isRightClick) {
             ctx.setSearchQuery("");
             openWithContext(viewer, ctx);
@@ -221,12 +228,12 @@ public class EnhancedReportsGUI {
         }
     }
     
-    private void handleSortClick(Player viewer, GUIContext<ReportedPlayer> ctx) {
+    private void handleSortClick(Player viewer, GUIContext<ReportManager.Report> ctx) {
         ctx.setSortOption(ctx.getSortOption().next());
         openWithContext(viewer, ctx);
     }
     
-    private void handleFilterClick(Player viewer, GUIContext<ReportedPlayer> ctx, String filterKey) {
+    private void handleFilterClick(Player viewer, GUIContext<ReportManager.Report> ctx, String filterKey) {
         String current = ctx.getFilter(filterKey);
         String[] options = {"ALL", "OPEN", "CLAIMED", "CLOSED"};
         int currentIndex = Arrays.asList(options).indexOf(current.toUpperCase());
@@ -235,47 +242,47 @@ public class EnhancedReportsGUI {
         openWithContext(viewer, ctx);
     }
     
-    private void handleJumpToPage(Player viewer, GUIContext<ReportedPlayer> ctx) {
+    private void handleJumpToPage(Player viewer, GUIContext<ReportManager.Report> ctx) {
         viewer.closeInventory();
         viewer.sendMessage("§e§lJump to Page: §7Type a page number in chat (or 'cancel' to abort)");
         // Chat listener would handle the input
     }
     
-    private void handleReportClick(Player viewer, GUIContext<ReportedPlayer> ctx, int slot, 
+    private void handleReportClick(Player viewer, GUIContext<ReportManager.Report> ctx, int slot, 
                                    boolean isShiftClick, boolean isRightClick, boolean selectionMode) {
         // Get the report at this slot
         int itemIndex = slot - 9;
-        List<ReportedPlayer> pageItems = ctx.getPageItems(r -> true, getSorter(ctx.getSortOption()));
-        
+        List<ReportManager.Report> pageItems = ctx.getPageItems(r -> true, getSorter(ctx.getSortOption()));
+
         if (itemIndex < 0 || itemIndex >= pageItems.size()) return;
-        ReportedPlayer report = pageItems.get(itemIndex);
+        ReportManager.Report report = pageItems.get(itemIndex);
         
         if (selectionMode && isShiftClick) {
             ctx.toggleSelection(report);
             openWithContext(viewer, ctx);
         } else if (isRightClick) {
             // Claim report
-            viewer.sendMessage("§aClai med report for " + report.reportedPlayerName);
+            viewer.sendMessage("§aClaimed report for " + getPlayerName(report.target));
             viewer.closeInventory();
         } else {
             // View details
             viewer.sendMessage("§eReport Details:");
-            viewer.sendMessage("§7Reported: §f" + report.reportedPlayerName);
-            viewer.sendMessage("§7By: §f" + report.reporterName);
+            viewer.sendMessage("§7Reported: §f" + getPlayerName(report.target));
+            viewer.sendMessage("§7By: §f" + getPlayerName(report.reporter));
             viewer.sendMessage("§7Reason: §f" + report.reason);
         }
     }
     
-    private void handleBulkAction(Player viewer, GUIContext<ReportedPlayer> ctx) {
-        Set<ReportedPlayer> selected = ctx.getSelectedItems();
+    private void handleBulkAction(Player viewer, GUIContext<ReportManager.Report> ctx) {
+        Set<ReportManager.Report> selected = ctx.getSelectedItems();
         if (selected.isEmpty()) {
             viewer.sendMessage("§cNo reports selected!");
             return;
         }
         
         int closed = 0;
-        for (ReportedPlayer report : selected) {
-            plugin.getReportManager().closeReport(report.reportId, viewer);
+        for (ReportManager.Report report : selected) {
+            plugin.getReportManager().closeReport(report.id, viewer);
             closed++;
         }
         
@@ -288,7 +295,7 @@ public class EnhancedReportsGUI {
         openWithContext(viewer, ctx);
     }
     
-    public GUIContext<ReportedPlayer> getContext(Player viewer) {
+    public GUIContext<ReportManager.Report> getContext(Player viewer) {
         return contexts.get(viewer.getUniqueId());
     }
 }
