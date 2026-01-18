@@ -113,7 +113,8 @@ public class WarningManager {
         checkThresholds(targetUuid);
 
         // Log audit
-        plugin.getAuditLogger().log("WARNING_ISSUED", Map.of(
+        plugin.getAuditLogger().log(Map.of(
+                "type", "WARNING_ISSUED",
                 "warning_id", String.valueOf(id),
                 "target", targetName,
                 "target_uuid", targetUuid.toString(),

@@ -391,4 +391,44 @@ public class ReportManager {
             claimMonitorTask = null;
         }
     }
+
+    // API methods for backward compatibility
+    public synchronized UUID reportPlayer(Player reporter, OfflinePlayer target, String reason) {
+        return add(reporter.getUniqueId(), target.getUniqueId(), reason);
+    }
+
+    public synchronized List<Report> getActiveReports() {
+        List<Report> active = new ArrayList<>();
+        for (Report r : all()) {
+            if ("OPEN".equals(r.status) || "CLAIMED".equals(r.status) || "NEEDS_INFO".equals(r.status)) {
+                active.add(r);
+            }
+        }
+        return active;
+    }
+
+    public synchronized List<Report> getReportsFor(OfflinePlayer player) {
+        List<Report> forPlayer = new ArrayList<>();
+        for (Report r : all()) {
+            if (r.target.equals(player.getUniqueId())) {
+                forPlayer.add(r);
+            }
+        }
+        return forPlayer;
+    }
+
+    public synchronized Report getReport(UUID id) {
+        return get(id);
+    }
+
+    public synchronized boolean closeReport(UUID id, Player staff) {
+        Report r = get(id);
+        if (r == null) return false;
+        setStatus(id, "CLOSED");
+        return true;
+    }
+
+    public synchronized List<Report> getAll() {
+        return all();
+    }
 }

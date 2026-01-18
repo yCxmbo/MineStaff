@@ -12,4 +12,8 @@ public class ActionLogger {
     public void logCommand(Player p, String action) {
         plugin.getLogger().log(Level.INFO, "[Action] " + p.getName() + ": " + action);
     }
+
+    public void log(Player p, String action, String details) {
+        plugin.getLogger().log(Level.INFO, "[Action] " + p.getName() + ": " + action + " - " + details);
+    }
 }
