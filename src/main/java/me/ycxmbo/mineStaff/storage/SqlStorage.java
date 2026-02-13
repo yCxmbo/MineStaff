@@ -221,16 +221,17 @@ public class SqlStorage {
 
     public java.util.List<InfractionManager.Infraction> listInfractions(UUID player) {
         java.util.List<InfractionManager.Infraction> out = new java.util.ArrayList<>();
-        String sql = "SELECT ts, staff, type, reason FROM infractions WHERE player=? ORDER BY ts ASC";
+        String sql = "SELECT id, ts, staff, type, reason FROM infractions WHERE player=? ORDER BY ts ASC";
         try (Connection c = ds.getConnection(); PreparedStatement ps = c.prepareStatement(sql)) {
             ps.setString(1, player.toString());
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    long ts = rs.getLong(1);
-                    UUID staff = UUID.fromString(rs.getString(2));
-                    String type = rs.getString(3);
-                    String reason = rs.getString(4);
-                    out.add(new InfractionManager.Infraction(staff, type, reason));
+                    String id = rs.getString(1);
+                    long ts = rs.getLong(2);
+                    String staff = rs.getString(3);
+                    String type = rs.getString(4);
+                    String reason = rs.getString(5);
+                    out.add(new InfractionManager.Infraction(id, player.toString(), ts, staff, type, reason));
                 }
             }
         } catch (SQLException e) { plugin.getLogger().warning("SQL listInfractions: " + e.getMessage()); }
