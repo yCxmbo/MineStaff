@@ -162,7 +162,7 @@ public class BackupManager {
      * Clean up old backups based on retention policy
      */
     private void cleanOldBackups() {
-        int maxBackups = plugin.getConfig().getInt("backup.max_backups", 7);
+        int maxBackups = plugin.getConfig().getInt("backup.max_backups", 1);
         int maxAgeDays = plugin.getConfig().getInt("backup.max_age_days", 30);
 
         File[] backupFiles = backupFolder.listFiles((dir, name) -> name.startsWith("backup-") && name.endsWith(".zip"));
@@ -174,16 +174,19 @@ public class BackupManager {
         long currentTime = System.currentTimeMillis();
         long maxAgeMillis = maxAgeDays * 24L * 60 * 60 * 1000;
 
+        // Always keep at least one backup (the newest)
+        int keep = Math.max(maxBackups, 1);
+
         int deleted = 0;
 
         // Delete old backups
         for (int i = 0; i < backupFiles.length; i++) {
             File backup = backupFiles[i];
 
-            // Keep first 'maxBackups' regardless of age
-            if (i < maxBackups) {
-                // But still check if it's older than max age
-                if (currentTime - backup.lastModified() <= maxAgeMillis) {
+            // Always keep the newest 'keep' backups unless they exceed max age
+            if (i < keep) {
+                // Never delete the very latest backup regardless of age
+                if (i == 0 || currentTime - backup.lastModified() <= maxAgeMillis) {
                     continue;
                 }
             }
