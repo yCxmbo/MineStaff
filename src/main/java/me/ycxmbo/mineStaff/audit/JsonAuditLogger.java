@@ -18,7 +18,8 @@ public class JsonAuditLogger {
     public void log(Map<String, Object> obj) {
         if (!plugin.getConfigManager().getConfig().getBoolean("audit.enabled", true)) return;
         String prefix = plugin.getConfigManager().getConfig().getString("audit.file_prefix", "actions-");
-        File f = new File(plugin.getDataFolder(), prefix + LocalDate.now().format(fmt) + ".log");
+        File logsFolder = new File(plugin.getDataFolder(), "logs");
+        File f = new File(logsFolder, prefix + LocalDate.now().format(fmt) + ".log");
         f.getParentFile().mkdirs();
         try (FileWriter fw = new FileWriter(f, true)) {
             fw.write(toJson(obj));

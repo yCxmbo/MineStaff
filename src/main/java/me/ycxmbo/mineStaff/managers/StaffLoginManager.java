@@ -96,14 +96,28 @@ public class StaffLoginManager {
         // Handle success/failure
         if (success) {
             clearFailedAttempts(uuid);
-            logSecurityEvent(p, "LOGIN_SUCCESS", "IP: " + safeIp(p));
+            logSecurityEvent(p, "LOGIN_SUCCESS", "");
         } else {
             incrementFailedAttempts(uuid);
             int attempts = failedAttempts.getOrDefault(uuid, 0);
-            logSecurityEvent(p, "LOGIN_FAILED", "Failed attempts: " + attempts + ", IP: " + safeIp(p));
+            logSecurityEvent(p, "LOGIN_FAILED", "Failed attempts: " + attempts);
         }
 
         return success;
+    }
+
+    public boolean hasPassword(Player p) {
+        String stored = plugin.getConfigManager().getStaffAccounts().getString(p.getUniqueId().toString() + ".password");
+        return stored != null && !stored.isEmpty();
+    }
+
+    public boolean verifyPassword(Player p, String password) {
+        String stored = plugin.getConfigManager().getStaffAccounts().getString(p.getUniqueId().toString() + ".password");
+        if (stored == null) return false;
+        if (stored.startsWith("$2") && stored.length() == 60) {
+            return BCrypt.verifyer().verify(password.toCharArray(), stored).verified;
+        }
+        return stored.equals(password);
     }
 
     public void setPassword(Player p, String password) {
@@ -205,8 +219,9 @@ public class StaffLoginManager {
 
     // Security logging
     private void logSecurityEvent(Player p, String event, String details) {
-        String message = String.format("[SECURITY] %s - Player: %s (%s) - %s",
-            event, p.getName(), p.getUniqueId(), details);
+        String message = details == null || details.isEmpty()
+            ? String.format("[SECURITY] %s - Player: %s", event, p.getName())
+            : String.format("[SECURITY] %s - Player: %s - %s", event, p.getName(), details);
         plugin.getLogger().info(message);
 
         // Also log to audit logger if available

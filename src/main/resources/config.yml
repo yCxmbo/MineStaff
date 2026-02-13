@@ -81,6 +81,16 @@ cps:
   duration_seconds: 10
   cooldown_ms: 2000
 
+freeze:
+  cooldown_ms: 500
+  default_seconds: 0
+  shift_seconds: 0
+  logout_flag_enabled: true
+  visual_cage:
+    enabled: true
+    particle: SNOWFLAKE
+    radius: 0.7
+
 randomtp:
   active_seconds: 60
   cooldown_ms: 2000
@@ -290,8 +300,8 @@ backup:
   enabled: true
   # Backup interval in hours
   interval_hours: 24
-  # Maximum number of backups to keep
-  max_backups: 7
+  # Maximum number of backups to keep (only the latest is retained by default)
+  max_backups: 1
   # Maximum age of backups in days (older backups are deleted)
   max_age_days: 30
 
