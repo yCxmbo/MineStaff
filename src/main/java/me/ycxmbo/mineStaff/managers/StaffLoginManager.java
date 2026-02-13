@@ -206,8 +206,8 @@ public class StaffLoginManager {
     // Security logging
     private void logSecurityEvent(Player p, String event, String details) {
         String message = details == null || details.isEmpty()
-            ? String.format("[SECURITY] %s - Player: %s (%s)", event, p.getName(), p.getUniqueId())
-            : String.format("[SECURITY] %s - Player: %s (%s) - %s", event, p.getName(), p.getUniqueId(), details);
+            ? String.format("[SECURITY] %s - Player: %s", event, p.getName())
+            : String.format("[SECURITY] %s - Player: %s - %s", event, p.getName(), details);
         plugin.getLogger().info(message);
 
         // Also log to audit logger if available
