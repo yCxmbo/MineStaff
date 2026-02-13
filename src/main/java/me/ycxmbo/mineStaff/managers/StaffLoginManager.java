@@ -106,6 +106,20 @@ public class StaffLoginManager {
         return success;
     }
 
+    public boolean hasPassword(Player p) {
+        String stored = plugin.getConfigManager().getStaffAccounts().getString(p.getUniqueId().toString() + ".password");
+        return stored != null && !stored.isEmpty();
+    }
+
+    public boolean verifyPassword(Player p, String password) {
+        String stored = plugin.getConfigManager().getStaffAccounts().getString(p.getUniqueId().toString() + ".password");
+        if (stored == null) return false;
+        if (stored.startsWith("$2") && stored.length() == 60) {
+            return BCrypt.verifyer().verify(password.toCharArray(), stored).verified;
+        }
+        return stored.equals(password);
+    }
+
     public void setPassword(Player p, String password) {
         // Hash password with BCrypt before storing
         String hashed = BCrypt.withDefaults().hashToString(BCRYPT_COST, password.toCharArray());

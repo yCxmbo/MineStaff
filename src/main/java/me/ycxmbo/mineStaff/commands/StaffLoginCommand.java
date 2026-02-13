@@ -35,17 +35,34 @@ public class StaffLoginCommand implements CommandExecutor {
             return true;
         }
         if (args.length == 0) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password> [otp]| set <newPassword>");
+            p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password> [otp] | setpassword <password> | change <oldPassword> <newPassword>");
             return true;
         }
-        if (args[0].equalsIgnoreCase("set")) {
+        if (args[0].equalsIgnoreCase("setpassword")) {
             if (args.length < 2) {
-                p.sendMessage(ChatColor.RED + "Usage: /stafflogin set <password>");
+                p.sendMessage(ChatColor.RED + "Usage: /stafflogin setpassword <password>");
+                return true;
+            }
+            if (login.hasPassword(p)) {
+                p.sendMessage(ChatColor.RED + "You already have a password. Use /stafflogin change <oldPassword> <newPassword>");
                 return true;
             }
             login.setPassword(p, args[1]);
             cfg.saveStaffAccounts();
             p.sendMessage(cfg.getMessage("password_set", "Password set."));
+            return true;
+        } else if (args[0].equalsIgnoreCase("change")) {
+            if (args.length < 3) {
+                p.sendMessage(ChatColor.RED + "Usage: /stafflogin change <oldPassword> <newPassword>");
+                return true;
+            }
+            if (!login.verifyPassword(p, args[1])) {
+                p.sendMessage(cfg.getMessage("login_failure", "Incorrect password."));
+                return true;
+            }
+            login.setPassword(p, args[2]);
+            cfg.saveStaffAccounts();
+            p.sendMessage(cfg.getMessage("password_changed", "&aPassword changed successfully."));
             return true;
         } else {
             String password = args[0];
