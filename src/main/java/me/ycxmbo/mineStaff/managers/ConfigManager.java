@@ -17,7 +17,7 @@ public class ConfigManager {
     private YamlConfiguration staffAccounts;
     private YamlConfiguration localeYaml;
 
-    private final Map<String, String> defaults = new HashMap<>();
+    private final Map<String, Object> defaults = new HashMap<>();
 
     public ConfigManager(MineStaff plugin) {
         this.plugin = plugin;
@@ -29,7 +29,7 @@ public class ConfigManager {
     }
 
     private void loadDefaults() {
-        defaults.put("config_version", "2");
+        defaults.put("config_version", 2);
         defaults.put("messages.prefix", "&8[&aMineStaff&8]&r ");
         defaults.put("messages.no_permission", "&cYou don't have permission.");
         defaults.put("messages.only_players", "&cOnly players can use this.");
@@ -46,55 +46,55 @@ public class ConfigManager {
         defaults.put("messages.cps_tool_cooldown", "&cCPS checker cooldown: {seconds}s");
         defaults.put("messages.cps_already_running", "&cA CPS test is already running for {target}.");
         defaults.put("messages.randomtp_cooldown", "&cRandom TP cooldown: {seconds}s");
-        defaults.put("options.staff_login_enabled", "true");
-        defaults.put("options.require_login", "true");
+        defaults.put("options.staff_login_enabled", true);
+        defaults.put("options.require_login", true);
         defaults.put("options.staffmode_gamemode", "CREATIVE");
         defaults.put("options.staffchat_prefix", "@");
-        defaults.put("tools.slots.teleport", "0");
-        defaults.put("tools.slots.freeze", "1");
-        defaults.put("tools.slots.inspect", "2");
-        defaults.put("tools.slots.vanish", "8");
-        defaults.put("tools.slots.cps", "3");
-        defaults.put("tools.slots.randomtp", "4");
-        defaults.put("alerts.use_minimessage", "true");
-        defaults.put("alerts.notify_on_join", "true");
-        defaults.put("alerts.notify_on_quit", "false");
+        defaults.put("tools.slots.teleport", 0);
+        defaults.put("tools.slots.freeze", 1);
+        defaults.put("tools.slots.inspect", 2);
+        defaults.put("tools.slots.vanish", 8);
+        defaults.put("tools.slots.cps", 3);
+        defaults.put("tools.slots.randomtp", 4);
+        defaults.put("alerts.use_minimessage", true);
+        defaults.put("alerts.notify_on_join", true);
+        defaults.put("alerts.notify_on_quit", false);
         defaults.put("alerts.join_template", "{player} joined at {world} ({x}, {y}, {z}).");
         defaults.put("alerts.quit_template", "{player} left from {world} ({x}, {y}, {z}).");
-        defaults.put("alerts.join_include_tp", "true");
-        defaults.put("alerts.quit_include_tp", "false");
-        defaults.put("alerts.cross_server", "true");
-        defaults.put("reports.cross_server", "true");
-        defaults.put("staffchat.cross_server", "true");
-        defaults.put("staffchat.console_log", "true");
+        defaults.put("alerts.join_include_tp", true);
+        defaults.put("alerts.quit_include_tp", false);
+        defaults.put("alerts.cross_server", true);
+        defaults.put("reports.cross_server", true);
+        defaults.put("staffchat.cross_server", true);
+        defaults.put("staffchat.console_log", true);
         defaults.put("staffchat.format_legacy", "&8[&dStaff&8] &b{name}&7: &f{message}");
-        defaults.put("cps.duration_seconds", "10");
-        defaults.put("cps.cooldown_ms", "2000");
+        defaults.put("cps.duration_seconds", 10);
+        defaults.put("cps.cooldown_ms", 2000);
 
         // Freeze options
-        defaults.put("freeze.cooldown_ms", "500");
-        defaults.put("freeze.default_seconds", "0");
-        defaults.put("freeze.shift_seconds", "0");
-        defaults.put("freeze.logout_flag_enabled", "true");
-        defaults.put("freeze.visual_cage.enabled", "true");
+        defaults.put("freeze.cooldown_ms", 500);
+        defaults.put("freeze.default_seconds", 0);
+        defaults.put("freeze.shift_seconds", 0);
+        defaults.put("freeze.logout_flag_enabled", true);
+        defaults.put("freeze.visual_cage.enabled", true);
         defaults.put("freeze.visual_cage.particle", "SNOWFLAKE");
-        defaults.put("freeze.visual_cage.radius", "0.7");
+        defaults.put("freeze.visual_cage.radius", 0.7);
 
         // Teleport options
-        defaults.put("options.teleport_to_player", "true");
+        defaults.put("options.teleport_to_player", true);
 
         // Reports
-        defaults.put("reports.claim_timeout_seconds", "0");
-        defaults.put("reports.notify_reporter_on_claim", "true");
-        defaults.put("reports.notify_reporter_on_close", "true");
-        defaults.put("reports.notify_reporter_on_needs_info", "true");
+        defaults.put("reports.claim_timeout_seconds", 0);
+        defaults.put("reports.notify_reporter_on_claim", true);
+        defaults.put("reports.notify_reporter_on_close", true);
+        defaults.put("reports.notify_reporter_on_needs_info", true);
         defaults.put("reports.default_category", "GENERAL");
         defaults.put("reports.default_priority", "MEDIUM");
         defaults.put("redis.channels.alerts", "minestaff:alerts");
     }
 
     private void ensureDefaults() {
-        for (Map.Entry<String, String> e : defaults.entrySet()) {
+        for (Map.Entry<String, Object> e : defaults.entrySet()) {
             if (!config.isSet(e.getKey())) {
                 config.set(e.getKey(), e.getValue());
             }
