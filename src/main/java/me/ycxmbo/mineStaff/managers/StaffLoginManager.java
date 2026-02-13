@@ -96,11 +96,11 @@ public class StaffLoginManager {
         // Handle success/failure
         if (success) {
             clearFailedAttempts(uuid);
-            logSecurityEvent(p, "LOGIN_SUCCESS", "IP: " + safeIp(p));
+            logSecurityEvent(p, "LOGIN_SUCCESS", "");
         } else {
             incrementFailedAttempts(uuid);
             int attempts = failedAttempts.getOrDefault(uuid, 0);
-            logSecurityEvent(p, "LOGIN_FAILED", "Failed attempts: " + attempts + ", IP: " + safeIp(p));
+            logSecurityEvent(p, "LOGIN_FAILED", "Failed attempts: " + attempts);
         }
 
         return success;
@@ -205,8 +205,9 @@ public class StaffLoginManager {
 
     // Security logging
     private void logSecurityEvent(Player p, String event, String details) {
-        String message = String.format("[SECURITY] %s - Player: %s (%s) - %s",
-            event, p.getName(), p.getUniqueId(), details);
+        String message = details == null || details.isEmpty()
+            ? String.format("[SECURITY] %s - Player: %s (%s)", event, p.getName(), p.getUniqueId())
+            : String.format("[SECURITY] %s - Player: %s (%s) - %s", event, p.getName(), p.getUniqueId(), details);
         plugin.getLogger().info(message);
 
         // Also log to audit logger if available
