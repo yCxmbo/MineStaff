@@ -66,6 +66,16 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.tickets.StaffTicketManager staffTicketManager;
     private me.ycxmbo.mineStaff.integrations.CoreProtectIntegration coreProtectIntegration;
 
+    // New feature modules
+    private me.ycxmbo.mineStaff.punishments.PunishmentManager punishmentManager;
+    private me.ycxmbo.mineStaff.gui.PunishmentGUI punishmentGUI;
+    private me.ycxmbo.mineStaff.automod.AutoModManager autoModManager;
+    private me.ycxmbo.mineStaff.alts.AltDetectionManager altDetectionManager;
+    private me.ycxmbo.mineStaff.analytics.StaffAnalyticsManager staffAnalyticsManager;
+    private me.ycxmbo.mineStaff.gui.StaffStatsGUI staffStatsGUI;
+    private me.ycxmbo.mineStaff.gui.CooldownConfigGUI cooldownConfigGUI;
+    private me.ycxmbo.mineStaff.services.RollbackSnapshotService rollbackSnapshotService;
+
     // Cross-server features
     private me.ycxmbo.mineStaff.crossserver.CrossServerTeleport crossServerTeleport;
     private me.ycxmbo.mineStaff.crossserver.GlobalStaffList globalStaffList;
@@ -123,6 +133,14 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.crossserver.CrossServerTeleport getCrossServerTeleport() { return crossServerTeleport; }
     public me.ycxmbo.mineStaff.crossserver.GlobalStaffList getGlobalStaffList() { return globalStaffList; }
     public me.ycxmbo.mineStaff.crossserver.NetworkReportSync getNetworkReportSync() { return networkReportSync; }
+    public me.ycxmbo.mineStaff.punishments.PunishmentManager getPunishmentManager() { return punishmentManager; }
+    public me.ycxmbo.mineStaff.gui.PunishmentGUI getPunishmentGUI() { return punishmentGUI; }
+    public me.ycxmbo.mineStaff.automod.AutoModManager getAutoModManager() { return autoModManager; }
+    public me.ycxmbo.mineStaff.alts.AltDetectionManager getAltDetectionManager() { return altDetectionManager; }
+    public me.ycxmbo.mineStaff.analytics.StaffAnalyticsManager getStaffAnalyticsManager() { return staffAnalyticsManager; }
+    public me.ycxmbo.mineStaff.gui.StaffStatsGUI getStaffStatsGUI() { return staffStatsGUI; }
+    public me.ycxmbo.mineStaff.gui.CooldownConfigGUI getCooldownConfigGUI() { return cooldownConfigGUI; }
+    public me.ycxmbo.mineStaff.services.RollbackSnapshotService getRollbackSnapshotService() { return rollbackSnapshotService; }
 
     public synchronized void reloadConfigDrivenServices() {
         ProxyMessenger oldProxy = this.proxyMessenger;
@@ -135,12 +153,22 @@ public class MineStaff extends JavaPlugin {
             try { oldRedis.close(); } catch (Throwable t) { getLogger().warning("Redis bridge shutdown failed: " + t.getMessage()); }
         }
 
+        DiscordBridge oldDiscord = this.discordBridge;
+        if (oldDiscord != null) {
+            try { oldDiscord.shutdown(); } catch (Throwable t) { getLogger().warning("Discord bridge shutdown failed: " + t.getMessage()); }
+        }
+
         this.discordBridge = new DiscordBridge(this);
         this.proxyMessenger = new ProxyMessenger(this);
         this.redisBridge = new RedisBridge(this);
 
         try { proxyMessenger.init(); } catch (Throwable t) { getLogger().warning("Proxy messenger init failed: " + t.getMessage()); }
         try { redisBridge.init(); } catch (Throwable t) { getLogger().warning("Redis bridge init failed: " + t.getMessage()); }
+        try { discordBridge.startRelay(); } catch (Throwable t) { getLogger().warning("Discord relay start failed: " + t.getMessage()); }
+
+        // Reload feature modules that cache config
+        try { if (autoModManager != null) autoModManager.reload(); } catch (Throwable ignored) {}
+        try { if (rollbackSnapshotService != null) rollbackSnapshotService.start(); } catch (Throwable ignored) {}
 
         // Handle LoginGuardListener registration based on current config
         reloadLoginGuardListener();
@@ -224,6 +252,16 @@ public class MineStaff extends JavaPlugin {
         this.channelManager = new me.ycxmbo.mineStaff.channels.ChannelManager(this);
         this.staffTicketManager = new me.ycxmbo.mineStaff.tickets.StaffTicketManager(this);
         this.coreProtectIntegration = new me.ycxmbo.mineStaff.integrations.CoreProtectIntegration(this);
+
+        // New feature modules (analytics before punishment: punishment reports into it)
+        this.staffAnalyticsManager = new me.ycxmbo.mineStaff.analytics.StaffAnalyticsManager(this);
+        this.punishmentManager = new me.ycxmbo.mineStaff.punishments.PunishmentManager(this);
+        this.punishmentGUI = new me.ycxmbo.mineStaff.gui.PunishmentGUI(this);
+        this.autoModManager = new me.ycxmbo.mineStaff.automod.AutoModManager(this);
+        this.altDetectionManager = new me.ycxmbo.mineStaff.alts.AltDetectionManager(this);
+        this.staffStatsGUI = new me.ycxmbo.mineStaff.gui.StaffStatsGUI(this);
+        this.cooldownConfigGUI = new me.ycxmbo.mineStaff.gui.CooldownConfigGUI(this);
+        this.rollbackSnapshotService = new me.ycxmbo.mineStaff.services.RollbackSnapshotService(this);
 
         // Cross-server features (only if Redis enabled)
         if (getConfig().getBoolean("redis.enabled", false)) {
@@ -338,6 +376,18 @@ public class MineStaff extends JavaPlugin {
         if (getCommand("globalstafflist") != null) {
             getCommand("globalstafflist").setExecutor(new me.ycxmbo.mineStaff.commands.GlobalStaffListCommand(this));
         }
+        if (getCommand("punish") != null) {
+            getCommand("punish").setExecutor(new me.ycxmbo.mineStaff.commands.PunishCommand(this));
+        }
+        if (getCommand("alts") != null) {
+            getCommand("alts").setExecutor(new me.ycxmbo.mineStaff.commands.AltsCommand(this));
+        }
+        if (getCommand("staffstats") != null) {
+            getCommand("staffstats").setExecutor(new me.ycxmbo.mineStaff.commands.StaffStatsCommand(this));
+        }
+        if (getCommand("cooldowns") != null) {
+            getCommand("cooldowns").setExecutor(new me.ycxmbo.mineStaff.commands.CooldownsCommand(this));
+        }
 
         this.staffListGUICommand = new StaffListGUICommand(this);
         this.staffListCommand = new StaffListCommand(this);
@@ -377,6 +427,12 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new LuckPermsContextListener(this), this);
         Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ChannelChatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.StaffTicketsGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.PunishmentListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.PunishmentGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.ChatFilterListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.AltJoinListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.StaffStatsGUIListener(), this);
+        Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.CooldownConfigGUIListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("LiteBans") != null) {
             Bukkit.getPluginManager().registerEvents(new LiteBansBridgeListener(this), this);
@@ -419,6 +475,9 @@ public class MineStaff extends JavaPlugin {
         // Start automatic backups
         backupManager.startAutomaticBackups();
 
+        // Start periodic inventory snapshots (if enabled in config)
+        rollbackSnapshotService.start();
+
         getLogger().info("MineStaff enabled.");
     }
 
@@ -434,6 +493,9 @@ public class MineStaff extends JavaPlugin {
         try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
         try { if (followManager != null) followManager.stopAll(); } catch (Throwable ignored) {}
         try { if (backupManager != null) backupManager.stopAutomaticBackups(); } catch (Throwable ignored) {}
+        try { if (rollbackSnapshotService != null) rollbackSnapshotService.stop(); } catch (Throwable ignored) {}
+        try { if (staffAnalyticsManager != null) staffAnalyticsManager.flushAll(); } catch (Throwable ignored) {}
+        try { if (discordBridge != null) discordBridge.shutdown(); } catch (Throwable ignored) {}
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");

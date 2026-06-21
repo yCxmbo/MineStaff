@@ -23,6 +23,7 @@ MineStaff provides a comprehensive, all-in-one toolkit for staff teams with adva
 - Private staff-only chat via `/staffchat` or `/sc`
 - Toggle mode or use one-off messages
 - Cross-server support via Redis
+- **Two-way Discord integration**: outbound webhooks + rich embeds, plus an optional bot-token relay that mirrors a Discord channel back into in-game staff chat
 
 **Private Staff Channels**
 - Isolated communication channels for different roles
@@ -49,6 +50,23 @@ MineStaff provides a comprehensive, all-in-one toolkit for staff teams with adva
 - Integration with **LiteBans** for punishment history
 - GUI-based management interfaces
 
+**Built-in Punishment System**
+- `/punish <player>` opens an interactive punishment GUI with configurable templates
+- Issue bans, temp-bans, mutes, temp-mutes and kicks (`/punish <player> ban|mute|kick ...`)
+- **Selectable backend**: enforce punishments natively (`builtin`) or delegate to **LiteBans** (`litebans`)
+- Built-in backend enforces bans at login and mutes in chat, with full history (`/punish <player> check`)
+- Discord embeds for every punishment
+
+**Auto-Moderation**
+- Configurable chat filters: banned words, excessive caps, spam/flood, advertising
+- Per-filter actions: cancel, warn, or auto-mute
+- Bypass permission and real-time staff notifications
+
+**Alt-Account Detection**
+- `/alts <player>` lists a player's known alternate accounts
+- Automatic staff alerts on join, flagging linked accounts that are banned
+- Privacy-respecting: correlates **salted address hashes**, never storing or showing raw IPs
+
 **Staff Support Tickets**
 - Internal help desk for staff coordination
 - `/ticket` command with full lifecycle management
@@ -67,6 +85,7 @@ MineStaff provides a comprehensive, all-in-one toolkit for staff teams with adva
 
 **Inventory Rollback**
 - Death inventory restoration system
+- **Periodic inventory snapshots** of online players (configurable interval)
 - GUI-based rollback with timestamp tracking
 - View and restore previous inventories
 
@@ -107,6 +126,15 @@ MineStaff provides a comprehensive, all-in-one toolkit for staff teams with adva
 - Monitor all player commands (`/commandspy`)
 - View private messages (`/socialspy`)
 - Real-time tracking of player activity
+
+**Staff Activity Analytics**
+- `/staffstats` leaderboard and per-staff breakdowns (chat + GUI)
+- Tracks duty time, sessions, warnings issued, punishments issued, and reports handled
+- Persisted across restarts
+
+**Tool Cooldown Configuration**
+- `/cooldowns` GUI to view and adjust per-tool cooldowns/rate-limits live
+- Changes are written straight back to `config.yml`
 
 ### 📊 Enhanced GUIs
 
@@ -240,6 +268,8 @@ See [API.md](API.md) for complete documentation.
 | `/infractions <player>` | View/issue infractions | `staffmode.infractions` |
 | `/warn <player> <reason>` | Issue warnings | `staffmode.warn` |
 | `/notes <player> add\|list\|remove` | Manage player notes | `staffmode.notes` |
+| `/punish <player> [ban\|mute\|kick\|unban\|unmute\|check]` | Punishment GUI / direct actions | `staffmode.punish` |
+| `/alts <player>` | List a player's known alt accounts | `staffmode.alts` |
 
 ### Investigation Tools
 | Command | Description | Permission |
@@ -282,6 +312,12 @@ See [API.md](API.md) for complete documentation.
 |---------|-------------|------------|
 | `/backupdata [create\|list\|restore]` | Manage data backups | `staffmode.backup.manage` |
 | `/migrate <yaml-to-sql\|sql-to-yaml>` | Migrate storage format | `staffmode.admin` |
+
+### Analytics & Configuration
+| Command | Description | Permission |
+|---------|-------------|------------|
+| `/staffstats [player\|gui]` | View staff activity analytics | `staffmode.stats` |
+| `/cooldowns` | Configure per-tool cooldowns via GUI | `staffmode.cooldowns` |
 
 ---
 

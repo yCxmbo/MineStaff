@@ -164,6 +164,26 @@ commands:
     usage: /<command>
     aliases: [gsl, networkstaff, nstaff]
     permission: staffmode.stafflist.global
+  punish:
+    description: Open the punishment GUI or issue punishments directly
+    usage: /<command> <player> [ban|mute|kick|unban|unmute|check] [args]
+    aliases: [punishment, pun]
+    permission: staffmode.punish
+  alts:
+    description: List a player's known alternate accounts
+    usage: /<command> <player>
+    aliases: [alt, altcheck]
+    permission: staffmode.alts
+  staffstats:
+    description: View staff activity analytics
+    usage: /<command> [player|gui]
+    aliases: [sstats, staffanalytics]
+    permission: staffmode.stats
+  cooldowns:
+    description: Configure per-tool cooldowns via GUI
+    usage: /<command>
+    aliases: [toolcooldowns, cooldownconfig]
+    permission: staffmode.cooldowns
 
 permissions:
   staffmode.toggle:        { default: op }
@@ -263,3 +283,24 @@ permissions:
   staffmode.network.reports:
     description: View and manage network-wide reports
     default: op
+  staffmode.punish:
+    description: Use the punishment system (ban/mute/kick)
+    default: op
+  staffmode.punish.manage:
+    description: Remove punishments (unban/unmute)
+    default: op
+  staffmode.alts:
+    description: View and be notified about alternate accounts
+    default: op
+  staffmode.stats:
+    description: View staff activity analytics
+    default: op
+  staffmode.cooldowns:
+    description: Configure per-tool cooldowns
+    default: op
+  staffmode.automod.bypass:
+    description: Bypass automatic chat moderation
+    default: op
+  staffmode.rollback.snapshot.bypass:
+    description: Exclude this player from periodic inventory snapshots
+    default: false

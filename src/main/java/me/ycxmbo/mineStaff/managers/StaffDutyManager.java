@@ -26,6 +26,11 @@ public class StaffDutyManager {
     public void enterDuty(Player p) {
         if (isOnDuty(p)) return;
         duty.add(p.getUniqueId());
+        try {
+            if (plugin.getStaffAnalyticsManager() != null) {
+                plugin.getStaffAnalyticsManager().startSession(p.getUniqueId(), p.getName());
+            }
+        } catch (Throwable ignored) {}
         // Turn on staff mode via API for consistency and events
         MineStaffAPI.get().ifPresent(api -> api.setStaffMode(p, true, MineStaffAPI.ToggleCause.COMMAND));
         // Ensure vanish if configured
@@ -46,6 +51,11 @@ public class StaffDutyManager {
     public void exitDuty(Player p) {
         if (!isOnDuty(p)) return;
         duty.remove(p.getUniqueId());
+        try {
+            if (plugin.getStaffAnalyticsManager() != null) {
+                plugin.getStaffAnalyticsManager().endSession(p.getUniqueId());
+            }
+        } catch (Throwable ignored) {}
         // Turn off staff mode via API
         MineStaffAPI.get().ifPresent(api -> api.setStaffMode(p, false, MineStaffAPI.ToggleCause.COMMAND));
         // Optionally unvanish
