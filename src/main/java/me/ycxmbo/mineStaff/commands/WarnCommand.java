@@ -127,6 +127,12 @@ public class WarnCommand implements CommandExecutor {
                 .append(Component.text(activeWarnings.size(), NamedTextColor.RED)));
         target.sendMessage(Component.text("═══════════════════════════════════", NamedTextColor.RED));
 
+        // Record analytics for the issuing staff member
+        if (sender instanceof Player && plugin.getStaffAnalyticsManager() != null) {
+            try { plugin.getStaffAnalyticsManager().increment(issuerUuid, issuerName, "warnings"); }
+            catch (Throwable ignored) {}
+        }
+
         // Play sound
         plugin.getSoundManager().playSound(target, "warning.received");
 

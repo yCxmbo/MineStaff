@@ -344,6 +344,15 @@ public class ReportManager {
             try { plugin.getRedisBridge().publishReportUpdate(r); } catch (Throwable ignored) {}
         }
 
+        if (staff != null) {
+            try {
+                if (plugin.getStaffAnalyticsManager() != null) {
+                    org.bukkit.entity.Player claimer = org.bukkit.Bukkit.getPlayer(staff);
+                    plugin.getStaffAnalyticsManager().increment(staff, claimer != null ? claimer.getName() : null, "reports");
+                }
+            } catch (Throwable ignored) {}
+        }
+
         ensureClaimMonitor();
     }
 

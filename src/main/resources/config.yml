@@ -66,6 +66,12 @@ infractions:
 
 rollback:
   max-snapshots-per-player: 25
+  # Periodically snapshot online players' inventories (in addition to on-death).
+  periodic:
+    enabled: false
+    interval-seconds: 300
+    # Skip players whose inventory and ender chest are both empty.
+    skip-empty: true
 
 silent-chest:
   require-sneak: true
@@ -128,6 +134,14 @@ discord:
   enabled: false
   alerts_webhook: ""
   staffchat_webhook: ""
+  # Two-way relay: mirror a Discord channel into in-game staff chat.
+  # Requires a Discord bot with the "Message Content" privileged intent and
+  # read access to the channel. Outbound staff chat still uses the webhook above.
+  relay:
+    enabled: false
+    bot_token: ""
+    channel_id: ""
+    poll_seconds: 5
 history:
   days: 7
 
@@ -329,3 +343,74 @@ channels:
       format: "&a[Staff] &b{name}&7: &f{message}"
       permission: "staffmode.channel.staff"
       cross_server: true
+
+# Punishment system
+punishments:
+  # Which backend issues and enforces punishments:
+  #   builtin  - MineStaff stores and enforces punishments itself
+  #   litebans - delegate to LiteBans via console commands (no local enforcement)
+  backend: builtin
+  ban-screen:
+    header: "&cYou are banned from this server."
+  # Templates shown as clickable buttons in the /punish GUI.
+  # type: ban | mute | kick ; duration: perm or e.g. 1h, 3d
+  templates:
+    - name: "Cheating"
+      type: ban
+      duration: perm
+      reason: "Cheating / unfair advantage"
+    - name: "Ban Evasion"
+      type: ban
+      duration: perm
+      reason: "Ban evasion"
+    - name: "Temp Ban (3d)"
+      type: ban
+      duration: 3d
+      reason: "Rule violation"
+    - name: "Spam Mute (1h)"
+      type: mute
+      duration: 1h
+      reason: "Spamming chat"
+    - name: "Toxicity Mute (1d)"
+      type: mute
+      duration: 1d
+      reason: "Toxic behaviour"
+    - name: "Warning Kick"
+      type: kick
+      duration: perm
+      reason: "Please follow the rules"
+
+# Automatic chat moderation
+automod:
+  enabled: false
+  notify-staff: true
+  exempt-permission: "staffmode.automod.bypass"
+  # Mute duration used when a filter's action is "mute"
+  mute-duration: "10m"
+  filters:
+    banned-words:
+      enabled: true
+      action: cancel   # cancel | warn | mute
+      words: []
+    caps:
+      enabled: true
+      action: cancel
+      min-length: 8
+      max-percent: 70
+    spam:
+      enabled: true
+      action: cancel
+      repeat-threshold: 3   # identical messages in a row
+      flood-threshold: 5    # messages within the window
+      flood-seconds: 3
+    advertising:
+      enabled: true
+      action: warn
+      pattern: "(?i)(\\b\\d{1,3}(\\.\\d{1,3}){3}\\b|[a-z0-9.-]+\\.(com|net|org|gg|io|me|tv|fun|xyz)\\b)"
+
+# Alt-account detection (correlates salted address hashes; raw IPs are never stored)
+alts:
+  enabled: true
+  notify-staff: true
+  # Optional salt for address hashing. Changing it resets existing links.
+  salt: ""
