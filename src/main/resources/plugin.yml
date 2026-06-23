@@ -186,121 +186,309 @@ commands:
     permission: staffmode.cooldowns
 
 permissions:
-  staffmode.toggle:        { default: op }
-  staffmode.teleport:      { default: op }
-  staffmode.freeze:        { default: op }
-  staffmode.freeze.use:    { default: op }
-  staffmode.freeze.bypass: { default: false }
-  staffmode.inspect:       { default: op }
-  staffmode.vanish:        { default: op }
-  staffmode.see:
-    description: See vanished staff
+  # ── Wildcard ─────────────────────────────────────────────────────────────
+  staffmode.*:
+    description: Grants every MineStaff permission (server administrators)
+    default: false
+    children:
+      staffmode.toggle: true
+      staffmode.use: true
+      staffmode.duty: true
+      staffmode.login: true
+      staffmode.reload: true
+      staffmode.admin: true
+      staffmode.teleport: true
+      staffmode.freeze: true
+      staffmode.inspect: true
+      staffmode.vanish: true
+      staffmode.see: true
+      staffmode.cpscheck: true
+      staffmode.randomtp: true
+      staffmode.silentchest: true
+      staffmode.follow: true
+      staffmode.chat: true
+      staffmode.spy: true
+      staffmode.alerts: true
+      staffmode.punish: true
+      staffmode.punish.manage: true
+      staffmode.warn: true
+      staffmode.infractions: true
+      staffmode.rollback: true
+      staffmode.notes: true
+      staffmode.backup: true
+      staffmode.backup.receive: true
+      staffmode.backup.manage: true
+      staffmode.channel: true
+      staffmode.channel.admin: true
+      staffmode.channel.mod: true
+      staffmode.channel.staff: true
+      staffmode.tickets: true
+      staffmode.tickets.notify: true
+      staffmode.coreprotect: true
+      staffmode.coreprotect.rollback: true
+      staffmode.stafflist: true
+      staffmode.stafflist.global: true
+      staffmode.alts: true
+      staffmode.stats: true
+      staffmode.cooldowns: true
+      staffmode.automod.bypass: true
+      staffmode.profile: true
+
+  # ── Core ─────────────────────────────────────────────────────────────────
+  staffmode.toggle:
+    description: Toggle Staff Mode on/off
     default: op
-  staffmode.chat:          { default: op }
-  staffmode.alerts:        { default: op }
-  staffmode.report:        { default: true }
-  staffmode.infractions:   { default: op }
-  staffmode.infractions.add: { default: op }
-  staffmode.rollback:      { default: op }
-  staffmode.login:         { default: op }
+
+  staffmode.use:
+    description: Recognized as a staff member; included in the global staff list
+    default: op
+
+  staffmode.duty:
+    description: Toggle staff duty (also activates Staff Mode)
+    default: op
+
+  staffmode.login:
+    description: Use /stafflogin and /staff2fa
+    default: op
+
+  staffmode.reload:
+    description: Reload the MineStaff configuration
+    default: op
+
+  staffmode.admin:
+    description: Access administrative commands (data migration, etc.)
+    default: op
+
+  # ── Teleport ─────────────────────────────────────────────────────────────
+  staffmode.teleport:
+    description: Use the teleport staff tool to teleport to players
+    default: op
+    children:
+      staffmode.teleport.crossserver: true
+
+  staffmode.teleport.crossserver:
+    description: Teleport to players on other servers in the network
+    default: op
+
+  # ── Freeze ───────────────────────────────────────────────────────────────
+  staffmode.freeze:
+    description: Freeze and unfreeze players
+    default: op
+    children:
+      staffmode.freeze.use: true
+
+  staffmode.freeze.use:
+    description: Use the freeze tool from the staff tool belt (alias for staffmode.freeze)
+    default: op
+
+  staffmode.freeze.bypass:
+    description: Cannot be frozen by staff
+    default: false
+
+  # ── Inspect / Profile ────────────────────────────────────────────────────
+  staffmode.inspect:
+    description: Open the inspector GUI and offline inventory viewer
+    default: op
+    children:
+      staffmode.profile: true
+
+  staffmode.profile:
+    description: Open the player profile GUI
+    default: op
+
+  # ── Vanish ───────────────────────────────────────────────────────────────
+  staffmode.vanish:
+    description: Toggle vanish
+    default: op
+
+  staffmode.see:
+    description: See vanished staff members
+    default: op
+
+  # ── Staff tools ───────────────────────────────────────────────────────────
+  staffmode.cpscheck:
+    description: Run a CPS (clicks-per-second) check on a player
+    default: op
+
+  staffmode.randomtp:
+    description: Use the random teleport tool in Staff Mode
+    default: op
+
+  staffmode.silentchest:
+    description: Open containers silently while in Staff Mode
+    default: op
+
+  staffmode.follow:
+    description: Continuously follow another player (teleport to them)
+    default: op
+
+  staffmode.follow.bypass:
+    description: Cannot be followed by staff members
+    default: false
+
+  # ── Communication ─────────────────────────────────────────────────────────
+  staffmode.chat:
+    description: Send and receive staff chat messages
+    default: op
+
+  staffmode.spy:
+    description: Use CommandSpy and SocialSpy
+    default: op
+
+  # ── Reports ───────────────────────────────────────────────────────────────
+  staffmode.report:
+    description: File a player report with /report
+    default: true
+
+  staffmode.alerts:
+    description: Receive staff alerts; access the reports GUI and evidence system
+    default: op
+    children:
+      staffmode.reports.history: true
+      staffmode.reports.notify: true
+
+  staffmode.reports.history:
+    description: View a player's full report history
+    default: op
+
+  staffmode.reports.notify:
+    description: Receive cross-server report notifications via network sync
+    default: op
+
+  # ── Punishments ───────────────────────────────────────────────────────────
+  staffmode.punish:
+    description: Issue punishments (ban / mute / kick) via the punishment GUI or commands
+    default: op
+    children:
+      staffmode.punish.manage: true
+
+  staffmode.punish.manage:
+    description: Remove punishments (unban / unmute)
+    default: op
+
+  # ── Warnings ──────────────────────────────────────────────────────────────
+  staffmode.warn:
+    description: Issue and manage player warnings
+    default: op
+
+  # ── Infractions ───────────────────────────────────────────────────────────
+  staffmode.infractions:
+    description: View player infractions
+    default: op
+    children:
+      staffmode.infractions.add: true
+
+  staffmode.infractions.add:
+    description: Add infractions to a player's record
+    default: op
+
+  # ── Rollback / Snapshots ─────────────────────────────────────────────────
+  staffmode.rollback:
+    description: Use the inventory rollback GUI to restore player inventories
+    default: op
+
+  staffmode.rollback.snapshot.bypass:
+    description: Exclude this player from periodic inventory snapshots
+    default: false
+
+  # ── Notes ─────────────────────────────────────────────────────────────────
+  staffmode.notes:
+    description: Add, list, and remove notes on players
+    default: op
+
+  # ── Backup ────────────────────────────────────────────────────────────────
+  staffmode.backup:
+    description: Request immediate backup from other staff members via /backup
+    default: op
+    children:
+      staffmode.backup.receive: true
+      staffmode.backup.manage: true
+
+  staffmode.backup.receive:
+    description: Receive backup requests broadcast by other staff
+    default: op
+
+  staffmode.backup.manage:
+    description: Create, list, and restore plugin data backups with /backupdata
+    default: op
+
+  # ── Staff Channels ────────────────────────────────────────────────────────
+  staffmode.channel:
+    description: Use private staff channels with /channel
+    default: op
+    children:
+      staffmode.channel.admin: true
+      staffmode.channel.mod: true
+      staffmode.channel.staff: true
+
+  staffmode.channel.admin:
+    description: Access the admin staff channel
+    default: op
+
+  staffmode.channel.mod:
+    description: Access the moderator staff channel
+    default: op
+
+  staffmode.channel.staff:
+    description: Access the general staff channel
+    default: op
+
+  # ── Tickets ───────────────────────────────────────────────────────────────
+  staffmode.tickets:
+    description: Use the staff ticket system (/ticket)
+    default: op
+    children:
+      staffmode.tickets.notify: true
+
+  staffmode.tickets.notify:
+    description: Receive notifications for new and updated staff tickets
+    default: op
+
+  # ── CoreProtect ───────────────────────────────────────────────────────────
+  staffmode.coreprotect:
+    description: Use CoreProtect block-history lookups via /co
+    default: op
+    children:
+      staffmode.coreprotect.rollback: true
+
+  staffmode.coreprotect.rollback:
+    description: Perform CoreProtect rollbacks and restores
+    default: op
+
+  # ── Staff List ────────────────────────────────────────────────────────────
   staffmode.stafflist:
     description: Access any staff list command
     default: op
     children:
       staffmode.stafflist.gui: true
       staffmode.stafflist.text: true
+      staffmode.stafflist.global: true
+
   staffmode.stafflist.gui:
     description: Open the staff list GUI
     default: op
+
   staffmode.stafflist.text:
     description: View the staff list in chat
     default: op
-  staffmode.cpscheck:      { default: op }
-  staffmode.reload:        { default: op }
-  staffmode.duty:          { default: op }
-  staffmode.notes:         { default: op }
-  staffmode.profile:       { default: op }
-  staffmode.spy:           { default: op }
-  staffmode.randomtp:      { default: op }
-  staffmode.history:       { default: op }
-  staffmode.silentchest:
-    description: Open containers silently in Staff Mode
-    default: op
-  staffmode.backup:
-    description: Request backup from other staff members
-    default: op
-  staffmode.backup.receive:
-    description: Receive backup requests from other staff
-    default: op
-  staffmode.follow:
-    description: Follow other players continuously
-    default: op
-  staffmode.follow.bypass:
-    description: Cannot be followed by staff
-    default: false
-  staffmode.warn:
-    description: Issue and manage player warnings
-    default: op
-  staffmode.reports.history:
-    description: View player report history
-    default: op
-  staffmode.backup.manage:
-    description: Create and manage data backups
-    default: op
-  staffmode.channel:
-    description: Use private staff channels
-    default: op
-  staffmode.channel.admin:
-    description: Access admin channel
-    default: op
-  staffmode.channel.mod:
-    description: Access moderator channel
-    default: op
-  staffmode.channel.staff:
-    description: Access general staff channel
-    default: op
-  staffmode.admin:
-    description: Access all administrative commands
-    default: op
-  staffmode.tickets:
-    description: Use staff ticket system
-    default: op
-  staffmode.tickets.notify:
-    description: Receive notifications for new tickets
-    default: op
-  staffmode.coreprotect:
-    description: Use CoreProtect integration for block lookups
-    default: op
-  staffmode.coreprotect.rollback:
-    description: Perform rollbacks and restores with CoreProtect
-    default: op
-  staffmode.teleport.crossserver:
-    description: Teleport to players on other servers in the network
-    default: op
+
   staffmode.stafflist.global:
-    description: View network-wide staff list
+    description: View the network-wide staff list
     default: op
-  staffmode.network.reports:
-    description: View and manage network-wide reports
-    default: op
-  staffmode.punish:
-    description: Use the punishment system (ban/mute/kick)
-    default: op
-  staffmode.punish.manage:
-    description: Remove punishments (unban/unmute)
-    default: op
+
+  # ── Alts / Analytics / Config ─────────────────────────────────────────────
   staffmode.alts:
-    description: View and be notified about alternate accounts
+    description: View a player's known alternate accounts and receive alt-join alerts
     default: op
+
   staffmode.stats:
-    description: View staff activity analytics
+    description: View staff activity analytics and the leaderboard
     default: op
+
   staffmode.cooldowns:
-    description: Configure per-tool cooldowns
+    description: Configure per-tool cooldowns via the GUI
     default: op
+
   staffmode.automod.bypass:
-    description: Bypass automatic chat moderation
+    description: Bypass automatic chat moderation filters
     default: op
-  staffmode.rollback.snapshot.bypass:
-    description: Exclude this player from periodic inventory snapshots
-    default: false
