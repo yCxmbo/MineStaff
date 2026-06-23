@@ -4,7 +4,6 @@ import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.CPSCheckManager;
 import me.ycxmbo.mineStaff.managers.ConfigManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -20,15 +19,15 @@ public class CPSCheckCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String lbl, String[] args) {
-        if (!(sender instanceof Player p)) { sender.sendMessage("Only players."); return true; }
-        if (!p.hasPermission("staffmode.cpscheck")) { p.sendMessage(ChatColor.RED + "No permission."); return true; }
-        if (args.length < 1) { p.sendMessage(ChatColor.YELLOW + "Usage: /cpscheck <player>"); return true; }
+        ConfigManager configManager = plugin.getConfigManager();
+        if (!(sender instanceof Player p)) { sender.sendMessage(configManager.getMessage("only_players", "Only players can use this.")); return true; }
+        if (!p.hasPermission("staffmode.cpscheck")) { p.sendMessage(configManager.getMessage("no_permission", "You don't have permission.")); return true; }
+        if (args.length < 1) { p.sendMessage(configManager.getMessage("cpscheck_usage", "Usage: /cpscheck <player>")); return true; }
 
         OfflinePlayer off = Bukkit.getOfflinePlayer(args[0]);
-        if (!off.isOnline()) { p.sendMessage(ChatColor.RED + "Target must be online."); return true; }
+        if (!off.isOnline()) { p.sendMessage(configManager.getMessage("cpscheck_target_must_be_online", "That player must be online for a CPS check.")); return true; }
         Player target = off.getPlayer();
 
-        ConfigManager configManager = plugin.getConfigManager();
         var cfg = configManager.getConfig();
 
         CPSCheckManager cps = plugin.getCPSManager();

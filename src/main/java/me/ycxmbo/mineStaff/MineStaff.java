@@ -317,7 +317,7 @@ public class MineStaff extends JavaPlugin {
         }
         if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
         if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
-        StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this.staffDutyManager);
+        StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this);
         if (getCommand("staffduty") != null) getCommand("staffduty").setExecutor(staffDutyCommand);
         if (getCommand("duty") != null) getCommand("duty").setExecutor(staffDutyCommand);
         if (getCommand("commandspy") != null) getCommand("commandspy").setExecutor(new me.ycxmbo.mineStaff.commands.CommandSpyCommand(this));
