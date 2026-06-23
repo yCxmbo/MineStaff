@@ -8,17 +8,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles enhanced GUI interactions
  */
 public class EnhancedGUIListener implements Listener {
     private final MineStaff plugin;
-    private final Map<UUID, PendingInput> pendingInputs = new HashMap<>();
+    private final Map<UUID, PendingInput> pendingInputs = new ConcurrentHashMap<>();
     
     private enum InputType { SEARCH, JUMP_TO_PAGE }
     
@@ -62,7 +63,7 @@ public class EnhancedGUIListener implements Listener {
         String input = event.getMessage().trim();
         
         if (input.equalsIgnoreCase("cancel")) {
-            player.sendMessage("§cCancelled");
+            player.sendMessage(plugin.getConfigManager().getMessage("enhanced_gui_cancelled", "&7Cancelled."));
             return;
         }
         
@@ -83,21 +84,27 @@ public class EnhancedGUIListener implements Listener {
             switch (pending.type) {
                 case SEARCH -> {
                     ctx.setSearchQuery(input);
-                    player.sendMessage("§aSearch set to: §f" + input);
+                    player.sendMessage(plugin.getConfigManager()
+                            .getMessage("gui_search_set", "&a✔ Search: &f{query}")
+                            .replace("{query}", input));
                     gui.open(player);
                 }
                 case JUMP_TO_PAGE -> {
                     try {
                         int page = Integer.parseInt(input) - 1;
                         if (page < 0) {
-                            player.sendMessage("§cPage number must be positive!");
+                            player.sendMessage(plugin.getConfigManager()
+                                    .getMessage("gui_page_must_be_positive", "&c✖ Page number must be greater than zero."));
                             return;
                         }
                         ctx.jumpToPage(page);
-                        player.sendMessage("§aJumped to page " + (page + 1));
+                        player.sendMessage(plugin.getConfigManager()
+                                .getMessage("gui_jumped_to_page", "&a► Jumped to page &f{page}&a.")
+                                .replace("{page}", String.valueOf(page + 1)));
                         gui.open(player);
                     } catch (NumberFormatException e) {
-                        player.sendMessage("§cInvalid page number!");
+                        player.sendMessage(plugin.getConfigManager()
+                                .getMessage("gui_invalid_page", "&c✖ That is not a valid page number."));
                     }
                 }
             }
@@ -108,9 +115,12 @@ public class EnhancedGUIListener implements Listener {
         pendingInputs.put(player.getUniqueId(), new PendingInput(type, guiType));
     }
     
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        pendingInputs.remove(event.getPlayer().getUniqueId());
+    }
+
     private EnhancedReportsGUI getEnhancedReportsGUI() {
-        // This would need to be stored in MineStaff plugin
-        // For now, return null - full implementation would need plugin integration
-        return null;
+        return plugin.getEnhancedReportsGUI();
     }
 }

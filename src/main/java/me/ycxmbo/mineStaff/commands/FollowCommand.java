@@ -1,8 +1,7 @@
 package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -18,69 +17,53 @@ public class FollowCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        ConfigManager cfg = plugin.getConfigManager();
         if (!(sender instanceof Player player)) {
-            sender.sendMessage(plugin.getConfigManager().getMessage("only_players", "Only players can use this."));
+            sender.sendMessage(cfg.getMessage("only_players", "Only players can use this."));
             return true;
         }
-
         if (!player.hasPermission("staffmode.follow")) {
-            player.sendMessage(plugin.getConfigManager().getMessage("no_permission", "You don't have permission."));
+            player.sendMessage(cfg.getMessage("no_permission", "No permission."));
             return true;
         }
-
-        // Check if staff mode is enabled
         if (!plugin.getStaffDataManager().isStaffMode(player)) {
-            player.sendMessage(Component.text("You must be in staff mode to use follow mode!", NamedTextColor.RED));
+            player.sendMessage(cfg.getMessage("follow_must_be_staffmode", "You must be in Staff Mode to use follow mode."));
             return true;
         }
 
-        // Toggle off if no args and already following
         if (args.length == 0) {
             if (plugin.getFollowManager().isFollowing(player)) {
                 plugin.getFollowManager().stopFollowing(player);
-                player.sendMessage(Component.text("Follow mode disabled.", NamedTextColor.GREEN));
+                player.sendMessage(cfg.getMessage("follow_disabled_self", "Follow mode disabled."));
                 return true;
             } else {
-                player.sendMessage(Component.text("Usage: /follow <player>", NamedTextColor.RED));
+                player.sendMessage(cfg.getMessage("follow_usage", "Usage: /follow <player>"));
                 return true;
             }
         }
 
-        String targetName = args[0];
-        Player target = Bukkit.getPlayer(targetName);
-
+        Player target = Bukkit.getPlayer(args[0]);
         if (target == null) {
-            player.sendMessage(Component.text("Player not found!", NamedTextColor.RED));
+            player.sendMessage(cfg.getMessage("player_not_found", "Player not found."));
             return true;
         }
-
         if (target.equals(player)) {
-            player.sendMessage(Component.text("You cannot follow yourself!", NamedTextColor.RED));
+            player.sendMessage(cfg.getMessage("follow_self", "You cannot follow yourself."));
             return true;
         }
-
-        // Check if target has bypass permission
         if (target.hasPermission("staffmode.follow.bypass")) {
-            player.sendMessage(Component.text("You cannot follow this player!", NamedTextColor.RED));
+            player.sendMessage(cfg.getMessage("follow_target_bypass", "You cannot follow that player."));
             return true;
         }
 
-        // Start following
         boolean success = plugin.getFollowManager().startFollowing(player, target);
-
         if (success) {
-            player.sendMessage(Component.text("Now following ", NamedTextColor.GREEN)
-                    .append(Component.text(target.getName(), NamedTextColor.YELLOW))
-                    .append(Component.text(". Use ", NamedTextColor.GREEN))
-                    .append(Component.text("/follow", NamedTextColor.YELLOW))
-                    .append(Component.text(" again to stop.", NamedTextColor.GREEN)));
-
-            // Log the action
+            player.sendMessage(cfg.getMessage("follow_started", "Now following {target}. Use /follow again to stop.")
+                    .replace("{target}", target.getName()));
             plugin.getActionLogger().log(player, "FOLLOW_START", "Target: " + target.getName());
         } else {
-            player.sendMessage(Component.text("Failed to start follow mode!", NamedTextColor.RED));
+            player.sendMessage(cfg.getMessage("follow_failed", "Failed to start follow mode."));
         }
-
         return true;
     }
 }

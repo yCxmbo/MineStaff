@@ -209,8 +209,10 @@ public class StaffTicketManager {
         // Notify ticket creator
         Player creator = Bukkit.getPlayer(ticket.createdBy);
         if (creator != null && creator.isOnline()) {
-            creator.sendMessage(String.format("§a§l[Staff Ticket] §r§f%s §7claimed your ticket: §e%s",
-                    staff.getName(), ticket.subject));
+            creator.sendMessage(plugin.getConfigManager()
+                    .getMessage("ticket_claimed_notify", "&a✔ &l[Ticket] &r&f{staff} &7has claimed your ticket &e#{ticket}&7.")
+                    .replace("{staff}", staff.getName())
+                    .replace("{ticket}", ticket.id.toString().substring(0, 8)));
         }
 
         return true;
@@ -248,8 +250,10 @@ public class StaffTicketManager {
         for (UUID uuid : toNotify) {
             Player player = Bukkit.getPlayer(uuid);
             if (player != null && player.isOnline()) {
-                player.sendMessage(String.format("§b§l[Staff Ticket] §r§f%s §7commented on ticket: §e%s",
-                        author.getName(), ticket.subject));
+                player.sendMessage(plugin.getConfigManager()
+                        .getMessage("ticket_comment_notify", "&b► &l[Ticket] &r&f{staff} &7replied to ticket &e#{ticket}&7.")
+                        .replace("{staff}", author.getName())
+                        .replace("{ticket}", ticket.id.toString().substring(0, 8)));
             }
         }
 
@@ -266,8 +270,10 @@ public class StaffTicketManager {
         // Notify ticket creator
         Player creator = Bukkit.getPlayer(ticket.createdBy);
         if (creator != null && creator.isOnline()) {
-            creator.sendMessage(String.format("§a§l[Staff Ticket] §r§7Your ticket §e%s §7has been resolved by §f%s",
-                    ticket.subject, resolver.getName()));
+            creator.sendMessage(plugin.getConfigManager()
+                    .getMessage("ticket_resolved_notify", "&a✔ &l[Ticket] &r&7Ticket &e#{ticket} &7has been resolved by &f{staff}&7.")
+                    .replace("{ticket}", ticket.id.toString().substring(0, 8))
+                    .replace("{staff}", resolver.getName()));
         }
 
         return true;

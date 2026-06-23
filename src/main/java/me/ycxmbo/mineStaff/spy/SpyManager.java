@@ -1,12 +1,12 @@
 package me.ycxmbo.mineStaff.spy;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class SpyManager {
-    private final Set<UUID> cmd = new HashSet<>();
-    private final Set<UUID> social = new HashSet<>();
+    private final Set<UUID> cmd = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> social = ConcurrentHashMap.newKeySet();
 
     public boolean isCommandSpy(UUID id) { return cmd.contains(id); }
     public void setCommandSpy(UUID id, boolean v) { if (v) cmd.add(id); else cmd.remove(id); }

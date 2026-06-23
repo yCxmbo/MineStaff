@@ -9,7 +9,6 @@ import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.tools.ToolManager;
 import me.ycxmbo.mineStaff.util.CooldownManager;
 import me.ycxmbo.mineStaff.util.SoundUtil;
-import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -102,7 +101,7 @@ public class ToolListener implements Listener {
 
             // Permission granularity
             boolean allowed = p.hasPermission("staffmode.freeze.use") || p.hasPermission("staffmode.freeze");
-            if (!allowed) { p.sendMessage(ChatColor.RED + "No permission."); return; }
+            if (!allowed) { p.sendMessage(plugin.getConfigManager().getMessage("no_permission", "&cYou don't have permission to do that.")); return; }
 
             int dur = cfg.getInt("freeze.default_seconds", 0);
             if (p.isSneaking()) dur = cfg.getInt("freeze.shift_seconds", dur);
@@ -160,37 +159,36 @@ public class ToolListener implements Listener {
         boolean newState = !data.isVanished(p);
         data.setVanished(p, newState);
 
-        // API + effects
         org.bukkit.Bukkit.getPluginManager().callEvent(new VanishToggleEvent(p, newState, MineStaffAPI.ToggleCause.TOOL));
         String key = newState ? "vanish_on" : "vanish_off";
-        String raw = plugin.getConfigManager().getConfig().getString("messages." + key, newState ? "&dVanish enabled." : "&dVanish disabled.");
-        p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
+        String def = newState ? "&5✔ Vanished. &8You are now invisible to non-staff." : "&d✖ Unvanished. &8You are now visible to all players.";
+        p.sendMessage(plugin.getConfigManager().getMessage(key, def));
     }
 
     private void useTeleport(Player p, int maxRange) {
         String key = "teleport";
+        ConfigManager configManager = plugin.getConfigManager();
         if (!cooldowns.ready(p.getUniqueId(), key)) {
             long ms = cooldowns.remaining(p.getUniqueId(), key);
-            String templ = plugin.getConfigManager().getConfig().getString("messages.teleport_cooldown", "&cTeleport cooldown: {seconds}s");
-            String msg = templ.replace("{seconds}", String.format(java.util.Locale.US, "%.1f", ms / 1000.0));
-            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', msg));
+            p.sendMessage(configManager.getMessage("teleport_cooldown", "&c⏱ Teleport on cooldown &8({seconds}s remaining)&c.")
+                    .replace("{seconds}", String.format(java.util.Locale.US, "%.1f", ms / 1000.0)));
             return;
         }
-        int range = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range", 60);
-        int rangeSneak = plugin.getConfigManager().getConfig().getInt("options.teleport_max_range_sneak", 120);
+        int range = configManager.getConfig().getInt("options.teleport_max_range", 60);
+        int rangeSneak = configManager.getConfig().getInt("options.teleport_max_range_sneak", 120);
         int usedRange = p.isSneaking() ? rangeSneak : range;
         Location eye = p.getEyeLocation();
 
-        // Optional: teleport to player in crosshair
-        boolean tpToPlayer = plugin.getConfigManager().getConfig().getBoolean("options.teleport_to_player", true);
+        boolean tpToPlayer = configManager.getConfig().getBoolean("options.teleport_to_player", true);
         if (tpToPlayer) {
             try {
                 var ray = p.getWorld().rayTraceEntities(eye, eye.getDirection(), usedRange, entity -> entity instanceof Player && !entity.equals(p));
                 if (ray != null && ray.getHitEntity() instanceof Player target) {
                     p.teleport(target.getLocation());
-                    int cd = plugin.getConfigManager().getConfig().getInt("options.teleport_cooldown_ms", 1500);
+                    int cd = configManager.getConfig().getInt("options.teleport_cooldown_ms", 1500);
                     cooldowns.set(p.getUniqueId(), key, cd);
-                    p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
+                    p.sendMessage(configManager.getMessage("teleport_success", "&a✔ Teleported to &e{target}&a.")
+                            .replace("{target}", target.getName()));
                     return;
                 }
             } catch (Throwable ignored) {}
@@ -203,19 +201,17 @@ public class ToolListener implements Listener {
             last = b;
         }
         if (last == null) {
-            String raw = plugin.getConfigManager().getConfig().getString("messages.teleport_no_spot", "&cNo safe spot in sight.");
-            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
+            p.sendMessage(configManager.getMessage("teleport_no_spot", "&c✖ No safe landing spot within range."));
             return;
         }
 
         Location dest = last.getLocation().add(0.5, 1, 0.5);
         if (dest.getBlock().getType().isSolid() || dest.clone().add(0,1,0).getBlock().getType().isSolid()) {
-            String raw = plugin.getConfigManager().getConfig().getString("messages.teleport_blocked", "&cBlocked destination.");
-            p.sendMessage(org.bukkit.ChatColor.translateAlternateColorCodes('&', raw));
+            p.sendMessage(configManager.getMessage("teleport_blocked", "&c✖ Destination is blocked or unsafe."));
             return;
         }
         p.teleport(dest);
-        int cd = plugin.getConfigManager().getConfig().getInt("options.teleport_cooldown_ms", 1500);
+        int cd = configManager.getConfig().getInt("options.teleport_cooldown_ms", 1500);
         cooldowns.set(p.getUniqueId(), key, cd);
     }
 
@@ -241,13 +237,17 @@ public class ToolListener implements Listener {
             if (last == 0L || last < cutoff) continue; // inactive
             candidates.add(t);
         }
-        if (candidates.isEmpty()) { p.sendMessage(org.bukkit.ChatColor.RED + "No active non-staff players found."); return; }
+        if (candidates.isEmpty()) {
+            p.sendMessage(configManager.getMessage("teleport_no_active_players", "&c✖ No eligible players to teleport to."));
+            return;
+        }
         java.util.Collections.shuffle(candidates);
         Player target = candidates.get(0);
         p.teleport(target.getLocation());
         int cd = configManager.getConfig().getInt("randomtp.cooldown_ms", 2000);
         cooldowns.set(p.getUniqueId(), cdKey, cd);
-        p.sendMessage(org.bukkit.ChatColor.AQUA + "Teleported to " + target.getName());
+        p.sendMessage(configManager.getMessage("teleport_success", "&a✔ Teleported to &e{target}&a.")
+                .replace("{target}", target.getName()));
     }
 
     private String formatCpsMessage(String key, String def, Player target, int seconds) {

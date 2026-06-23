@@ -20,21 +20,22 @@ public class FreezeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        var cfg = plugin.getConfigManager();
         if (!(sender instanceof Player p)) {
-            sender.sendMessage(ChatColor.RED + "Only players.");
+            sender.sendMessage(cfg.getMessage("only_players", "Only players can use this."));
             return true;
         }
         if (!(p.hasPermission("staffmode.freeze.use") || p.hasPermission("staffmode.freeze"))) {
-            p.sendMessage(ChatColor.RED + "No permission.");
+            p.sendMessage(cfg.getMessage("no_permission", "You don't have permission."));
             return true;
         }
         if (args.length < 1) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /freeze <player> [seconds]");
+            p.sendMessage(cfg.getMessage("freeze_usage", "Usage: /freeze <player> [seconds]"));
             return true;
         }
         Player t = Bukkit.getPlayerExact(args[0]);
         if (t == null) {
-            p.sendMessage(ChatColor.RED + "Player not found.");
+            p.sendMessage(cfg.getMessage("player_not_found", "Player not found."));
             return true;
         }
         int seconds = 0;

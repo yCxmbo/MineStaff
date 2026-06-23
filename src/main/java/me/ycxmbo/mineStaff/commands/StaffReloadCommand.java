@@ -12,12 +12,13 @@ public class StaffReloadCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("staffmode.reload")) {
-            sender.sendMessage("No permission.");
+            sender.sendMessage(plugin.getConfigManager().getMessage("reload_no_permission", "No permission."));
             return true;
         }
+        plugin.getMessageManager().reload();
         plugin.getConfigManager().reload();
         plugin.reloadConfigDrivenServices();
-        sender.sendMessage("MineStaff reloaded.");
+        sender.sendMessage(plugin.getConfigManager().getMessage("reload_success", "MineStaff reloaded."));
         return true;
     }
 }

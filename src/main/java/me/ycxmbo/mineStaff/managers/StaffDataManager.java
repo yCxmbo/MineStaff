@@ -6,14 +6,15 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class StaffDataManager {
     private final MineStaff plugin;
-    private final Set<UUID> staffMode = new HashSet<>();
-    private final Set<UUID> frozen = new HashSet<>();
-    private final Set<UUID> vanished = new HashSet<>();
+    private final Set<UUID> staffMode = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> frozen = ConcurrentHashMap.newKeySet();
+    private final Set<UUID> vanished = ConcurrentHashMap.newKeySet();
 
-    private final Map<UUID, GameMode> previousGamemode = new HashMap<>();
+    private final Map<UUID, GameMode> previousGamemode = new ConcurrentHashMap<>();
 
     private static class InventorySnapshot {
         final ItemStack[] contents;
@@ -24,7 +25,7 @@ public class StaffDataManager {
             this.contents = contents; this.armor = armor; this.offhand = offhand; this.heldSlot = heldSlot;
         }
     }
-    private final Map<UUID, InventorySnapshot> savedInventories = new HashMap<>();
+    private final Map<UUID, InventorySnapshot> savedInventories = new ConcurrentHashMap<>();
 
     public StaffDataManager(MineStaff plugin) { this.plugin = plugin; }
 

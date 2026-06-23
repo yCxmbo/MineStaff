@@ -4,20 +4,20 @@ import me.ycxmbo.mineStaff.MineStaff;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Manages player follow mode for staff members
- */
-public class FollowManager {
+public class FollowManager implements Listener {
     private final MineStaff plugin;
-    private final Map<UUID, UUID> following = new HashMap<>(); // follower -> target
-    private final Map<UUID, BukkitTask> tasks = new HashMap<>();
-    private static final long FOLLOW_INTERVAL_TICKS = 20L; // 1 second
+    private final Map<UUID, UUID> following = new ConcurrentHashMap<>();
+    private final Map<UUID, BukkitTask> tasks = new ConcurrentHashMap<>();
+    private static final long FOLLOW_INTERVAL_TICKS = 20L;
 
     public FollowManager(MineStaff plugin) {
         this.plugin = plugin;
@@ -47,11 +47,11 @@ public class FollowManager {
                 return;
             }
 
-            // Stop if follower is no longer in staff mode
             if (!plugin.getStaffDataManager().isStaffMode(currentFollower)) {
                 stopFollowing(currentFollower);
                 if (currentFollower.isOnline()) {
-                    currentFollower.sendMessage("§cFollow mode disabled - you left staff mode.");
+                    currentFollower.sendMessage(plugin.getConfigManager()
+                            .getMessage("follow_disabled_no_staffmode", "&c✖ Follow mode disabled — you are no longer in staff mode."));
                 }
                 return;
             }
@@ -94,6 +94,11 @@ public class FollowManager {
         UUID targetId = following.get(follower.getUniqueId());
         if (targetId == null) return null;
         return Bukkit.getPlayer(targetId);
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        stopFollowing(e.getPlayer());
     }
 
     /**

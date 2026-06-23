@@ -72,7 +72,9 @@ public class PunishmentGUIListener implements Listener {
             case "unmute" -> pm.unmute(target, targetName, p.getName());
             default -> { return; }
         }
-        p.sendMessage(ChatColor.GREEN + "Applied " + action.toUpperCase() + " to " + targetName + ".");
+        p.sendMessage(plugin.getConfigManager().getMessage("punishment_applied", "&a✔ &e{type} &aapplied to &f{target}&a.")
+                .replace("{type}", action.toUpperCase())
+                .replace("{target}", targetName));
         p.closeInventory();
     }
 }

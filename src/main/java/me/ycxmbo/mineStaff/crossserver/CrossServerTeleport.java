@@ -39,39 +39,42 @@ public class CrossServerTeleport {
     
     public void teleportToPlayer(Player staff, String targetPlayerName) {
         if (!staff.hasPermission("staffmode.teleport.crossserver")) {
-            staff.sendMessage("§cYou don't have permission to use cross-server teleport!");
+            staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_no_permission", "&c✖ You don't have permission to use cross-server teleport."));
             return;
         }
-        
+
         Player localPlayer = Bukkit.getPlayerExact(targetPlayerName);
         if (localPlayer != null) {
             staff.teleport(localPlayer.getLocation());
-            staff.sendMessage("§aTeleported to " + targetPlayerName);
+            staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_success", "&a✔ Teleported to &f{target}&a.")
+                    .replace("{target}", targetPlayerName));
             return;
         }
-        
+
         queryPlayerLocation(staff, targetPlayerName);
     }
-    
+
     private void queryPlayerLocation(Player staff, String targetPlayerName) {
-        staff.sendMessage("§7Searching for player across network...");
-        
+        staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_searching", "&7⌛ Searching for &f{target} &7across the network...")
+                .replace("{target}", targetPlayerName));
+
         var redisBridge = plugin.getRedisBridge();
         if (redisBridge == null) {
-            staff.sendMessage("§cCross-server features are not enabled!");
+            staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_disabled", "&c✖ Cross-server features are not enabled on this server."));
             return;
         }
-        
+
         String channel = "minestaff:teleport:query";
         String message = serverName + "|" + staff.getUniqueId() + "|" + staff.getName() + "|" + targetPlayerName;
-        
+
         redisBridge.publish(channel, message);
-        
-        staff.sendMessage("§eWaiting for response from network...");
-        
+
+        staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_waiting", "&e⌛ Awaiting network response..."));
+
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!pendingTeleports.containsKey(staff.getUniqueId())) {
-                staff.sendMessage("§cPlayer " + targetPlayerName + " not found on any server!");
+                staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_not_found", "&c✖ Player &f{target} &cis not online on any server.")
+                        .replace("{target}", targetPlayerName));
             }
         }, 60L);
     }
@@ -95,10 +98,12 @@ public class CrossServerTeleport {
         if (staff == null) return;
         
         pendingTeleports.put(staffId, new PendingTeleport(targetServer, targetPlayerName));
-        
-        staff.sendMessage("§aPlayer found on server: §e" + targetServer);
-        staff.sendMessage("§7Initiating cross-server teleport...");
-        
+
+        staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_found", "&a✔ Found &f{target} &aon &e{server}&a.")
+                .replace("{target}", targetPlayerName)
+                .replace("{server}", targetServer));
+        staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_initiating", "&7⌛ Initiating transfer..."));
+
         sendPlayerToServer(staff, targetServer, targetPlayerName);
     }
     
@@ -108,12 +113,13 @@ public class CrossServerTeleport {
         out.writeUTF(server);
         
         player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
-        
+
         String channel = "minestaff:teleport:pending";
         String message = server + "|" + player.getUniqueId() + "|" + targetPlayer;
         plugin.getRedisBridge().publish(channel, message);
-        
-        player.sendMessage("§aSwitching to server " + server + "...");
+
+        player.sendMessage(plugin.getConfigManager().getMessage("csteleport_switching", "&a⌛ Connecting to &e{server}&a...")
+                .replace("{server}", server));
     }
     
     public void handlePlayerJoin(Player player) {

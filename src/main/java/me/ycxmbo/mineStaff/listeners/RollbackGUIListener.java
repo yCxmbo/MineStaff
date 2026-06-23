@@ -13,9 +13,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import java.util.UUID;
 
 public class RollbackGUIListener implements Listener {
+    private final MineStaff plugin;
     private final RollbackManager rb;
 
-    public RollbackGUIListener(MineStaff plugin) { this.rb = plugin.getRollbackManager(); }
+    public RollbackGUIListener(MineStaff plugin) {
+        this.plugin = plugin;
+        this.rb = plugin.getRollbackManager();
+    }
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
@@ -40,21 +44,22 @@ public class RollbackGUIListener implements Listener {
 
         OfflinePlayer off = Bukkit.getOfflinePlayer(targetId);
         if (!off.isOnline()) {
-            p.sendMessage(ChatColor.RED + "Target is not online for restore.");
+            p.sendMessage(plugin.getConfigManager().getMessage("rollback_target_offline_restore", "&c✖ That player is not online for inventory restore."));
             return;
         }
         Player target = off.getPlayer();
         var snaps = rb.getSnapshots(targetId);
         var snap = snaps.get(ts);
         if (snap == null) {
-            p.sendMessage(ChatColor.RED + "Snapshot not found.");
+            p.sendMessage(plugin.getConfigManager().getMessage("rollback_snapshot_not_found_restore", "&c✖ Snapshot not found."));
             return;
         }
         target.getInventory().setContents(snap.inv);
         target.getEnderChest().setContents(snap.ec);
         target.updateInventory();
-        p.sendMessage(ChatColor.GREEN + "Restored " + target.getName() + "'s inventory from snapshot.");
-        target.sendMessage(ChatColor.YELLOW + "Your inventory was restored by staff.");
+        p.sendMessage(plugin.getConfigManager().getMessage("rollback_restored_staff", "&a✔ Restored &e{target}&a's inventory from snapshot.")
+                .replace("{target}", target.getName()));
+        target.sendMessage(plugin.getConfigManager().getMessage("rollback_restored_target", "&e⚙ Your inventory has been restored by a staff member."));
         me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
                 "type","rollback","actor",p.getUniqueId().toString(),
                 "target",target.getUniqueId().toString(),

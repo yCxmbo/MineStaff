@@ -7,7 +7,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+
+import java.util.List;
 
 /**
  * Listener for staff tickets GUI interactions
@@ -75,10 +78,11 @@ public class StaffTicketsGUIListener implements Listener {
 
         // Ticket items (slots 9-53)
         if (slot >= 9 && slot < 54 && clicked.hasItemMeta() && clicked.getItemMeta().hasLore()) {
-            // Extract ticket ID from lore
-            String lore = clicked.getItemMeta().getLore().get(0); // First line has ID
-            if (lore.startsWith("§7ID: §8")) {
-                String shortId = lore.substring(8, 16); // Extract short ID
+            List<String> loreLines = clicked.getItemMeta().getLore();
+            if (loreLines == null || loreLines.isEmpty()) return;
+            String firstLine = loreLines.get(0);
+            if (firstLine.startsWith("§7ID: §8")) {
+                String shortId = firstLine.substring(8, 16);
                 player.closeInventory();
                 player.performCommand("ticket view " + shortId);
             }
@@ -93,5 +97,10 @@ public class StaffTicketsGUIListener implements Listener {
         if (title.startsWith("§6Staff Tickets")) {
             plugin.getStaffTicketsGUI().cleanup(player);
         }
+    }
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        plugin.getStaffTicketsGUI().cleanup(event.getPlayer());
     }
 }

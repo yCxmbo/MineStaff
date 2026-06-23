@@ -2,7 +2,6 @@ package me.ycxmbo.mineStaff.automod;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.util.AlertFormatter;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayDeque;
@@ -132,7 +131,9 @@ public class AutoModManager {
     /** Apply the consequences of a violation. Must run on the main thread. */
     public void punish(Player player, Violation v) {
         String label = label(v.type);
-        player.sendMessage(ChatColor.RED + "Your message was blocked: " + ChatColor.GRAY + label);
+        player.sendMessage(plugin.getConfigManager()
+                .getMessage("automod_blocked", "&c✖ Message blocked &8(reason: &7{reason}&8)")
+                .replace("{reason}", label));
 
         if (plugin.getConfig().getBoolean("automod.notify-staff", true)) {
             try {

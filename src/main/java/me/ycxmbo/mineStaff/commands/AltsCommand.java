@@ -2,6 +2,7 @@ package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.alts.AltDetectionManager;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -12,10 +13,6 @@ import org.bukkit.command.CommandSender;
 import java.util.Set;
 import java.util.UUID;
 
-/**
- * {@code /alts <player>} &mdash; list a player's known alternate accounts,
- * flagging any that are currently banned. No IP addresses are ever shown.
- */
 public class AltsCommand implements CommandExecutor {
     private final MineStaff plugin;
 
@@ -25,18 +22,19 @@ public class AltsCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        ConfigManager cfg = plugin.getConfigManager();
         if (!sender.hasPermission("staffmode.alts")) {
-            sender.sendMessage(plugin.getConfigManager().getMessage("no_permission", "You don't have permission."));
+            sender.sendMessage(cfg.getMessage("no_permission", "No permission."));
             return true;
         }
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.YELLOW + "Usage: /alts <player>");
+            sender.sendMessage(cfg.getMessage("alts_usage", "Usage: /alts <player>"));
             return true;
         }
 
         AltDetectionManager alts = plugin.getAltDetectionManager();
         if (alts == null || !alts.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + "Alt detection is disabled.");
+            sender.sendMessage(cfg.getMessage("alts_disabled", "Alt detection is disabled."));
             return true;
         }
 
@@ -45,9 +43,11 @@ public class AltsCommand implements CommandExecutor {
         String name = off.getName() != null ? off.getName() : args[0];
 
         Set<UUID> found = alts.getAlts(target);
-        sender.sendMessage(ChatColor.GOLD + "Known alts for " + name + " (" + found.size() + ")");
+        sender.sendMessage(cfg.getMessage("alts_known_header", "Known alts for {name} ({count})")
+                .replace("{name}", name)
+                .replace("{count}", String.valueOf(found.size())));
         if (found.isEmpty()) {
-            sender.sendMessage(ChatColor.GRAY + "No linked accounts found.");
+            sender.sendMessage(cfg.getMessage("alts_no_linked", "No linked accounts found."));
             return true;
         }
         for (UUID alt : found) {

@@ -3,7 +3,6 @@ package me.ycxmbo.mineStaff.commands;
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.managers.StaffLoginManager;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -23,11 +22,11 @@ public class StaffLoginCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!(sender instanceof Player p)) {
-            sender.sendMessage(ChatColor.RED + "Only players.");
+            sender.sendMessage(cfg.getMessage("only_players", "Only players can use this."));
             return true;
         }
         if (!p.hasPermission("staffmode.login")) {
-            p.sendMessage(ChatColor.RED + "No permission.");
+            p.sendMessage(cfg.getMessage("no_permission", "You don't have permission."));
             return true;
         }
         if (!cfg.isStaffLoginEnabled()) {
@@ -35,16 +34,16 @@ public class StaffLoginCommand implements CommandExecutor {
             return true;
         }
         if (args.length == 0) {
-            p.sendMessage(ChatColor.YELLOW + "Usage: /stafflogin <password> [otp] | setpassword <password> | change <oldPassword> <newPassword>");
+            p.sendMessage(cfg.getMessage("stafflogin_usage", "Usage: /stafflogin <password> [otp] | setpassword <password> | change <old> <new>"));
             return true;
         }
         if (args[0].equalsIgnoreCase("setpassword")) {
             if (args.length < 2) {
-                p.sendMessage(ChatColor.RED + "Usage: /stafflogin setpassword <password>");
+                p.sendMessage(cfg.getMessage("stafflogin_setpassword_usage", "Usage: /stafflogin setpassword <password>"));
                 return true;
             }
             if (login.hasPassword(p)) {
-                p.sendMessage(ChatColor.RED + "You already have a password. Use /stafflogin change <oldPassword> <newPassword>");
+                p.sendMessage(cfg.getMessage("stafflogin_already_has_password", "You already have a password. Use /stafflogin change <old> <new>."));
                 return true;
             }
             login.setPassword(p, args[1]);
@@ -53,7 +52,7 @@ public class StaffLoginCommand implements CommandExecutor {
             return true;
         } else if (args[0].equalsIgnoreCase("change")) {
             if (args.length < 3) {
-                p.sendMessage(ChatColor.RED + "Usage: /stafflogin change <oldPassword> <newPassword>");
+                p.sendMessage(cfg.getMessage("stafflogin_change_usage", "Usage: /stafflogin change <oldPassword> <newPassword>"));
                 return true;
             }
             if (!login.verifyPassword(p, args[1])) {
@@ -83,11 +82,11 @@ public class StaffLoginCommand implements CommandExecutor {
             }
             boolean require2fa = cfg.getConfig().getBoolean("security.2fa.enabled", false) && login.isTwoFactorEnabled(p);
             if (require2fa) {
-                if (args.length < 2) { p.sendMessage(ChatColor.RED + "OTP required. Usage: /stafflogin <password> <otp>"); return true; }
+                if (args.length < 2) { p.sendMessage(cfg.getMessage("stafflogin_otp_required", "OTP required. Usage: /stafflogin <password> <otp>")); return true; }
                 String otp = args[1];
                 String secret = login.getTwoFactorSecret(p);
                 if (secret == null || !me.ycxmbo.mineStaff.security.TwoFactorManager.verify(secret, otp, 1)) {
-                    p.sendMessage(ChatColor.RED + "Invalid OTP.");
+                    p.sendMessage(cfg.getMessage("stafflogin_invalid_otp", "Invalid OTP code. Please try again."));
                     return true;
                 }
             }

@@ -2,7 +2,6 @@ package me.ycxmbo.mineStaff.listeners;
 
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.StaffChatManager;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -27,7 +26,7 @@ public class StaffChatListener implements Listener {
         if (scm.isToggled(p)) {
             e.setCancelled(true);
             if (!p.hasPermission("staffmode.chat")) {
-                p.sendMessage(ChatColor.RED + "You lost permission for staff chat.");
+                p.sendMessage(plugin.getConfigManager().getMessage("staffchat_lost_permission", "&c⚠ You no longer have permission for staff chat."));
                 scm.setToggled(p, false);
                 return;
             }
@@ -39,7 +38,7 @@ public class StaffChatListener implements Listener {
         if (message.startsWith(prefix)) {
             e.setCancelled(true);
             if (!p.hasPermission("staffmode.chat")) {
-                p.sendMessage(ChatColor.RED + "You lost permission for staff chat.");
+                p.sendMessage(plugin.getConfigManager().getMessage("staffchat_lost_permission", "&c⚠ You no longer have permission for staff chat."));
                 return;
             }
             String trimmed = message.substring(prefix.length()).trim();

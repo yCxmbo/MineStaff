@@ -1,10 +1,10 @@
 package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.punishments.Punishment;
 import me.ycxmbo.mineStaff.punishments.PunishmentManager;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,11 +17,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Entry point for the built-in punishment system. With only a player argument it
- * opens the punishment GUI; subcommands allow direct ban/mute/kick/unban/unmute
- * and a punishment history view.
- */
 public class PunishCommand implements CommandExecutor {
     private final MineStaff plugin;
     private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm");
@@ -32,17 +27,13 @@ public class PunishCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        ConfigManager cfg = plugin.getConfigManager();
         if (!sender.hasPermission("staffmode.punish")) {
-            sender.sendMessage(plugin.getConfigManager().getMessage("no_permission", "You don't have permission."));
+            sender.sendMessage(cfg.getMessage("no_permission", "No permission."));
             return true;
         }
         if (args.length < 1) {
-            sender.sendMessage(ChatColor.YELLOW + "Usage:");
-            sender.sendMessage(ChatColor.GRAY + "  /punish <player>            " + ChatColor.DARK_GRAY + "open GUI");
-            sender.sendMessage(ChatColor.GRAY + "  /punish <player> ban <dur|perm> <reason>");
-            sender.sendMessage(ChatColor.GRAY + "  /punish <player> mute <dur|perm> <reason>");
-            sender.sendMessage(ChatColor.GRAY + "  /punish <player> kick <reason>");
-            sender.sendMessage(ChatColor.GRAY + "  /punish <player> unban|unmute|check");
+            sender.sendMessage(cfg.getMessage("punish_usage", "Usage: /punish <player> | ban/mute/kick/unban/unmute/check"));
             return true;
         }
 
@@ -55,7 +46,7 @@ public class PunishCommand implements CommandExecutor {
 
         if (args.length == 1) {
             if (!(sender instanceof Player p)) {
-                sender.sendMessage(ChatColor.RED + "Only players can open the GUI. Use a subcommand from console.");
+                sender.sendMessage(cfg.getMessage("punish_gui_only_players", "Only players can open the GUI."));
                 return true;
             }
             plugin.getPunishmentGUI().open(p, targetName, target);
@@ -64,67 +55,62 @@ public class PunishCommand implements CommandExecutor {
 
         String sub = args[1].toLowerCase();
         String staffName = sender.getName();
+        final String finalTargetName = targetName;
 
         switch (sub) {
             case "ban" -> {
-                if (args.length < 4) { sender.sendMessage(ChatColor.RED + "Usage: /punish <player> ban <dur|perm> <reason>"); return true; }
+                if (args.length < 4) { sender.sendMessage(cfg.getMessage("punish_ban_usage", "Usage: /punish <player> ban <dur|perm> <reason>")); return true; }
                 long dur = PunishmentManager.parseDuration(args[2]);
-                if (dur < 0) { sender.sendMessage(ChatColor.RED + "Invalid duration. Use e.g. 1h, 3d, perm."); return true; }
-                String reason = join(args, 3);
-                pm.ban(target, targetName, staffName, reason, dur);
-                sender.sendMessage(ChatColor.GREEN + "Banned " + targetName + ".");
+                if (dur < 0) { sender.sendMessage(cfg.getMessage("punish_invalid_duration", "Invalid duration.")); return true; }
+                pm.ban(target, finalTargetName, staffName, join(args, 3), dur);
+                sender.sendMessage(cfg.getMessage("punish_banned", "Banned {target}.").replace("{target}", finalTargetName));
             }
             case "mute" -> {
-                if (args.length < 4) { sender.sendMessage(ChatColor.RED + "Usage: /punish <player> mute <dur|perm> <reason>"); return true; }
+                if (args.length < 4) { sender.sendMessage(cfg.getMessage("punish_mute_usage", "Usage: /punish <player> mute <dur|perm> <reason>")); return true; }
                 long dur = PunishmentManager.parseDuration(args[2]);
-                if (dur < 0) { sender.sendMessage(ChatColor.RED + "Invalid duration. Use e.g. 1h, 3d, perm."); return true; }
-                String reason = join(args, 3);
-                pm.mute(target, targetName, staffName, reason, dur);
-                sender.sendMessage(ChatColor.GREEN + "Muted " + targetName + ".");
+                if (dur < 0) { sender.sendMessage(cfg.getMessage("punish_invalid_duration", "Invalid duration.")); return true; }
+                pm.mute(target, finalTargetName, staffName, join(args, 3), dur);
+                sender.sendMessage(cfg.getMessage("punish_muted", "Muted {target}.").replace("{target}", finalTargetName));
             }
             case "kick" -> {
-                if (args.length < 3) { sender.sendMessage(ChatColor.RED + "Usage: /punish <player> kick <reason>"); return true; }
-                pm.kick(target, targetName, staffName, join(args, 2));
-                sender.sendMessage(ChatColor.GREEN + "Kicked " + targetName + ".");
+                if (args.length < 3) { sender.sendMessage(cfg.getMessage("punish_kick_usage", "Usage: /punish <player> kick <reason>")); return true; }
+                pm.kick(target, finalTargetName, staffName, join(args, 2));
+                sender.sendMessage(cfg.getMessage("punish_kicked", "Kicked {target}.").replace("{target}", finalTargetName));
             }
             case "unban" -> {
-                if (!sender.hasPermission("staffmode.punish.manage")) { noManage(sender); return true; }
-                pm.unban(target, targetName, staffName);
-                sender.sendMessage(ChatColor.GREEN + "Unbanned " + targetName + ".");
+                if (!sender.hasPermission("staffmode.punish.manage")) { sender.sendMessage(cfg.getMessage("punish_no_manage", "No permission.")); return true; }
+                pm.unban(target, finalTargetName, staffName);
+                sender.sendMessage(cfg.getMessage("punish_unbanned", "Unbanned {target}.").replace("{target}", finalTargetName));
             }
             case "unmute" -> {
-                if (!sender.hasPermission("staffmode.punish.manage")) { noManage(sender); return true; }
-                pm.unmute(target, targetName, staffName);
-                sender.sendMessage(ChatColor.GREEN + "Unmuted " + targetName + ".");
+                if (!sender.hasPermission("staffmode.punish.manage")) { sender.sendMessage(cfg.getMessage("punish_no_manage", "No permission.")); return true; }
+                pm.unmute(target, finalTargetName, staffName);
+                sender.sendMessage(cfg.getMessage("punish_unmuted", "Unmuted {target}.").replace("{target}", finalTargetName));
             }
-            case "check" -> showHistory(sender, pm, target, targetName);
-            default -> sender.sendMessage(ChatColor.RED + "Unknown subcommand. Try ban|mute|kick|unban|unmute|check.");
+            case "check" -> showHistory(sender, pm, target, finalTargetName, cfg);
+            default -> sender.sendMessage(cfg.getMessage("punish_unknown_sub", "Unknown subcommand."));
         }
         return true;
     }
 
-    private void showHistory(CommandSender sender, PunishmentManager pm, UUID target, String name) {
+    private void showHistory(CommandSender sender, PunishmentManager pm, UUID target, String name, ConfigManager cfg) {
         if (pm.isLiteBansBackend()) {
-            sender.sendMessage(ChatColor.YELLOW + "LiteBans backend is active; use LiteBans history commands.");
+            sender.sendMessage(cfg.getMessage("punish_history_litebans", "LiteBans is active; use LiteBans history commands."));
             return;
         }
         List<Punishment> history = pm.getHistory(target);
-        sender.sendMessage(ChatColor.GOLD + "Punishment history for " + name + " (" + history.size() + ")");
+        sender.sendMessage(cfg.getMessage("punish_history_header", "Punishment history for {name} ({count})")
+                .replace("{name}", name).replace("{count}", String.valueOf(history.size())));
         if (history.isEmpty()) {
-            sender.sendMessage(ChatColor.GRAY + "No punishments on record.");
+            sender.sendMessage(cfg.getMessage("punish_history_empty", "No punishments on record."));
             return;
         }
         for (Punishment p : history) {
-            String status = p.isActive() && !p.isExpired() ? ChatColor.RED + "ACTIVE" : ChatColor.DARK_GRAY + "ended";
-            sender.sendMessage(ChatColor.GRAY + "#" + p.getId() + " " + ChatColor.WHITE + p.getType()
-                    + ChatColor.GRAY + " by " + p.getStaff() + " " + status);
-            sender.sendMessage(ChatColor.DARK_GRAY + "  " + fmt.format(new Date(p.getStart()))
+            String status = p.isActive() && !p.isExpired() ? "§cACTIVE" : "§8ended";
+            sender.sendMessage("§7#" + p.getId() + " §f" + p.getType() + " §7by " + p.getStaff() + " " + status);
+            sender.sendMessage("§8  " + fmt.format(new Date(p.getStart()))
                     + " | " + (p.isPermanent() ? "Permanent" : p.durationString()) + " | " + p.getReason());
         }
-    }
-
-    private void noManage(CommandSender sender) {
-        sender.sendMessage(ChatColor.RED + "You need staffmode.punish.manage to remove punishments.");
     }
 
     private String join(String[] args, int from) {

@@ -29,8 +29,8 @@ public class StaffModeCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!(sender instanceof Player p)) { sender.sendMessage(ChatColor.RED + "Only players."); return true; }
-        if (!p.hasPermission("staffmode.toggle")) { p.sendMessage(ChatColor.RED + "No permission."); return true; }
+        if (!(sender instanceof Player p)) { sender.sendMessage(config.getMessage("only_players", "Only players can use this.")); return true; }
+        if (!p.hasPermission("staffmode.toggle")) { p.sendMessage(config.getMessage("no_permission", "You don't have permission.")); return true; }
         if (config.isLoginRequired() && !loginManager.isLoggedIn(p)) {
             p.sendMessage(config.getMessage("login_required", "You must /stafflogin before using staff tools."));
             return true;

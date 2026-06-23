@@ -36,7 +36,8 @@ public class ProfileGUIListener implements Listener {
         if ("EC".equalsIgnoreCase(type)) offInv.openEnderChest(p, off);
         if ("HISTORY".equalsIgnoreCase(type)) {
             if (!me.ycxmbo.mineStaff.bridge.HistoryBridge.openHistory(me.ycxmbo.mineStaff.MineStaff.getInstance(), p, off.getName() != null ? off.getName() : off.getUniqueId().toString())) {
-                p.sendMessage(ChatColor.RED + "No history plugin detected (CoreProtect/Prism).");
+                p.sendMessage(me.ycxmbo.mineStaff.MineStaff.getInstance().getConfigManager()
+                        .getMessage("no_history_plugin", "&c✖ No block history plugin found &8(requires CoreProtect or Prism)&c."));
             }
         }
     }

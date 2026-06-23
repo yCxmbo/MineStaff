@@ -33,6 +33,7 @@ public class MineStaff extends JavaPlugin {
     public static MineStaff getInstance() { return instance; }
 
     // Core
+    private MessageManager messageManager;
     private ConfigManager configManager;
     private StaffDataManager staffDataManager;
     private StaffLoginManager staffLoginManager;
@@ -89,11 +90,13 @@ public class MineStaff extends JavaPlugin {
     private me.ycxmbo.mineStaff.warnings.WarningsGUI warningsGUI;
     private me.ycxmbo.mineStaff.gui.ReportHistoryGUI reportHistoryGUI;
     private me.ycxmbo.mineStaff.gui.StaffTicketsGUI staffTicketsGUI;
+    private me.ycxmbo.mineStaff.gui.enhanced.EnhancedReportsGUI enhancedReportsGUI;
 
     // Listeners that may need to be dynamically registered/unregistered
     private LoginGuardListener loginGuardListener;
 
     // Getters
+    public MessageManager getMessageManager() { return messageManager; }
     public ConfigManager getConfigManager() { return configManager; }
     public StaffDataManager getStaffDataManager() { return staffDataManager; }
     public StaffLoginManager getStaffLoginManager() { return staffLoginManager; }
@@ -129,6 +132,7 @@ public class MineStaff extends JavaPlugin {
     public me.ycxmbo.mineStaff.channels.ChannelManager getChannelManager() { return channelManager; }
     public me.ycxmbo.mineStaff.tickets.StaffTicketManager getStaffTicketManager() { return staffTicketManager; }
     public me.ycxmbo.mineStaff.gui.StaffTicketsGUI getStaffTicketsGUI() { return staffTicketsGUI; }
+    public me.ycxmbo.mineStaff.gui.enhanced.EnhancedReportsGUI getEnhancedReportsGUI() { return enhancedReportsGUI; }
     public me.ycxmbo.mineStaff.integrations.CoreProtectIntegration getCoreProtectIntegration() { return coreProtectIntegration; }
     public me.ycxmbo.mineStaff.crossserver.CrossServerTeleport getCrossServerTeleport() { return crossServerTeleport; }
     public me.ycxmbo.mineStaff.crossserver.GlobalStaffList getGlobalStaffList() { return globalStaffList; }
@@ -167,8 +171,8 @@ public class MineStaff extends JavaPlugin {
         try { discordBridge.startRelay(); } catch (Throwable t) { getLogger().warning("Discord relay start failed: " + t.getMessage()); }
 
         // Reload feature modules that cache config
-        try { if (autoModManager != null) autoModManager.reload(); } catch (Throwable ignored) {}
-        try { if (rollbackSnapshotService != null) rollbackSnapshotService.start(); } catch (Throwable ignored) {}
+        try { if (autoModManager != null) autoModManager.reload(); } catch (Throwable t) { getLogger().warning("AutoMod reload failed: " + t.getMessage()); }
+        try { if (rollbackSnapshotService != null) rollbackSnapshotService.start(); } catch (Throwable t) { getLogger().warning("Rollback snapshot restart failed: " + t.getMessage()); }
 
         // Handle LoginGuardListener registration based on current config
         reloadLoginGuardListener();
@@ -208,6 +212,7 @@ public class MineStaff extends JavaPlugin {
         logServerCompatibility();
 
         // Instantiate managers
+        this.messageManager    = new MessageManager(this);
         this.configManager     = new ConfigManager(this);
 
         // Validate configuration
@@ -275,6 +280,7 @@ public class MineStaff extends JavaPlugin {
         this.warningsGUI = new me.ycxmbo.mineStaff.warnings.WarningsGUI(this);
         this.reportHistoryGUI = new me.ycxmbo.mineStaff.gui.ReportHistoryGUI(this);
         this.staffTicketsGUI = new me.ycxmbo.mineStaff.gui.StaffTicketsGUI(this);
+        this.enhancedReportsGUI = new me.ycxmbo.mineStaff.gui.enhanced.EnhancedReportsGUI(this);
 
         boolean staffLoginEnabled = configManager.isStaffLoginEnabled();
         boolean loginRequired = configManager.isLoginRequired();
@@ -314,7 +320,7 @@ public class MineStaff extends JavaPlugin {
         }
         if (getCommand("staffreload") != null) getCommand("staffreload").setExecutor(new StaffReloadCommand(this));
         if (getCommand("reports") != null) getCommand("reports").setExecutor(new me.ycxmbo.mineStaff.commands.ReportsGUICommand(this));
-        StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this.staffDutyManager);
+        StaffDutyCommand staffDutyCommand = new StaffDutyCommand(this);
         if (getCommand("staffduty") != null) getCommand("staffduty").setExecutor(staffDutyCommand);
         if (getCommand("duty") != null) getCommand("duty").setExecutor(staffDutyCommand);
         if (getCommand("commandspy") != null) getCommand("commandspy").setExecutor(new me.ycxmbo.mineStaff.commands.CommandSpyCommand(this));
@@ -433,13 +439,15 @@ public class MineStaff extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.AltJoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.StaffStatsGUIListener(), this);
         Bukkit.getPluginManager().registerEvents(new me.ycxmbo.mineStaff.listeners.CooldownConfigGUIListener(this), this);
+        Bukkit.getPluginManager().registerEvents(followManager, this);
+        Bukkit.getPluginManager().registerEvents(new EnhancedGUIListener(this), this);
 
         if (Bukkit.getPluginManager().getPlugin("LiteBans") != null) {
             Bukkit.getPluginManager().registerEvents(new LiteBansBridgeListener(this), this);
         }
 
         // Optional: initialize reflection-based bridges for Vulcan/LiteBans alerts
-        try { me.ycxmbo.mineStaff.bridge.BridgeManager.initialize(this); } catch (Throwable ignored) {}
+        try { me.ycxmbo.mineStaff.bridge.BridgeManager.initialize(this); } catch (Throwable t) { getLogger().warning("BridgeManager init failed: " + t.getMessage()); }
 
         if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null) {
             try {
@@ -470,7 +478,7 @@ public class MineStaff extends JavaPlugin {
             }
         }
 
-        try { reportManager.ensureClaimMonitor(); } catch (Throwable ignored) {}
+        try { reportManager.ensureClaimMonitor(); } catch (Throwable t) { getLogger().warning("Claim monitor init failed: " + t.getMessage()); }
 
         // Start automatic backups
         backupManager.startAutomaticBackups();
@@ -484,18 +492,18 @@ public class MineStaff extends JavaPlugin {
     @Override
     public void onDisable() {
         // Persist and cleanup
-        try { vanishStore.save(); } catch (Throwable ignored) {}
-        try { configManager.saveStaffAccounts(); } catch (Throwable ignored) {}
-        try { if (reportManager != null) reportManager.shutdown(); } catch (Throwable ignored) {}
-        try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable ignored) {}
-        try { if (proxyMessenger != null) proxyMessenger.close(); } catch (Throwable ignored) {}
-        try { if (redisBridge != null) redisBridge.close(); } catch (Throwable ignored) {}
-        try { if (freezeService != null) freezeService.stop(); } catch (Throwable ignored) {}
-        try { if (followManager != null) followManager.stopAll(); } catch (Throwable ignored) {}
-        try { if (backupManager != null) backupManager.stopAutomaticBackups(); } catch (Throwable ignored) {}
-        try { if (rollbackSnapshotService != null) rollbackSnapshotService.stop(); } catch (Throwable ignored) {}
-        try { if (staffAnalyticsManager != null) staffAnalyticsManager.flushAll(); } catch (Throwable ignored) {}
-        try { if (discordBridge != null) discordBridge.shutdown(); } catch (Throwable ignored) {}
+        try { vanishStore.save(); } catch (Throwable t) { getLogger().warning("Vanish store save failed: " + t.getMessage()); }
+        try { configManager.saveStaffAccounts(); } catch (Throwable t) { getLogger().warning("Staff accounts save failed: " + t.getMessage()); }
+        try { if (reportManager != null) reportManager.shutdown(); } catch (Throwable t) { getLogger().warning("Report manager shutdown failed: " + t.getMessage()); }
+        try { if (sqlStorage != null) sqlStorage.close(); } catch (Throwable t) { getLogger().warning("SQL storage close failed: " + t.getMessage()); }
+        try { if (proxyMessenger != null) proxyMessenger.close(); } catch (Throwable t) { getLogger().warning("Proxy messenger close failed: " + t.getMessage()); }
+        try { if (redisBridge != null) redisBridge.close(); } catch (Throwable t) { getLogger().warning("Redis bridge close failed: " + t.getMessage()); }
+        try { if (freezeService != null) freezeService.stop(); } catch (Throwable t) { getLogger().warning("Freeze service stop failed: " + t.getMessage()); }
+        try { if (followManager != null) followManager.stopAll(); } catch (Throwable t) { getLogger().warning("Follow manager stop failed: " + t.getMessage()); }
+        try { if (backupManager != null) backupManager.stopAutomaticBackups(); } catch (Throwable t) { getLogger().warning("Backup manager stop failed: " + t.getMessage()); }
+        try { if (rollbackSnapshotService != null) rollbackSnapshotService.stop(); } catch (Throwable t) { getLogger().warning("Rollback snapshot stop failed: " + t.getMessage()); }
+        try { if (staffAnalyticsManager != null) staffAnalyticsManager.flushAll(); } catch (Throwable t) { getLogger().warning("Analytics flush failed: " + t.getMessage()); }
+        try { if (discordBridge != null) discordBridge.shutdown(); } catch (Throwable t) { getLogger().warning("Discord bridge shutdown failed: " + t.getMessage()); }
         // Unregister API service(s)
         getServer().getServicesManager().unregisterAll(this);
         getLogger().info("MineStaff disabled.");

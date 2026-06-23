@@ -44,7 +44,7 @@ public class LoginGuardListener implements Listener {
         if (!requiresLogin(p)) return;
         if (e.getFrom().getX() != e.getTo().getX() || e.getFrom().getY() != e.getTo().getY() || e.getFrom().getZ() != e.getTo().getZ()) {
             e.setTo(e.getFrom());
-            p.sendMessage(ChatColor.YELLOW + "Please /stafflogin to move.");
+            p.sendMessage(config.getMessage("login_move_restricted", "Please /stafflogin to move."));
         }
     }
 
@@ -55,7 +55,7 @@ public class LoginGuardListener implements Listener {
         String msg = e.getMessage().toLowerCase();
         if (msg.startsWith("/stafflogin")) return; // allow both /stafflogin and /stafflogin set
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin before using commands."));
+        p.sendMessage(config.getMessage("login_cmd_restricted", "Please /stafflogin before using commands."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -63,7 +63,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin before using chat."));
+        p.sendMessage(config.getMessage("login_chat_restricted", "Please /stafflogin before using chat."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -71,7 +71,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to interact."));
+        p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -79,7 +79,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to interact."));
+        p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -87,7 +87,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to break blocks."));
+        p.sendMessage(config.getMessage("login_break_restricted", "Please /stafflogin to break blocks."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -95,7 +95,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to place blocks."));
+        p.sendMessage(config.getMessage("login_place_restricted", "Please /stafflogin to place blocks."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -103,7 +103,7 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to drop items."));
+        p.sendMessage(config.getMessage("login_drop_restricted", "Please /stafflogin to drop items."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -111,7 +111,7 @@ public class LoginGuardListener implements Listener {
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to use inventory."));
+        p.sendMessage(config.getMessage("login_inventory_restricted", "Please /stafflogin to use inventory."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -119,7 +119,7 @@ public class LoginGuardListener implements Listener {
         if (!(e.getWhoClicked() instanceof Player p)) return;
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to use inventory."));
+        p.sendMessage(config.getMessage("login_inventory_restricted", "Please /stafflogin to use inventory."));
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -127,7 +127,7 @@ public class LoginGuardListener implements Listener {
         if (!(e.getDamager() instanceof Player p)) return;
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
-        p.sendMessage(config.getMessage("login_required", "Please /stafflogin to fight."));
+        p.sendMessage(config.getMessage("login_fight_restricted", "Please /stafflogin to fight."));
     }
 
     @EventHandler(ignoreCancelled = true)

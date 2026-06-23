@@ -11,6 +11,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * GUI for viewing and managing staff tickets
@@ -18,8 +19,8 @@ import java.util.*;
 public class StaffTicketsGUI {
     private final MineStaff plugin;
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd, HH:mm");
-    private final Map<UUID, Integer> viewerPages = new HashMap<>();
-    private final Map<UUID, String> viewerFilters = new HashMap<>();
+    private final Map<UUID, Integer> viewerPages = new ConcurrentHashMap<>();
+    private final Map<UUID, String> viewerFilters = new ConcurrentHashMap<>();
 
     public StaffTicketsGUI(MineStaff plugin) {
         this.plugin = plugin;
@@ -47,15 +48,17 @@ public class StaffTicketsGUI {
         Map<String, Integer> stats = plugin.getStaffTicketManager().getTicketStats();
         ItemStack statsItem = new ItemStack(Material.PAPER);
         ItemMeta statsMeta = statsItem.getItemMeta();
-        statsMeta.setDisplayName("§6Ticket Statistics");
-        List<String> statsLore = new ArrayList<>();
-        statsLore.add("§7Total: §f" + stats.get("total"));
-        statsLore.add("§7Open: §c" + stats.get("open"));
-        statsLore.add("§7Claimed: §e" + stats.get("claimed"));
-        statsLore.add("§7Resolved: §a" + stats.get("resolved"));
-        statsLore.add("§7Closed: §8" + stats.get("closed"));
-        statsMeta.setLore(statsLore);
-        statsItem.setItemMeta(statsMeta);
+        if (statsMeta != null) {
+            statsMeta.setDisplayName("§6Ticket Statistics");
+            List<String> statsLore = new ArrayList<>();
+            statsLore.add("§7Total: §f" + stats.get("total"));
+            statsLore.add("§7Open: §c" + stats.get("open"));
+            statsLore.add("§7Claimed: §e" + stats.get("claimed"));
+            statsLore.add("§7Resolved: §a" + stats.get("resolved"));
+            statsLore.add("§7Closed: §8" + stats.get("closed"));
+            statsMeta.setLore(statsLore);
+            statsItem.setItemMeta(statsMeta);
+        }
         inv.setItem(8, statsItem);
 
         // Display tickets
@@ -72,24 +75,30 @@ public class StaffTicketsGUI {
         if (page > 0) {
             ItemStack prev = new ItemStack(Material.ARROW);
             ItemMeta prevMeta = prev.getItemMeta();
-            prevMeta.setDisplayName("§a← Previous Page");
-            prev.setItemMeta(prevMeta);
+            if (prevMeta != null) {
+                prevMeta.setDisplayName("§a← Previous Page");
+                prev.setItemMeta(prevMeta);
+            }
             inv.setItem(48, prev);
         }
 
         if (page < totalPages - 1) {
             ItemStack next = new ItemStack(Material.ARROW);
             ItemMeta nextMeta = next.getItemMeta();
-            nextMeta.setDisplayName("§aNext Page →");
-            next.setItemMeta(nextMeta);
+            if (nextMeta != null) {
+                nextMeta.setDisplayName("§aNext Page →");
+                next.setItemMeta(nextMeta);
+            }
             inv.setItem(50, next);
         }
 
         // Close button
         ItemStack close = new ItemStack(Material.BARRIER);
         ItemMeta closeMeta = close.getItemMeta();
-        closeMeta.setDisplayName("§cClose");
-        close.setItemMeta(closeMeta);
+        if (closeMeta != null) {
+            closeMeta.setDisplayName("§cClose");
+            close.setItemMeta(closeMeta);
+        }
         inv.setItem(49, close);
 
         viewer.openInventory(inv);
@@ -108,6 +117,7 @@ public class StaffTicketsGUI {
     private ItemStack createFilterButton(String name, String filterValue, String currentFilter, Material material) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
         meta.setDisplayName(name);
 
         List<String> lore = new ArrayList<>();
@@ -133,6 +143,7 @@ public class StaffTicketsGUI {
 
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
         meta.setDisplayName("§f" + ticket.subject);
 
         List<String> lore = new ArrayList<>();

@@ -1,24 +1,4 @@
-messages:
-  prefix: "&8[&aMineStaff&8]&r "
-  no_permission: "&cYou don't have permission."
-  only_players: "&cOnly players can use this."
-  staffmode_enabled: "&aStaff Mode enabled."
-  staffmode_disabled: "&cStaff Mode disabled."
-  login_required: "&eYou must /stafflogin before using staff tools."
-  login_success: "&aLogin successful."
-  login_failure: "&cIncorrect password."
-  login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
-  password_set: "&aPassword set."
-  staff_login_disabled: "&cStaff login is disabled."
-  vanish_on: "&dVanish enabled."
-  vanish_off: "&dVanish disabled."
-  teleport_cooldown: "&cTeleport cooldown: {seconds}s"
-  teleport_blocked: "&cBlocked destination."
-  teleport_no_spot: "&cNo safe spot in sight."
-  cps_started: "&aStarted {seconds}s CPS test on {target}."
-  cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
-  cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
-  cps_already_running: "&cA CPS test is already running for {target}."
+# All player-facing messages are now in messages.yml — edit that file instead.
 
 options:
   staff_login_enabled: true
