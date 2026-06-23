@@ -3,7 +3,6 @@ package me.ycxmbo.mineStaff.listeners;
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.managers.StaffDataManager;
 import me.ycxmbo.mineStaff.tools.ToolManager;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -14,8 +13,12 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.inventory.ItemStack;
 
 public class StaffToolGuardListener implements Listener {
+    private final MineStaff plugin;
     private final StaffDataManager data;
-    public StaffToolGuardListener(MineStaff plugin) { this.data = plugin.getStaffDataManager(); }
+    public StaffToolGuardListener(MineStaff plugin) {
+        this.plugin = plugin;
+        this.data = plugin.getStaffDataManager();
+    }
 
     private boolean isStaffTool(ItemStack it) {
         if (it == null) return false;
@@ -42,7 +45,7 @@ public class StaffToolGuardListener implements Listener {
                 if (isStaffTool(hb)) touching = true;
             }
         }
-        if (touching) { e.setCancelled(true); p.sendMessage(ChatColor.RED + "You can't move staff tools in Staff Mode."); }
+        if (touching) { e.setCancelled(true); p.sendMessage(plugin.getConfigManager().getMessage("staff_tool_guard", "&c✖ Staff tools cannot be moved while in Staff Mode.")); }
     }
 
     @EventHandler
@@ -51,7 +54,7 @@ public class StaffToolGuardListener implements Listener {
         if (!data.isStaffMode(p)) return;
         if (isStaffTool(e.getCursor()) || isStaffTool(e.getOldCursor())) {
             e.setCancelled(true);
-            p.sendMessage(ChatColor.RED + "You can't move staff tools in Staff Mode.");
+            p.sendMessage(plugin.getConfigManager().getMessage("staff_tool_guard", "&c✖ Staff tools cannot be moved while in Staff Mode."));
         }
     }
 }

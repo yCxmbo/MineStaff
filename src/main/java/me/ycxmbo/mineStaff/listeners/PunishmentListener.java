@@ -3,7 +3,6 @@ package me.ycxmbo.mineStaff.listeners;
 import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.punishments.Punishment;
 import me.ycxmbo.mineStaff.punishments.PunishmentManager;
-import org.bukkit.ChatColor;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -39,8 +38,11 @@ public class PunishmentListener implements Listener {
         Punishment mute = pm.getActiveMute(e.getPlayer().getUniqueId());
         if (mute != null) {
             e.setCancelled(true);
-            e.getPlayer().sendMessage(ChatColor.RED + "You are muted: " + ChatColor.WHITE + mute.getReason()
-                    + ChatColor.GRAY + (mute.isPermanent() ? " (permanent)" : " (" + mute.durationString() + " left)"));
+            String expires = mute.isPermanent() ? "permanent" : mute.durationString() + " left";
+            e.getPlayer().sendMessage(plugin.getConfigManager()
+                    .getMessage("punishment_muted_blocked", "&c✖ You are muted: &f{reason} &8(expires {expires})")
+                    .replace("{reason}", mute.getReason())
+                    .replace("{expires}", expires));
         }
     }
 }

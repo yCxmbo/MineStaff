@@ -223,8 +223,7 @@ public class EnhancedReportsGUI {
             openWithContext(viewer, ctx);
         } else {
             viewer.closeInventory();
-            viewer.sendMessage("§e§lSearch: §7Type your search query in chat (or 'cancel' to abort)");
-            // Chat listener would handle the input
+            viewer.sendMessage(plugin.getConfigManager().getMessage("gui_search_prompt", "&e► Type your search query in chat, or type &fcancel &eto abort."));
         }
     }
     
@@ -244,8 +243,7 @@ public class EnhancedReportsGUI {
     
     private void handleJumpToPage(Player viewer, GUIContext<ReportManager.Report> ctx) {
         viewer.closeInventory();
-        viewer.sendMessage("§e§lJump to Page: §7Type a page number in chat (or 'cancel' to abort)");
-        // Chat listener would handle the input
+        viewer.sendMessage(plugin.getConfigManager().getMessage("gui_page_jump_prompt", "&e► Type a page number in chat, or type &fcancel &eto abort."));
     }
     
     private void handleReportClick(Player viewer, GUIContext<ReportManager.Report> ctx, int slot, 
@@ -261,12 +259,11 @@ public class EnhancedReportsGUI {
             ctx.toggleSelection(report);
             openWithContext(viewer, ctx);
         } else if (isRightClick) {
-            // Claim report
-            viewer.sendMessage("§aClaimed report for " + getPlayerName(report.target));
+            viewer.sendMessage(plugin.getConfigManager().getMessage("gui_claimed_report", "&a✔ Claimed report for &e{target}&a.")
+                    .replace("{target}", getPlayerName(report.target)));
             viewer.closeInventory();
         } else {
-            // View details
-            viewer.sendMessage("§eReport Details:");
+            viewer.sendMessage(plugin.getConfigManager().getMessage("gui_report_details_header", "&e&lReport Details"));
             viewer.sendMessage("§7Reported: §f" + getPlayerName(report.target));
             viewer.sendMessage("§7By: §f" + getPlayerName(report.reporter));
             viewer.sendMessage("§7Reason: §f" + report.reason);
@@ -276,18 +273,19 @@ public class EnhancedReportsGUI {
     private void handleBulkAction(Player viewer, GUIContext<ReportManager.Report> ctx) {
         Set<ReportManager.Report> selected = ctx.getSelectedItems();
         if (selected.isEmpty()) {
-            viewer.sendMessage("§cNo reports selected!");
+            viewer.sendMessage(plugin.getConfigManager().getMessage("gui_no_reports_selected", "&c✖ No reports are selected."));
             return;
         }
-        
+
         int closed = 0;
         for (ReportManager.Report report : selected) {
             plugin.getReportManager().closeReport(report.id, viewer);
             closed++;
         }
-        
+
         ctx.clearSelection();
-        viewer.sendMessage("§aClosed " + closed + " report(s)");
+        viewer.sendMessage(plugin.getConfigManager().getMessage("gui_closed_reports", "&a✔ Closed &e{count} &areport(s).")
+                .replace("{count}", String.valueOf(closed)));
         
         // Refresh
         ctx = new GUIContext<>(viewer, plugin.getReportManager().getActiveReports());

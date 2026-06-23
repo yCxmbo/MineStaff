@@ -62,7 +62,7 @@ public class EnhancedGUIListener implements Listener {
         String input = event.getMessage().trim();
         
         if (input.equalsIgnoreCase("cancel")) {
-            player.sendMessage("§cCancelled");
+            player.sendMessage(plugin.getConfigManager().getMessage("enhanced_gui_cancelled", "&7Cancelled."));
             return;
         }
         
@@ -83,21 +83,27 @@ public class EnhancedGUIListener implements Listener {
             switch (pending.type) {
                 case SEARCH -> {
                     ctx.setSearchQuery(input);
-                    player.sendMessage("§aSearch set to: §f" + input);
+                    player.sendMessage(plugin.getConfigManager()
+                            .getMessage("gui_search_set", "&a✔ Search: &f{query}")
+                            .replace("{query}", input));
                     gui.open(player);
                 }
                 case JUMP_TO_PAGE -> {
                     try {
                         int page = Integer.parseInt(input) - 1;
                         if (page < 0) {
-                            player.sendMessage("§cPage number must be positive!");
+                            player.sendMessage(plugin.getConfigManager()
+                                    .getMessage("gui_page_must_be_positive", "&c✖ Page number must be greater than zero."));
                             return;
                         }
                         ctx.jumpToPage(page);
-                        player.sendMessage("§aJumped to page " + (page + 1));
+                        player.sendMessage(plugin.getConfigManager()
+                                .getMessage("gui_jumped_to_page", "&a► Jumped to page &f{page}&a.")
+                                .replace("{page}", String.valueOf(page + 1)));
                         gui.open(player);
                     } catch (NumberFormatException e) {
-                        player.sendMessage("§cInvalid page number!");
+                        player.sendMessage(plugin.getConfigManager()
+                                .getMessage("gui_invalid_page", "&c✖ That is not a valid page number."));
                     }
                 }
             }

@@ -31,7 +31,7 @@ public class ChannelChatListener implements Listener {
         // Get active channel
         StaffChannel channel = plugin.getChannelManager().getActiveChannel(player);
         if (channel == null) {
-            player.sendMessage("§cNo active channel! Use /channel join <name>");
+            player.sendMessage(plugin.getConfigManager().getMessage("channel_no_active", "&c✖ No channel active. Use &f/channel join <name>&c."));
             return;
         }
 

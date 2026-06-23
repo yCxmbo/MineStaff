@@ -144,6 +144,7 @@ ticket_new_notify: "&e► &l[Ticket] &r&7New ticket from &f{player}&7: &e{subjec
 # ─── Cross-Server Teleport ────────────────────────────────────
 # {target}, {server}
 csteleport_no_permission: "&c✖ You don't have permission to use cross-server teleport."
+csteleport_usage: "&eUsage: &f/csteleport <player>"
 csteleport_searching: "&7⌛ Searching for &f{target} &7across the network..."
 csteleport_disabled: "&c✖ Cross-server features are not enabled on this server."
 csteleport_waiting: "&e⌛ Awaiting network response..."
@@ -203,3 +204,193 @@ cpscheck_target_must_be_online: "&c✖ That player must be online for a CPS chec
 # ─── Reload ───────────────────────────────────────────────────
 reload_success: "&a✔ MineStaff configuration reloaded successfully."
 reload_no_permission: "&c✖ You don't have permission to reload MineStaff."
+
+# ─── Staff List ───────────────────────────────────────────────
+# {list}
+stafflist_header: "&b► Online staff in Staff Mode: &f{list}"
+stafflist_empty: "&7none"
+
+# ─── Rollback Command ─────────────────────────────────────────
+rollback_usage: "&eUsage: &f/rollback <player>"
+
+# ─── Evidence ─────────────────────────────────────────────────
+# {id}, {url}
+evidence_usage: "&eUsage: &f/evidence <reportId> add <url> &8| &flist"
+evidence_invalid_id: "&c✖ Invalid report ID format."
+evidence_add_usage: "&eUsage: &f/evidence <reportId> add <url>"
+evidence_added: "&a✔ Evidence added. &8(ID: &7{id}&8)"
+evidence_list_header: "&6Evidence for report &f{id}&6:"
+
+# ─── 2FA ──────────────────────────────────────────────────────
+# {secret}, {url}
+fa2_disabled: "&c✖ 2FA is not enabled on this server."
+fa2_usage: "&eUsage: &f/staff2fa enable &8| &fconfirm <otp> &8| &fdisable &8| &fstatus"
+fa2_enable_secret: "&a2FA Secret: &f{secret}"
+fa2_enable_instructions: "&7Add this to your authenticator app, then run &f/staff2fa confirm <code>&7."
+fa2_enable_url: "&9{url}"
+fa2_confirm_usage: "&eUsage: &f/staff2fa confirm <otp>"
+fa2_no_pending: "&c✖ No pending 2FA setup. Run &f/staff2fa enable &cfirst."
+fa2_enabled: "&a✔ 2FA enabled successfully."
+fa2_invalid_code: "&c✖ Invalid code. Please try again."
+fa2_disabled_success: "&7✖ 2FA disabled."
+fa2_status_on: "&a✔ 2FA: &lENABLED"
+fa2_status_off: "&7✖ 2FA: &lDISABLED"
+
+# ─── Infractions ──────────────────────────────────────────────
+infractions_usage: "&eUsage: &f/infractions <player> [add <type> <reason>]"
+infractions_add_usage: "&eUsage: &f/infractions <player> add <type> <reason>"
+infraction_added: "&a✔ Infraction recorded."
+
+# ─── Punish Command ───────────────────────────────────────────
+# {target}
+punish_usage: "&eUsage: &f/punish <player> &8| &fban/mute/kick/unban/unmute/check"
+punish_gui_only_players: "&c✖ Only players can open the punishment GUI. Use a subcommand from console."
+punish_ban_usage: "&eUsage: &f/punish <player> ban <dur|perm> <reason>"
+punish_mute_usage: "&eUsage: &f/punish <player> mute <dur|perm> <reason>"
+punish_kick_usage: "&eUsage: &f/punish <player> kick <reason>"
+punish_invalid_duration: "&c✖ Invalid duration. Use: 1h, 3d, perm, etc."
+punish_banned: "&a✔ &lBanned &r&e{target}&a."
+punish_muted: "&a✔ &lMuted &r&e{target}&a."
+punish_kicked: "&a✔ &lKicked &r&e{target}&a."
+punish_unbanned: "&a✔ &lUnbanned &r&e{target}&a."
+punish_unmuted: "&a✔ &lUnmuted &r&e{target}&a."
+punish_no_manage: "&c✖ You need &fstafftime.punish.manage &cto remove punishments."
+punish_unknown_sub: "&c✖ Unknown subcommand. Try ban|mute|kick|unban|unmute|check."
+punish_history_litebans: "&7LiteBans is active; use LiteBans history commands."
+punish_history_header: "&6Punishment history for &f{name} &8({count})"
+punish_history_empty: "&7No punishments on record."
+
+# ─── Staff Chat Command ───────────────────────────────────────
+staffchat_on: "&d✔ StaffChat &lON&r&8 — chat routed to staff."
+staffchat_off: "&7✖ StaffChat &lOFF&r&8 — chat is public again."
+
+# ─── Alts Command ─────────────────────────────────────────────
+# {name}, {count}
+alts_usage: "&eUsage: &f/alts <player>"
+alts_known_header: "&6Known alts for &f{name} &8({count})"
+alts_no_linked: "&7No linked accounts found."
+
+# ─── Notes ────────────────────────────────────────────────────
+# {name}, {index}
+notes_usage: "&eUsage: &f/notes <player> add <note> &8| &flist &8| &fremove <index>"
+notes_add_usage: "&eUsage: &f/notes <player> add <note>"
+notes_note_added: "&a✔ Note added."
+notes_list_header: "&6Notes for &f{name}&6:"
+notes_remove_usage: "&eUsage: &f/notes <player> remove <index>"
+notes_note_removed: "&a✔ Note removed."
+notes_invalid_index: "&c✖ Invalid index."
+notes_invalid_index_number: "&c✖ Index must be a number."
+
+# ─── Profile / InspectOffline ─────────────────────────────────
+profile_usage: "&eUsage: &f/profile <player>"
+inspectoffline_usage: "&eUsage: &f/inspectoffline <player> [ec]"
+
+# ─── Follow ───────────────────────────────────────────────────
+# {target}
+follow_must_be_staffmode: "&c✖ You must be in Staff Mode to use follow mode."
+follow_disabled_self: "&a✔ Follow mode disabled."
+follow_usage: "&eUsage: &f/follow <player>"
+follow_self: "&c✖ You cannot follow yourself."
+follow_target_bypass: "&c✖ You cannot follow that player."
+follow_started: "&a✔ Now following &e{target}&a. Use &f/follow &aagain to stop."
+follow_failed: "&c✖ Failed to start follow mode."
+
+# ─── Staff Tickets ────────────────────────────────────────────
+# {id}, {subject}
+ticket_help_create_tip: "Create a new ticket"
+ticket_help_list_tip: "List tickets"
+ticket_help_view_tip: "View ticket details"
+ticket_help_claim_tip: "Claim a ticket"
+ticket_help_unclaim_tip: "Unclaim a ticket"
+ticket_help_comment_tip: "Add a comment"
+ticket_help_resolve_tip: "Mark as resolved"
+ticket_help_close_tip: "Close ticket"
+ticket_help_reopen_tip: "Reopen ticket"
+ticket_help_stats_tip: "View statistics"
+ticket_help_gui_tip: "Open ticket GUI"
+ticket_create_usage: "&eUsage: &f/ticket create <subject>"
+ticket_created: "&a✔ &l[Ticket] &r&7Ticket created!"
+ticket_created_id: "&7Ticket ID: &e{id}"
+ticket_created_subject: "&7Subject: &f{subject}"
+ticket_created_tip: "&7Use &e/ticket view {id} &7to view it."
+ticket_view_usage: "&eUsage: &f/ticket view <id>"
+ticket_not_found: "&c✖ Ticket not found!"
+ticket_claim_usage: "&eUsage: &f/ticket claim <id>"
+ticket_claimed_self: "&a✔ &l[Ticket] &r&7Ticket claimed successfully!"
+ticket_claim_failed: "&c✖ Failed to claim ticket. It may already be claimed."
+ticket_unclaim_usage: "&eUsage: &f/ticket unclaim <id>"
+ticket_unclaimed: "&a✔ &l[Ticket] &r&7Ticket unclaimed successfully!"
+ticket_unclaim_failed: "&c✖ Failed to unclaim ticket."
+ticket_comment_usage: "&eUsage: &f/ticket comment <id> <message>"
+ticket_comment_added: "&a✔ &l[Ticket] &r&7Comment added successfully!"
+ticket_comment_failed: "&c✖ Failed to add comment."
+ticket_resolve_usage: "&eUsage: &f/ticket resolve <id>"
+ticket_resolved_self: "&a✔ &l[Ticket] &r&7Ticket marked as resolved!"
+ticket_resolve_failed: "&c✖ Failed to resolve ticket."
+ticket_close_usage: "&eUsage: &f/ticket close <id>"
+ticket_closed_self: "&a✔ &l[Ticket] &r&7Ticket closed successfully!"
+ticket_close_failed: "&c✖ Failed to close ticket."
+ticket_reopen_usage: "&eUsage: &f/ticket reopen <id>"
+ticket_reopened: "&a✔ &l[Ticket] &r&7Ticket reopened!"
+ticket_reopen_failed: "&c✖ Failed to reopen ticket."
+ticket_no_tickets: "&7No tickets found."
+ticket_list_filter_invalid: "&c✖ Invalid filter! Use: mine, claimed, open, all, resolved, closed"
+ticket_list_more: "&7... and {count} more. Use &e/ticket gui &7to see all."
+ticket_stats_header: "&6&l=== Staff Ticket Statistics ==="
+ticket_stats_total: "&7Total Tickets: &f{count}"
+ticket_stats_open: "&7Open: &c{count}"
+ticket_stats_claimed: "&7Claimed: &e{count}"
+ticket_stats_resolved: "&7Resolved: &a{count}"
+ticket_stats_closed: "&7Closed: &8{count}"
+ticket_opening_gui: "&7⌛ Opening tickets GUI..."
+
+# ─── CoreProtect Lookup ───────────────────────────────────────
+coreprotect_no_permission: "&c✖ You don't have permission to use CoreProtect lookups."
+coreprotect_not_available: "&c✖ CoreProtect integration is not available."
+coreprotect_no_block: "&c✖ You must be looking at a block!"
+coreprotect_rollback_no_permission: "&c✖ You don't have permission to perform rollbacks."
+coreprotect_restore_no_permission: "&c✖ You don't have permission to perform restores."
+
+# ─── Migration Tool ───────────────────────────────────────────
+migrate_no_permission: "&c✖ You don't have permission to use this command."
+migrate_in_progress: "&c✖ A migration is already in progress!"
+migrate_invalid_direction: "&c✖ Invalid direction! Use 'yaml-to-sql' or 'sql-to-yaml'"
+migrate_completed: "&a✔ Migration completed successfully!"
+migrate_failed: "&c✖ Migration failed: &f{error}"
+
+# ─── Global Staff List ────────────────────────────────────────
+# {total}, {staffmode}
+globalstafflist_no_permission: "&c✖ You don't have permission to view the global staff list."
+globalstafflist_disabled: "&c✖ Cross-server features are not enabled."
+globalstafflist_no_data: "&c✖ No network data available yet. Please wait a moment..."
+globalstafflist_summary: "&7Total: &f{total} &7| In Staff Mode: &a{staffmode}"
+globalstafflist_legend: "&7&oLegend: &a[SM] &7= Staff Mode, &7[V] &7= Vanished"
+
+# ─── CommandSpy / SocialSpy format ────────────────────────────
+# {player}, {command}, {message}
+spy_cmdspy_format: "&8[CmdSpy] &7{player}: &f{command}"
+spy_socialspy_format: "&8[SocialSpy] &7{player}: &f{message}"
+
+# ─── Alt Join Notification ────────────────────────────────────
+# {name}, {count}, {alts}
+altcheck_header: "&8[AltCheck] &e{name} &7has &f{count} &7known alt(s): "
+
+# ─── Backup Request ───────────────────────────────────────────
+# {seconds}, {count}
+backup_cooldown: "&c⏱ Please wait &e{seconds}s &cbefore requesting backup again."
+backup_requested: "&a✔ Backup requested! Notified &e{count} &astaff member(s)."
+backup_no_staff: "&e⚠ No staff members available to receive your backup request."
+
+# ─── Channel (extra) ──────────────────────────────────────────
+# {channel}
+channel_switched: "&a✔ Switched to channel: &f{channel}"
+channel_mode_on: "&a✔ Channel mode enabled for: &f{channel}"
+channel_mode_off: "&7✖ Channel mode disabled."
+channel_mode_on_no_channel: "&c✖ No active channel set. Use &f/channel join <name>&c first."
+
+# ─── Rollback GUI / Restore ───────────────────────────────────
+rollback_target_offline_restore: "&c✖ That player is not online for inventory restore."
+rollback_snapshot_not_found_restore: "&c✖ Snapshot not found."
+
+# ─── Enhanced GUI ─────────────────────────────────────────────
+enhanced_gui_cancelled: "&7Cancelled."

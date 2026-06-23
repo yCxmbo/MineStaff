@@ -11,9 +11,13 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import java.util.UUID;
 
 public class ReportsGUIListener implements Listener {
+    private final MineStaff plugin;
     private final ReportManager reports;
 
-    public ReportsGUIListener(MineStaff plugin) { this.reports = plugin.getReportManager(); }
+    public ReportsGUIListener(MineStaff plugin) {
+        this.plugin = plugin;
+        this.reports = plugin.getReportManager();
+    }
 
     @EventHandler
     public void onClick(InventoryClickEvent e) {
@@ -49,16 +53,16 @@ public class ReportsGUIListener implements Listener {
         switch (e.getClick()) {
             case LEFT:
                 reports.setClaimed(id, p.getUniqueId());
-                p.sendMessage(ChatColor.AQUA + "Report claimed.");
-                me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                p.sendMessage(plugin.getConfigManager().getMessage("report_claimed", "&a✔ Report claimed. Investigate and close it when done."));
+                plugin.getAuditLogger().log(java.util.Map.of(
                         "type","report","action","claim","id",id.toString(),"actor",p.getUniqueId().toString()
                 ));
                 p.closeInventory();
                 break;
             case RIGHT:
                 reports.setStatus(id, "CLOSED");
-                p.sendMessage(ChatColor.GREEN + "Report closed.");
-                me.ycxmbo.mineStaff.MineStaff.getInstance().getAuditLogger().log(java.util.Map.of(
+                p.sendMessage(plugin.getConfigManager().getMessage("report_closed", "&a✔ Report closed and archived."));
+                plugin.getAuditLogger().log(java.util.Map.of(
                         "type","report","action","close","id",id.toString(),"actor",p.getUniqueId().toString()
                 ));
                 p.closeInventory();

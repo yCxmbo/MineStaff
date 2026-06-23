@@ -47,11 +47,11 @@ public class FollowManager {
                 return;
             }
 
-            // Stop if follower is no longer in staff mode
             if (!plugin.getStaffDataManager().isStaffMode(currentFollower)) {
                 stopFollowing(currentFollower);
                 if (currentFollower.isOnline()) {
-                    currentFollower.sendMessage("§cFollow mode disabled - you left staff mode.");
+                    currentFollower.sendMessage(plugin.getConfigManager()
+                            .getMessage("follow_disabled_no_staffmode", "&c✖ Follow mode disabled — you are no longer in staff mode."));
                 }
                 return;
             }

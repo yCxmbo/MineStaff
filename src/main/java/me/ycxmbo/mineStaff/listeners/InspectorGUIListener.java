@@ -38,10 +38,16 @@ public class InspectorGUIListener implements Listener {
 
         UUID targetId = InspectorGUI.extractTargetFromItem(clicked);
         if (targetId == null) targetId = InspectorGUI.extractTargetFromTitle(title);
-        if (targetId == null) { viewer.sendMessage(ChatColor.RED + "Unable to resolve target."); return; }
+        if (targetId == null) {
+            viewer.sendMessage(plugin.getConfigManager().getMessage("inspector_cant_resolve", "&c✖ Could not resolve that player."));
+            return;
+        }
 
         OfflinePlayer off = Bukkit.getOfflinePlayer(targetId);
-        if (!off.isOnline()) { viewer.sendMessage(ChatColor.RED + "Target is not online."); return; }
+        if (!off.isOnline()) {
+            viewer.sendMessage(plugin.getConfigManager().getMessage("inspector_target_offline", "&c✖ That player is not currently online."));
+            return;
+        }
         Player target = off.getPlayer();
 
         String name = ChatColor.stripColor(clicked.getItemMeta().getDisplayName()).toLowerCase();

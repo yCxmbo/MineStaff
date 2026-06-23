@@ -234,7 +234,9 @@ public class WarningManager {
             executeAction(player, "kick", "Exceeded warning threshold (" + activeCount + " warnings)");
         } else if (activeCount >= warnThreshold) {
             if (player != null && player.isOnline()) {
-                player.sendMessage("§c§lWARNING: You have " + activeCount + " active warnings! Further violations may result in punishment.");
+                player.sendMessage(plugin.getConfigManager()
+                        .getMessage("warning_threshold", "&c⚠ &lWarning! &r&cYou now have &e{count} &cactive warnings. Continued rule violations will result in punishment.")
+                        .replace("{count}", String.valueOf(activeCount)));
             }
         }
     }

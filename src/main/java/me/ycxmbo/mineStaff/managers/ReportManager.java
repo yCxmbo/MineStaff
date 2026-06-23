@@ -246,7 +246,10 @@ public class ReportManager {
                 if (("CLOSED".equals(upper) && notifyClose) || ("NEEDS_INFO".equals(upper) && notifyNeeds)) {
                     org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
                     if (reporter != null) {
-                        reporter.sendMessage(org.bukkit.ChatColor.AQUA + "Your report (" + id + ") is now " + upper + ".");
+                        reporter.sendMessage(plugin.getConfigManager()
+                                .getMessage("report_status_notify", "&b► Your report &7({id})&b is now &f{status}&b.")
+                                .replace("{id}", id.toString().substring(0, Math.min(8, id.toString().length())))
+                                .replace("{status}", upper));
                     }
                     try { plugin.getDiscordBridge().sendAlert("Report " + id + " status -> " + upper); } catch (Throwable ignored) {}
                 }
@@ -332,7 +335,10 @@ public class ReportManager {
                     org.bukkit.entity.Player reporter = org.bukkit.Bukkit.getPlayer(r.reporter);
                     org.bukkit.entity.Player claimer = org.bukkit.Bukkit.getPlayer(staff);
                     if (reporter != null && claimer != null) {
-                        reporter.sendMessage(org.bukkit.ChatColor.AQUA + "Your report (" + id + ") was claimed by " + claimer.getName() + ".");
+                        reporter.sendMessage(plugin.getConfigManager()
+                                .getMessage("report_claimed_notify", "&b► Your report &7({id})&b was claimed by &f{claimer}&b.")
+                                .replace("{id}", id.toString().substring(0, Math.min(8, id.toString().length())))
+                                .replace("{claimer}", claimer.getName()));
                     }
                     try { plugin.getDiscordBridge().sendAlert("Report " + id + " claimed by " + (claimer == null ? staff : claimer.getName())); } catch (Throwable ignored) {}
                 }

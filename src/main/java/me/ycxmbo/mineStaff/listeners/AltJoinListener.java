@@ -57,11 +57,14 @@ public class AltJoinListener implements Listener {
                 names.append(banned ? ChatColor.RED + name + " (banned)" : ChatColor.WHITE + name);
             }
 
-            String header = (anyBanned ? ChatColor.RED + "⚠ " : ChatColor.YELLOW)
-                    + joined.getName() + ChatColor.GRAY + " has " + found.size() + " known alt(s): ";
+            String header = plugin.getConfigManager()
+                    .getMessage("altcheck_header", "&8[AltCheck] &e{name} &7has &f{count} &7known alt(s): ")
+                    .replace("{name}", joined.getName())
+                    .replace("{count}", String.valueOf(found.size()));
+            if (anyBanned) header = ChatColor.RED + "⚠ " + ChatColor.stripColor(header);
             for (Player staff : Bukkit.getOnlinePlayers()) {
                 if (staff.hasPermission("staffmode.alts")) {
-                    staff.sendMessage(ChatColor.DARK_GRAY + "[AltCheck] " + header + names);
+                    staff.sendMessage(header + names);
                 }
             }
         }, 20L);

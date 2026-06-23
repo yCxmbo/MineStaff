@@ -53,6 +53,8 @@ public class CooldownConfigGUIListener implements Listener {
         plugin.saveConfig();
 
         plugin.getCooldownConfigGUI().open(p);
-        p.sendMessage(ChatColor.GREEN + "Set " + path + " = " + updated + "ms");
+        p.sendMessage(plugin.getConfigManager().getMessage("cooldown_set", "&a✔ Cooldown updated: &f{path} &8= &e{value}ms")
+                .replace("{path}", path)
+                .replace("{value}", String.valueOf(updated)));
     }
 }

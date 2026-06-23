@@ -4,7 +4,6 @@ import me.ycxmbo.mineStaff.MineStaff;
 import me.ycxmbo.mineStaff.api.events.CPSCheckFinishEvent;
 import me.ycxmbo.mineStaff.api.events.CPSCheckStartEvent;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import java.util.Map;
@@ -54,10 +53,15 @@ public class CPSCheckManager {
             double cps = seconds <= 0 ? s.clicks : (s.clicks / (double) seconds);
             Bukkit.getPluginManager().callEvent(new CPSCheckFinishEvent(staff, target, cps));
             if (staff != null && staff.isOnline()) {
-                staff.sendMessage(ChatColor.GREEN + "[CPS] " + ChatColor.WHITE + target.getName() + ": " + ChatColor.YELLOW + String.format(java.util.Locale.US, "%.2f", cps) + " CPS");
+                staff.sendMessage(plugin.getConfigManager()
+                        .getMessage("cps_result_staff", "&8[CPS] &f{target} &8→ &e{cps} &7clicks/s")
+                        .replace("{target}", target.getName())
+                        .replace("{cps}", String.format(java.util.Locale.US, "%.2f", cps)));
             }
             if (target != null && target.isOnline()) {
-                target.sendMessage(ChatColor.YELLOW + "A staff member measured your CPS: " + ChatColor.WHITE + String.format(java.util.Locale.US, "%.2f", cps));
+                target.sendMessage(plugin.getConfigManager()
+                        .getMessage("cps_result_target", "&7A staff member measured your CPS at &e{cps} &7clicks/s.")
+                        .replace("{cps}", String.format(java.util.Locale.US, "%.2f", cps)));
             }
         }, Math.max(1, seconds) * 20L);
     }

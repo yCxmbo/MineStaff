@@ -1,15 +1,13 @@
 package me.ycxmbo.mineStaff.commands;
 
 import me.ycxmbo.mineStaff.MineStaff;
+import me.ycxmbo.mineStaff.managers.ConfigManager;
 import me.ycxmbo.mineStaff.migration.DataMigrationTool;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.scheduler.BukkitRunnable;
 
-/**
- * Command to migrate data between YAML and SQL storage
- */
 public class MigrateCommand implements CommandExecutor {
     private final MineStaff plugin;
     private boolean isRunning = false;
@@ -20,16 +18,15 @@ public class MigrateCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        ConfigManager cfg = plugin.getConfigManager();
         if (!sender.hasPermission("staffmode.admin")) {
-            sender.sendMessage("§cYou don't have permission to use this command.");
+            sender.sendMessage(cfg.getMessage("migrate_no_permission", "No permission."));
             return true;
         }
-
         if (isRunning) {
-            sender.sendMessage("§cA migration is already in progress!");
+            sender.sendMessage(cfg.getMessage("migrate_in_progress", "A migration is already in progress!"));
             return true;
         }
-
         if (args.length < 1) {
             sender.sendMessage("§c§lMineStaff Data Migration Tool");
             sender.sendMessage("§7");
@@ -43,14 +40,12 @@ public class MigrateCommand implements CommandExecutor {
         }
 
         String direction = args[0].toLowerCase();
-
         if (!direction.equals("yaml-to-sql") && !direction.equals("sql-to-yaml")) {
-            sender.sendMessage("§cInvalid direction! Use 'yaml-to-sql' or 'sql-to-yaml'");
+            sender.sendMessage(cfg.getMessage("migrate_invalid_direction", "Invalid direction! Use 'yaml-to-sql' or 'sql-to-yaml'"));
             return true;
         }
 
         DataMigrationTool migrationTool = new DataMigrationTool(plugin);
-
         sender.sendMessage("§e========================================");
         sender.sendMessage("§6§l    MineStaff Data Migration");
         sender.sendMessage("§e========================================");
@@ -61,39 +56,27 @@ public class MigrateCommand implements CommandExecutor {
         sender.sendMessage("§7");
 
         isRunning = true;
-
-        // Run migration asynchronously
         new BukkitRunnable() {
             @Override
             public void run() {
-                DataMigrationTool.MigrationResult result;
+                DataMigrationTool.MigrationResult result = direction.equals("yaml-to-sql")
+                        ? migrationTool.migrateYamlToSql(sender::sendMessage)
+                        : migrationTool.migrateSqlToYaml(sender::sendMessage);
 
-                if (direction.equals("yaml-to-sql")) {
-                    result = migrationTool.migrateYamlToSql(sender::sendMessage);
-                } else {
-                    result = migrationTool.migrateSqlToYaml(sender::sendMessage);
-                }
-
-                // Send summary
                 sender.sendMessage("§e========================================");
                 if (result.success) {
-                    sender.sendMessage("§a§lMigration Completed Successfully!");
-                    sender.sendMessage("§7");
+                    sender.sendMessage(cfg.getMessage("migrate_completed", "Migration completed successfully!"));
                     sender.sendMessage("§7Statistics:");
                     for (DataMigrationTool.MigrationStats stat : result.stats.values()) {
-                        sender.sendMessage(String.format("  §f%s: §a%d migrated",
-                                stat.dataType, stat.migrated));
+                        sender.sendMessage(String.format("  §f%s: §a%d migrated", stat.dataType, stat.migrated));
                     }
                 } else {
-                    sender.sendMessage("§c§lMigration Failed!");
-                    sender.sendMessage("§7Error: §f" + result.message);
+                    sender.sendMessage(cfg.getMessage("migrate_failed", "Migration failed: {error}").replace("{error}", result.message));
                 }
                 sender.sendMessage("§e========================================");
-
                 isRunning = false;
             }
         }.runTaskAsynchronously(plugin);
-
         return true;
     }
 }

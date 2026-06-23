@@ -178,12 +178,12 @@ public class ChannelManager {
      */
     public void sendMessage(Player sender, StaffChannel channel, String message) {
         if (channel == null) {
-            sender.sendMessage("§cNo active channel set!");
+            sender.sendMessage(plugin.getConfigManager().getMessage("channel_no_active_set", "&c✖ No active channel is set."));
             return;
         }
 
         if (!sender.hasPermission(channel.getPermission())) {
-            sender.sendMessage("§cYou don't have access to this channel!");
+            sender.sendMessage(plugin.getConfigManager().getMessage("channel_no_access", "&c✖ You don't have permission to access that channel."));
             return;
         }
 
