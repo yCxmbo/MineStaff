@@ -28,7 +28,7 @@ public class FreezeService {
 
     public boolean toggle(Player actor, Player target, Boolean newState, MineStaffAPI.ToggleCause cause, int durationSeconds) {
         if (target.hasPermission("staffmode.freeze.bypass")) {
-            if (actor != null) actor.sendMessage(ChatColor.RED + "Target cannot be frozen.");
+            if (actor != null) actor.sendMessage(plugin.getMessageManager().get("freeze_cannot_freeze", ChatColor.RED + "Target cannot be frozen."));
             return false;
         }
         boolean state = (newState != null ? newState : !data.isFrozen(target));
@@ -37,9 +37,14 @@ public class FreezeService {
         // Fire API event
         Bukkit.getPluginManager().callEvent(new FreezeToggleEvent(target, state, cause));
 
-        String msg = ChatColor.YELLOW + "Player " + target.getName() + " " + (state ? "frozen." : "unfrozen.");
-        if (actor != null) actor.sendMessage(msg);
-        if (state) target.sendMessage(ChatColor.RED + "You have been frozen by staff. Do not log out.");
+        var mm = plugin.getMessageManager();
+        if (actor != null) {
+            String key = state ? "freeze_toggled_on" : "freeze_toggled_off";
+            String def = state ? ChatColor.YELLOW + "Player " + target.getName() + " frozen." : ChatColor.YELLOW + "Player " + target.getName() + " unfrozen.";
+            actor.sendMessage(mm.get(key, def).replace("{target}", target.getName()));
+        }
+        if (state) target.sendMessage(mm.get("freeze_notify", ChatColor.RED + "You have been frozen by staff. Do not log out."));
+        else target.sendMessage(mm.get("freeze_unfreeze_notify", ChatColor.GREEN + "You have been unfrozen."));
 
         try { plugin.getDiscordBridge().sendAlert("Freeze: " + (actor == null ? "Console" : actor.getName()) + " -> " + target.getName() + " = " + state); } catch (Throwable ignored) {}
         try { plugin.getAuditLogger().log(java.util.Map.of(

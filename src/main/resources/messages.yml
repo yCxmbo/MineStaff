@@ -1,0 +1,180 @@
+# ╔══════════════════════════════════════════════════════════════╗
+# ║                  MineStaff — messages.yml                   ║
+# ║  Edit player-facing text here. Supports legacy color codes  ║
+# ║  (&a, &c, etc.) and common {placeholder} variables.         ║
+# ╚══════════════════════════════════════════════════════════════╝
+
+# Prefix prepended to most messages (set to "" to disable).
+prefix: "&8[&aMineStaff&8]&r "
+
+# ─── General ──────────────────────────────────────────────────
+no_permission: "&cYou don't have permission."
+only_players: "&cOnly players can use this."
+player_not_found: "&cPlayer not found."
+feature_disabled: "&cThis feature is disabled."
+
+# ─── Staff Mode ───────────────────────────────────────────────
+staffmode_enabled: "&aStaff Mode enabled."
+staffmode_disabled: "&cStaff Mode disabled."
+
+# ─── Staff Login ──────────────────────────────────────────────
+# {seconds} — remaining lockout seconds
+login_required: "&eYou must /stafflogin before using staff tools."
+login_success: "&aLogin successful."
+login_failure: "&cIncorrect password."
+login_locked_out: "&cToo many failed attempts. Try again in {seconds} seconds."
+login_move_restricted: "&eYou must /stafflogin before moving."
+login_cmd_restricted: "&eYou must /stafflogin before using commands."
+login_chat_restricted: "&eYou must /stafflogin before chatting."
+login_interact_restricted: "&eYou must /stafflogin before interacting."
+login_break_restricted: "&eYou must /stafflogin before breaking blocks."
+login_place_restricted: "&eYou must /stafflogin before placing blocks."
+login_drop_restricted: "&eYou must /stafflogin before dropping items."
+login_inventory_restricted: "&eYou must /stafflogin before using inventory."
+login_fight_restricted: "&eYou must /stafflogin before fighting."
+password_set: "&aPassword set."
+password_changed: "&aPassword changed successfully."
+staff_login_disabled: "&cStaff login is disabled."
+
+# ─── Vanish ───────────────────────────────────────────────────
+vanish_on: "&dVanish enabled."
+vanish_off: "&dVanish disabled."
+
+# ─── Freeze ───────────────────────────────────────────────────
+# {target} — name of the frozen/unfrozen player
+# {seconds} — duration (only when timed freeze is active)
+freeze_usage: "&eUsage: /freeze <player> [seconds]"
+freeze_cannot_freeze: "&cTarget cannot be frozen."
+freeze_toggled_on: "&aFroze {target}."
+freeze_toggled_off: "&aUnfroze {target}."
+# Sent to the player who was frozen
+freeze_notify: "&cYou have been frozen by staff. Do not log out."
+freeze_unfreeze_notify: "&aYou have been unfrozen."
+
+# ─── Reports ──────────────────────────────────────────────────
+# {id}, {reporter}, {target}, {reason}, {status}, {claimer}
+report_usage: "&eUsage: /report <player> <reason>"
+report_submitted: "&aReport submitted. ID: &e{id}"
+report_claimed: "&bReport claimed."
+report_closed: "&aReport closed."
+report_status_notify: "&bYour report ({id}) is now {status}."
+report_claimed_notify: "&bYour report ({id}) was claimed by {claimer}."
+
+# ─── CPS Check ────────────────────────────────────────────────
+# {target}, {seconds}, {cps}
+cps_started: "&aStarted {seconds}s CPS test on {target}."
+cps_target_notify: "&eA staff member is measuring your CPS for {seconds} seconds."
+cps_tool_cooldown: "&cCPS checker cooldown: {seconds}s"
+cps_already_running: "&cA CPS test is already running for {target}."
+cps_result_staff: "&a[CPS] &f{target}: &e{cps} CPS"
+cps_result_target: "&eA staff member measured your CPS: &f{cps}"
+
+# ─── Teleport ─────────────────────────────────────────────────
+# {seconds}, {target}
+teleport_cooldown: "&cTeleport cooldown: {seconds}s"
+teleport_blocked: "&cBlocked destination."
+teleport_no_spot: "&cNo safe spot in sight."
+teleport_success: "&bTeleported to {target}."
+teleport_no_active_players: "&cNo active non-staff players found."
+
+# ─── Random TP ────────────────────────────────────────────────
+# {seconds}
+randomtp_cooldown: "&cRandom TP cooldown: {seconds}s"
+
+# ─── Rollback / Inventory Restore ─────────────────────────────
+# {target}
+rollback_target_not_online: "&cTarget is not online for restore."
+rollback_snapshot_not_found: "&cSnapshot not found."
+rollback_restored_staff: "&aRestored {target}'s inventory from snapshot."
+rollback_restored_target: "&eYour inventory was restored by staff."
+
+# ─── Staff Chat ───────────────────────────────────────────────
+staffchat_lost_permission: "&cYou lost permission for staff chat."
+
+# ─── Punishments ──────────────────────────────────────────────
+# {type}, {target}, {reason}, {expires}
+punishment_applied: "&aApplied {type} to {target}."
+punishment_muted_notify: "&cYou have been muted: {reason} &7(expires: {expires})"
+punishment_muted_blocked: "&cYou are muted: &f{reason} &7(expires {expires})"
+
+# ─── AutoMod ──────────────────────────────────────────────────
+# {reason}
+automod_blocked: "&cYour message was blocked: &7{reason}"
+
+# ─── Follow ───────────────────────────────────────────────────
+follow_disabled_no_staffmode: "&cFollow mode disabled - you left staff mode."
+
+# ─── Channels ─────────────────────────────────────────────────
+channel_no_active: "&cNo active channel! Use /channel join <name>"
+channel_no_access: "&cYou don't have access to this channel!"
+channel_no_active_set: "&cNo active channel set!"
+
+# ─── Alt Detection ────────────────────────────────────────────
+# {name}, {count}
+alts_disabled: "&cAlt detection is disabled."
+alts_header: "&6Known alts for {name} &7({count})"
+alts_no_alts: "&7No linked accounts found."
+
+# ─── Inspector / Staff Tools ──────────────────────────────────
+inspector_cant_resolve: "&cUnable to resolve target."
+inspector_target_offline: "&cTarget is not online."
+staff_tool_guard: "&cYou can't move staff tools in Staff Mode."
+no_history_plugin: "&cNo history plugin detected (CoreProtect/Prism)."
+
+# ─── Staff Tickets ────────────────────────────────────────────
+# {staff}, {ticket}
+ticket_claimed_notify: "&a&l[Staff Ticket] &r&f{staff} &7claimed your ticket: &e{ticket}"
+ticket_comment_notify: "&b&l[Staff Ticket] &r&f{staff} &7commented on ticket: &e{ticket}"
+ticket_resolved_notify: "&a&l[Staff Ticket] &r&7Your ticket &e{ticket} &7has been resolved by &f{staff}"
+ticket_new_notify: "&e&l[Staff Ticket] &r&fNew ticket from &e{player}&7: {subject}"
+
+# ─── Cross-Server Teleport ────────────────────────────────────
+# {target}, {server}
+csteleport_no_permission: "&cYou don't have permission to use cross-server teleport!"
+csteleport_searching: "&7Searching for player across network..."
+csteleport_disabled: "&cCross-server features are not enabled!"
+csteleport_waiting: "&eWaiting for response from network..."
+csteleport_not_found: "&cPlayer {target} not found on any server!"
+csteleport_success: "&aTeleported to {target}"
+csteleport_found: "&aPlayer found on server: &e{server}"
+csteleport_initiating: "&7Initiating cross-server teleport..."
+csteleport_switching: "&aSwitching to server {server}..."
+
+# ─── Warnings ─────────────────────────────────────────────────
+# {count}
+warning_threshold: "&c&lWARNING: &r&cYou have {count} active warnings! Further violations may result in punishment."
+
+# ─── Enhanced GUI ─────────────────────────────────────────────
+gui_search_prompt: "&e&lSearch: &7Type your search query in chat (or 'cancel' to abort)"
+gui_page_jump_prompt: "&e&lJump to Page: &7Type a page number in chat (or 'cancel' to abort)"
+gui_cancelled: "&cCancelled."
+gui_search_set: "&aSearch set to: &f{query}"
+gui_page_must_be_positive: "&cPage number must be positive!"
+gui_jumped_to_page: "&aJumped to page {page}"
+gui_invalid_page: "&cInvalid page number!"
+gui_claimed_report: "&aClaimed report for {target}"
+gui_report_details_header: "&eReport Details:"
+gui_no_reports_selected: "&cNo reports selected!"
+gui_closed_reports: "&aClosed {count} report(s)"
+
+# ─── Cooldowns Config GUI ─────────────────────────────────────
+# {path}, {value}
+cooldown_set: "&aSet {path} = {value}ms"
+
+# ─── Staff Stats ──────────────────────────────────────────────
+staffstats_unavailable: "&cAnalytics are unavailable."
+staffstats_gui_only: "&cOnly players can open the GUI."
+staffstats_header: "&6Staff stats: &e{name}"
+staffstats_duty_time: "&7  Duty time: &f{time}"
+staffstats_sessions: "&7  Sessions: &f{count}"
+staffstats_warnings: "&7  Warnings issued: &f{count}"
+staffstats_punishments: "&7  Punishments issued: &f{count}"
+staffstats_reports: "&7  Reports handled: &f{count}"
+staffstats_leaderboard_header: "&6═══ Staff Activity Leaderboard ═══"
+staffstats_no_data: "&7No data recorded yet."
+staffstats_leaderboard_entry: "&e{rank}. &f{name} &7— &f{time}"
+staffstats_gui_tip: "&8Tip: /staffstats gui for the interactive view."
+
+# ─── Reload ───────────────────────────────────────────────────
+reload_success: "&aMineStaff reloaded."
+reload_no_permission: "&cNo permission."

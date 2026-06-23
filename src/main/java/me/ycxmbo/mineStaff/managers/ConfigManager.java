@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 public class ConfigManager {
     private final MineStaff plugin;
@@ -30,22 +31,6 @@ public class ConfigManager {
 
     private void loadDefaults() {
         defaults.put("config_version", 2);
-        defaults.put("messages.prefix", "&8[&aMineStaff&8]&r ");
-        defaults.put("messages.no_permission", "&cYou don't have permission.");
-        defaults.put("messages.only_players", "&cOnly players can use this.");
-        defaults.put("messages.staffmode_enabled", "&aStaff Mode enabled.");
-        defaults.put("messages.staffmode_disabled", "&cStaff Mode disabled.");
-        defaults.put("messages.login_required", "&eYou must /stafflogin before using staff tools.");
-        defaults.put("messages.login_success", "&aLogin successful.");
-        defaults.put("messages.login_failure", "&cIncorrect password.");
-        defaults.put("messages.login_locked_out", "&cToo many failed attempts. Try again in {seconds} seconds.");
-        defaults.put("messages.password_set", "&aPassword set.");
-        defaults.put("messages.staff_login_disabled", "&cStaff login is disabled.");
-        defaults.put("messages.cps_started", "&aStarted {seconds}s CPS test on {target}.");
-        defaults.put("messages.cps_target_notify", "&eA staff member is measuring your CPS for {seconds} seconds.");
-        defaults.put("messages.cps_tool_cooldown", "&cCPS checker cooldown: {seconds}s");
-        defaults.put("messages.cps_already_running", "&cA CPS test is already running for {target}.");
-        defaults.put("messages.randomtp_cooldown", "&cRandom TP cooldown: {seconds}s");
         defaults.put("options.staff_login_enabled", true);
         defaults.put("options.require_login", true);
         defaults.put("options.staffmode_gamemode", "CREATIVE");
@@ -109,21 +94,40 @@ public class ConfigManager {
                 staffAccountsFile.getParentFile().mkdirs();
                 staffAccountsFile.createNewFile();
             } catch (IOException e) {
-                e.printStackTrace();
+                plugin.getLogger().log(Level.WARNING, "Could not create staffaccounts.yml", e);
             }
         }
         staffAccounts = YamlConfiguration.loadConfiguration(staffAccountsFile);
     }
 
+    /**
+     * Returns a message by key. Lookup order:
+     *  1. messages.yml (via MessageManager)
+     *  2. legacy locale file
+     *  3. legacy messages.* section in config.yml
+     *  4. supplied default value
+     */
     public String getMessage(String path, String def) {
+        // 1. messages.yml
+        MessageManager mm = plugin.getMessageManager();
+        if (mm != null) {
+            String fromFile = mm.messages().getString(path, null);
+            if (fromFile != null) {
+                String prefix = mm.getPrefix();
+                return prefix + ChatColor.translateAlternateColorCodes('&', fromFile);
+            }
+        }
+
+        // 2. locale file (legacy)
         String prefix = ChatColor.translateAlternateColorCodes('&', config.getString("messages.prefix", ""));
         String rawMsg = null;
         if (localeYaml != null && localeYaml.isSet("messages." + path)) {
             rawMsg = localeYaml.getString("messages." + path, def);
         }
+        // 3. config.yml messages section (legacy)
         if (rawMsg == null) rawMsg = config.getString("messages." + path, def);
-        String raw = ChatColor.translateAlternateColorCodes('&', rawMsg);
-        return prefix + raw;
+        if (rawMsg == null) rawMsg = def;
+        return prefix + ChatColor.translateAlternateColorCodes('&', rawMsg);
     }
 
     public FileConfiguration getConfig() {
@@ -158,7 +162,7 @@ public class ConfigManager {
         try {
             staffAccounts.save(staffAccountsFile);
         } catch (IOException e) {
-            e.printStackTrace();
+            plugin.getLogger().log(Level.WARNING, "Could not save staffaccounts.yml", e);
         }
     }
 
@@ -182,6 +186,7 @@ public class ConfigManager {
             if (!f.exists()) { localeYaml = null; return; }
             localeYaml = YamlConfiguration.loadConfiguration(f);
         } catch (Throwable t) {
+            plugin.getLogger().log(Level.WARNING, "Failed to load locale file", t);
             localeYaml = null;
         }
     }

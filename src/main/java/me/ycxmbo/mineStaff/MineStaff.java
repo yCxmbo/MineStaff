@@ -33,6 +33,7 @@ public class MineStaff extends JavaPlugin {
     public static MineStaff getInstance() { return instance; }
 
     // Core
+    private MessageManager messageManager;
     private ConfigManager configManager;
     private StaffDataManager staffDataManager;
     private StaffLoginManager staffLoginManager;
@@ -94,6 +95,7 @@ public class MineStaff extends JavaPlugin {
     private LoginGuardListener loginGuardListener;
 
     // Getters
+    public MessageManager getMessageManager() { return messageManager; }
     public ConfigManager getConfigManager() { return configManager; }
     public StaffDataManager getStaffDataManager() { return staffDataManager; }
     public StaffLoginManager getStaffLoginManager() { return staffLoginManager; }
@@ -208,6 +210,7 @@ public class MineStaff extends JavaPlugin {
         logServerCompatibility();
 
         // Instantiate managers
+        this.messageManager    = new MessageManager(this);
         this.configManager     = new ConfigManager(this);
 
         // Validate configuration
