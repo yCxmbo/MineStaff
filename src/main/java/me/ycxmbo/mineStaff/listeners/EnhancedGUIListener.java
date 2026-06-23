@@ -8,17 +8,18 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles enhanced GUI interactions
  */
 public class EnhancedGUIListener implements Listener {
     private final MineStaff plugin;
-    private final Map<UUID, PendingInput> pendingInputs = new HashMap<>();
+    private final Map<UUID, PendingInput> pendingInputs = new ConcurrentHashMap<>();
     
     private enum InputType { SEARCH, JUMP_TO_PAGE }
     
@@ -114,9 +115,12 @@ public class EnhancedGUIListener implements Listener {
         pendingInputs.put(player.getUniqueId(), new PendingInput(type, guiType));
     }
     
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) {
+        pendingInputs.remove(event.getPlayer().getUniqueId());
+    }
+
     private EnhancedReportsGUI getEnhancedReportsGUI() {
-        // This would need to be stored in MineStaff plugin
-        // For now, return null - full implementation would need plugin integration
-        return null;
+        return plugin.getEnhancedReportsGUI();
     }
 }

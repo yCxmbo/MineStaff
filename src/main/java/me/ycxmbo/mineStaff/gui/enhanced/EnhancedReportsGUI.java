@@ -18,8 +18,8 @@ import java.util.function.Predicate;
  */
 public class EnhancedReportsGUI {
     private final MineStaff plugin;
-    private final Map<UUID, GUIContext<ReportManager.Report>> contexts = new HashMap<>();
-    private final Map<UUID, Boolean> selectionModes = new HashMap<>();
+    private final Map<UUID, GUIContext<ReportManager.Report>> contexts = new java.util.concurrent.ConcurrentHashMap<>();
+    private final Map<UUID, Boolean> selectionModes = new java.util.concurrent.ConcurrentHashMap<>();
     
     public EnhancedReportsGUI(MineStaff plugin) {
         this.plugin = plugin;
@@ -295,5 +295,11 @@ public class EnhancedReportsGUI {
     
     public GUIContext<ReportManager.Report> getContext(Player viewer) {
         return contexts.get(viewer.getUniqueId());
+    }
+
+    public void cleanup(Player viewer) {
+        UUID id = viewer.getUniqueId();
+        contexts.remove(id);
+        selectionModes.remove(id);
     }
 }
