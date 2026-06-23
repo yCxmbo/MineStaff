@@ -29,12 +29,14 @@ public class CrossServerTeleport {
     public CrossServerTeleport(MineStaff plugin) {
         this.plugin = plugin;
         this.serverName = plugin.getConfig().getString("server-name", "unknown");
-        
+
+        long cleanupInterval = plugin.getConfig().getLong("crossserver.cleanup_interval_ticks", 1200L);
         Bukkit.getScheduler().runTaskTimer(plugin, () -> {
+            long timeoutMs = plugin.getConfig().getLong("crossserver.timeout_ms", 60000L);
             long now = System.currentTimeMillis();
-            pendingTeleports.entrySet().removeIf(entry -> 
-                now - entry.getValue().requestTime > 60000);
-        }, 1200L, 1200L);
+            pendingTeleports.entrySet().removeIf(entry ->
+                now - entry.getValue().requestTime > timeoutMs);
+        }, cleanupInterval, cleanupInterval);
     }
     
     public void teleportToPlayer(Player staff, String targetPlayerName) {
@@ -64,28 +66,29 @@ public class CrossServerTeleport {
             return;
         }
 
-        String channel = "minestaff:teleport:query";
+        String channel = plugin.getConfig().getString("redis.channels.teleport_query", "minestaff:teleport:query");
         String message = serverName + "|" + staff.getUniqueId() + "|" + staff.getName() + "|" + targetPlayerName;
 
         redisBridge.publish(channel, message);
 
         staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_waiting", "&e⌛ Awaiting network response..."));
 
+        long responseTicks = plugin.getConfig().getLong("crossserver.response_timeout_ticks", 60L);
         Bukkit.getScheduler().runTaskLater(plugin, () -> {
             if (!pendingTeleports.containsKey(staff.getUniqueId())) {
                 staff.sendMessage(plugin.getConfigManager().getMessage("csteleport_not_found", "&c✖ Player &f{target} &cis not online on any server.")
                         .replace("{target}", targetPlayerName));
             }
-        }, 60L);
+        }, responseTicks);
     }
     
     public void handleTeleportQuery(String originServer, UUID staffId, String staffName, String targetPlayerName) {
         Player target = Bukkit.getPlayerExact(targetPlayerName);
         if (target == null) return;
         
-        String channel = "minestaff:teleport:response";
+        String channel = plugin.getConfig().getString("redis.channels.teleport_response", "minestaff:teleport:response");
         String message = serverName + "|" + originServer + "|" + staffId + "|" + staffName + "|" + targetPlayerName;
-        
+
         plugin.getRedisBridge().publish(channel, message);
         
         plugin.getLogger().info("Cross-server teleport: " + staffName + " is teleporting to " + targetPlayerName + " on " + serverName);
@@ -114,7 +117,7 @@ public class CrossServerTeleport {
         
         player.sendPluginMessage(plugin, "BungeeCord", out.toByteArray());
 
-        String channel = "minestaff:teleport:pending";
+        String channel = plugin.getConfig().getString("redis.channels.teleport_pending", "minestaff:teleport:pending");
         String message = server + "|" + player.getUniqueId() + "|" + targetPlayer;
         plugin.getRedisBridge().publish(channel, message);
 

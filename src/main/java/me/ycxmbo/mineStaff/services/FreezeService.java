@@ -72,25 +72,30 @@ public class FreezeService {
 
     private void startParticles() {
         if (particleTask != null) return;
+        var cfg = plugin.getConfigManager().getConfig();
+        long periodTicks = cfg.getLong("freeze.visual_cage.period_ticks", 40L);
         particleTask = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-            var cfg = plugin.getConfigManager().getConfig();
-            boolean enabled = cfg.getBoolean("freeze.visual_cage.enabled", true);
-            String particleName = cfg.getString("freeze.visual_cage.particle", "SNOWFLAKE");
+            var c = plugin.getConfigManager().getConfig();
+            boolean enabled = c.getBoolean("freeze.visual_cage.enabled", true);
+            String particleName = c.getString("freeze.visual_cage.particle", "SNOWFLAKE");
             Particle particle = Particle.SNOWFLAKE;
             try { particle = Particle.valueOf(particleName); } catch (IllegalArgumentException ignored) {}
-            double r = cfg.getDouble("freeze.visual_cage.radius", 0.7);
-            int points = 16;
+            double r = c.getDouble("freeze.visual_cage.radius", 0.7);
+            int points = c.getInt("freeze.visual_cage.particle_count", 16);
+            String actionBarRaw = c.getString("freeze.action_bar", "&cYou are frozen.");
+            String actionBarText = ChatColor.translateAlternateColorCodes('&', actionBarRaw);
             for (Player p : Bukkit.getOnlinePlayers()) {
                 if (!data.isFrozen(p)) continue;
-                if (!enabled) continue;
-                var loc = p.getLocation().add(0, 1, 0);
-                for (int i = 0; i < points; i++) {
-                    double ang = (2 * Math.PI * i) / points;
-                    p.getWorld().spawnParticle(particle, loc.getX() + r * Math.cos(ang), loc.getY(), loc.getZ() + r * Math.sin(ang), 1, 0, 0, 0, 0);
+                if (enabled) {
+                    var loc = p.getLocation().add(0, 1, 0);
+                    for (int i = 0; i < points; i++) {
+                        double ang = (2 * Math.PI * i) / points;
+                        p.getWorld().spawnParticle(particle, loc.getX() + r * Math.cos(ang), loc.getY(), loc.getZ() + r * Math.sin(ang), 1, 0, 0, 0, 0);
+                    }
                 }
-                p.sendActionBar(ChatColor.RED + "You are frozen.");
+                p.sendActionBar(actionBarText);
             }
-        }, 20L, 40L); // every 2 seconds
+        }, 20L, periodTicks);
     }
 
     public void stop() {
