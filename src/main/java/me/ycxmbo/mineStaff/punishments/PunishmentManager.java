@@ -155,11 +155,11 @@ public class PunishmentManager {
             persist(p);
             Player online = Bukkit.getPlayer(target);
             if (online != null) {
-                String expires = p.isPermanent() ? "permanent" : p.durationString();
+                String expiresLabel = p.isPermanent() ? "permanent" : p.durationString();
                 online.sendMessage(plugin.getConfigManager()
                         .getMessage("punishment_muted_notify", "&c⚠ You have been muted: &f{reason} &8(expires: {expires})")
                         .replace("{reason}", reason)
-                        .replace("{expires}", expires));
+                        .replace("{expires}", expiresLabel));
             }
         }
         announce(staffName, targetName, "MUTE", expires < 0 ? "Permanent" : formatDuration(durationMs), reason);
