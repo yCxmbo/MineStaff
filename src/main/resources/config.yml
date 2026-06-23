@@ -32,6 +32,22 @@ tools:
     vanish: 8
     cps: 3
     randomtp: 4
+  # Item materials for each staff tool (must be valid Bukkit Material names)
+  materials:
+    teleport: COMPASS
+    freeze: BLAZE_ROD
+    inspect: BOOK
+    cps: CLOCK
+    randomtp: FEATHER
+  # Display names shown on each staff tool (supports & color codes)
+  names:
+    teleport: "&bTeleport"
+    freeze: "&cFreeze"
+    inspect: "&6Inspect"
+    cps: "&eCPS Check"
+    randomtp: "&bRandom TP"
+    vanish_on: "&dVanish &aON"
+    vanish_off: "&dVanish &7OFF"
 
 teleport-to-spawn-on-exit: true
 
@@ -55,6 +71,16 @@ rollback:
 
 silent-chest:
   require-sneak: true
+
+# Staff mode protection settings — toggle which actions are blocked while in staff mode
+staffmode:
+  protections:
+    cancel_damage: true
+    cancel_mob_targeting: true
+    cancel_block_place: true
+    cancel_block_break: true
+    cancel_item_drop: true
+    cancel_item_pickup: true
 
 staffchat:
   cross_server: true
@@ -80,6 +106,20 @@ freeze:
 randomtp:
   active_seconds: 60
   cooldown_ms: 2000
+
+# Vanish persistence — keep vanish state across server restarts/reloads
+vanish:
+  persist: true
+
+# Follow mode settings
+follow:
+  # How often the follower teleports to the target (in ticks; 20 ticks = 1 second)
+  interval_ticks: 20
+
+# Player notes settings
+notes:
+  # Maximum notes per player (0 = unlimited)
+  max_per_player: 0
 
 audit:
   enabled: true
@@ -134,6 +174,10 @@ security:
     enabled: false
   session_timeout_minutes: 60
   bind_ip: true
+  # Maximum failed /stafflogin attempts before lockout
+  max_failed_attempts: 5
+  # How long a lockout lasts (in minutes)
+  lockout_duration_minutes: 5
 
 # Sound customization for all plugin features
 sounds:

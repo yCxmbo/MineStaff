@@ -17,8 +17,6 @@ public class FollowManager implements Listener {
     private final MineStaff plugin;
     private final Map<UUID, UUID> following = new ConcurrentHashMap<>();
     private final Map<UUID, BukkitTask> tasks = new ConcurrentHashMap<>();
-    private static final long FOLLOW_INTERVAL_TICKS = 20L;
-
     public FollowManager(MineStaff plugin) {
         this.plugin = plugin;
     }
@@ -35,6 +33,8 @@ public class FollowManager implements Listener {
         stopFollowing(follower);
 
         following.put(follower.getUniqueId(), target.getUniqueId());
+
+        long intervalTicks = plugin.getConfigManager().getConfig().getLong("follow.interval_ticks", 20L);
 
         // Create repeating task to teleport
         BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
@@ -60,7 +60,7 @@ public class FollowManager implements Listener {
             Location targetLoc = currentTarget.getLocation();
             currentFollower.teleport(targetLoc);
 
-        }, 0L, FOLLOW_INTERVAL_TICKS);
+        }, 0L, intervalTicks);
 
         tasks.put(follower.getUniqueId(), task);
         return true;

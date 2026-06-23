@@ -470,11 +470,14 @@ public class MineStaff extends JavaPlugin {
         );
 
         // Re-apply persisted vanish state for online players (e.g., on /reload)
-        for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
-            if (vanishStore.isVanished(p.getUniqueId())) {
-                staffDataManager.setVanished(p, true);
-                me.ycxmbo.mineStaff.util.VanishUtil.applyVanish(p, true);
-                toolManager.updateVanishDye(p, true);
+        boolean persistVanish = getConfig().getBoolean("vanish.persist", true);
+        if (persistVanish) {
+            for (org.bukkit.entity.Player p : Bukkit.getOnlinePlayers()) {
+                if (vanishStore.isVanished(p.getUniqueId())) {
+                    staffDataManager.setVanished(p, true);
+                    me.ycxmbo.mineStaff.util.VanishUtil.applyVanish(p, true);
+                    toolManager.updateVanishDye(p, true);
+                }
             }
         }
 

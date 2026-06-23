@@ -280,6 +280,7 @@ notes_remove_usage: "&eUsage: &f/notes <player> remove <index>"
 notes_note_removed: "&a✔ Note removed."
 notes_invalid_index: "&c✖ Invalid index."
 notes_invalid_index_number: "&c✖ Index must be a number."
+notes_limit_reached: "&c✖ Note limit reached for this player."
 
 # ─── Profile / InspectOffline ─────────────────────────────────
 profile_usage: "&eUsage: &f/profile <player>"

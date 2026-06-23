@@ -76,6 +76,43 @@ public class ConfigManager {
         defaults.put("reports.default_category", "GENERAL");
         defaults.put("reports.default_priority", "MEDIUM");
         defaults.put("redis.channels.alerts", "minestaff:alerts");
+
+        // Tool materials
+        defaults.put("tools.materials.teleport", "COMPASS");
+        defaults.put("tools.materials.freeze",   "BLAZE_ROD");
+        defaults.put("tools.materials.inspect",  "BOOK");
+        defaults.put("tools.materials.cps",      "CLOCK");
+        defaults.put("tools.materials.randomtp", "FEATHER");
+
+        // Tool display names
+        defaults.put("tools.names.teleport",  "&bTeleport");
+        defaults.put("tools.names.freeze",    "&cFreeze");
+        defaults.put("tools.names.inspect",   "&6Inspect");
+        defaults.put("tools.names.cps",       "&eCPS Check");
+        defaults.put("tools.names.randomtp",  "&bRandom TP");
+        defaults.put("tools.names.vanish_on",  "&dVanish &aON");
+        defaults.put("tools.names.vanish_off", "&dVanish &7OFF");
+
+        // Staff mode protections
+        defaults.put("staffmode.protections.cancel_damage",         true);
+        defaults.put("staffmode.protections.cancel_mob_targeting",  true);
+        defaults.put("staffmode.protections.cancel_block_place",    true);
+        defaults.put("staffmode.protections.cancel_block_break",    true);
+        defaults.put("staffmode.protections.cancel_item_drop",      true);
+        defaults.put("staffmode.protections.cancel_item_pickup",    true);
+
+        // Vanish
+        defaults.put("vanish.persist", true);
+
+        // Follow mode
+        defaults.put("follow.interval_ticks", 20);
+
+        // Notes limit
+        defaults.put("notes.max_per_player", 0);
+
+        // Security thresholds
+        defaults.put("security.max_failed_attempts",      5);
+        defaults.put("security.lockout_duration_minutes", 5);
     }
 
     private void ensureDefaults() {
