@@ -6,6 +6,7 @@ import me.ycxmbo.mineStaff.managers.StaffLoginManager;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -86,7 +87,13 @@ public class LoginGuardListener implements Listener {
         p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
 
-    @EventHandler(ignoreCancelled = true)
+    // Run at LOWEST priority and do NOT ignore cancelled events: for non-op players,
+    // Citizens (or a region/protection plugin) frequently cancels the entity interact
+    // before a default-priority handler would see it. Op players bypass those plugins, so
+    // their click was recorded and their NPC command was exempted, while non-op players'
+    // clicks were dropped and the NPC's command was blocked by the command guard. Running
+    // first and honouring cancelled events ensures the NPC click is always recorded.
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onInteractEntity(PlayerInteractEntityEvent e) {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
@@ -97,6 +104,7 @@ public class LoginGuardListener implements Listener {
             recentNpcClicks.put(p.getUniqueId(), System.currentTimeMillis());
             return;
         }
+        if (e.isCancelled()) return;
         e.setCancelled(true);
         p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
