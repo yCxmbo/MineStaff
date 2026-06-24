@@ -78,6 +78,9 @@ public class LoginGuardListener implements Listener {
     public void onInteractEntity(PlayerInteractEntityEvent e) {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
+        // Allow clicking Citizens NPCs (tagged with the "NPC" metadata) so menu/login
+        // NPCs remain usable before a staff member authenticates.
+        if (e.getRightClicked().hasMetadata("NPC")) return;
         e.setCancelled(true);
         p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
