@@ -30,15 +30,12 @@ public class StaffChatManager {
     /** Normal broadcast initiated locally; forwards to proxy if enabled. */
     public void broadcast(Player sender, String message) {
         String rendered = legacyFormat(sender.getName(), message);
-        String soundName = plugin.getConfigManager().getConfig().getString("staffchat.mention_sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-        org.bukkit.Sound snd = org.bukkit.Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
-        try { snd = org.bukkit.Sound.valueOf(soundName); } catch (IllegalArgumentException ignored) {}
         for (Player pl : Bukkit.getOnlinePlayers()) {
             if (!pl.hasPermission("staffmode.chat")) continue;
             pl.sendMessage(rendered);
             // mention: @name
             if (message.toLowerCase().contains("@" + pl.getName().toLowerCase())) {
-                try { pl.playSound(pl.getLocation(), snd, 0.6f, 1.2f); } catch (Throwable ignored) {}
+                try { plugin.getSoundManager().playSound(pl, "staffchat.mention"); } catch (Throwable ignored) {}
             }
         }
         if (plugin.getConfigManager().getConfig().getBoolean("staffchat.console_log", true)) {

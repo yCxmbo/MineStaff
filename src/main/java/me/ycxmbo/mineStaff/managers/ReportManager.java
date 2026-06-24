@@ -5,7 +5,6 @@ import me.ycxmbo.mineStaff.util.AlertFormatter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.Sound;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
@@ -281,14 +280,10 @@ public class ReportManager {
                 .replace("{id}", idText);
 
         Component message = AlertFormatter.format(plugin, content, null);
-        String soundName = cfg.getString("alerts.sound", "ENTITY_EXPERIENCE_ORB_PICKUP");
-        Sound notifySound = Sound.ENTITY_EXPERIENCE_ORB_PICKUP;
-        try { notifySound = Sound.valueOf(soundName); } catch (IllegalArgumentException ignored) {}
-
         for (Player online : Bukkit.getOnlinePlayers()) {
             if (online.hasPermission(permission)) {
                 online.sendMessage(message);
-                try { online.playSound(online.getLocation(), notifySound, 0.6f, 1.2f); } catch (Throwable ignored) {}
+                try { plugin.getSoundManager().playSound(online, "report.notification"); } catch (Throwable ignored) {}
             }
         }
 

@@ -38,6 +38,7 @@ public class SoundManager {
         sounds.put("report.filed", loadSound("sounds.report.filed", "ENTITY_VILLAGER_YES", 1.0f, 1.0f));
         sounds.put("report.claimed", loadSound("sounds.report.claimed", "BLOCK_NOTE_BLOCK_BELL", 1.0f, 1.0f));
         sounds.put("report.closed", loadSound("sounds.report.closed", "ENTITY_EXPERIENCE_ORB_PICKUP", 1.0f, 1.0f));
+        sounds.put("report.notification", loadSound("sounds.report.notification", "ENTITY_EXPERIENCE_ORB_PICKUP", 0.6f, 1.2f));
         sounds.put("infraction.added", loadSound("sounds.infraction.added", "BLOCK_ANVIL_LAND", 1.0f, 1.5f));
         sounds.put("cps.start", loadSound("sounds.cps.start", "BLOCK_NOTE_BLOCK_PLING", 1.0f, 1.5f));
         sounds.put("cps.complete", loadSound("sounds.cps.complete", "BLOCK_NOTE_BLOCK_PLING", 1.0f, 2.0f));

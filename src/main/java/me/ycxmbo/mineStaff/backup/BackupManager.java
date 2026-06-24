@@ -58,8 +58,9 @@ public class BackupManager {
             }
         };
 
-        // Run first backup after 1 minute, then repeat
-        backupTask.runTaskTimerAsynchronously(plugin, 1200L, intervalTicks);
+        long startupDelaySecs = plugin.getConfig().getLong("backup.startup_delay_seconds", 60L);
+        long startupDelayTicks = Math.max(20L, startupDelaySecs * 20L);
+        backupTask.runTaskTimerAsynchronously(plugin, startupDelayTicks, intervalTicks);
 
         plugin.getLogger().info("Automatic backups enabled. Interval: " + intervalHours + " hours");
     }

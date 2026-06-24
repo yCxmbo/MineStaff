@@ -44,7 +44,9 @@ public class CooldownConfigGUIListener implements Listener {
         }
         if (path == null) return;
 
-        int step = e.isShiftClick() ? 1000 : 250;
+        int smallStep = plugin.getConfig().getInt("cooldowns.small_step_ms", 250);
+        int largeStep = plugin.getConfig().getInt("cooldowns.large_step_ms", 1000);
+        int step = e.isShiftClick() ? largeStep : smallStep;
         if (e.isRightClick()) step = -step;
 
         int current = plugin.getConfig().getInt(path, 0);

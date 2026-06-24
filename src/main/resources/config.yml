@@ -32,6 +32,22 @@ tools:
     vanish: 8
     cps: 3
     randomtp: 4
+  # Item materials for each staff tool (must be valid Bukkit Material names)
+  materials:
+    teleport: COMPASS
+    freeze: BLAZE_ROD
+    inspect: BOOK
+    cps: CLOCK
+    randomtp: FEATHER
+  # Display names shown on each staff tool (supports & color codes)
+  names:
+    teleport: "&bTeleport"
+    freeze: "&cFreeze"
+    inspect: "&6Inspect"
+    cps: "&eCPS Check"
+    randomtp: "&bRandom TP"
+    vanish_on: "&dVanish &aON"
+    vanish_off: "&dVanish &7OFF"
 
 teleport-to-spawn-on-exit: true
 
@@ -40,6 +56,12 @@ reports:
   # Placeholders: {reporter}, {target}, {reason}, {id}
   notify_staff_message: "New report filed by {reporter} against {target}: {reason}"
   cross_server: true
+  # SLA deadlines — how many seconds after creation a report becomes overdue (0 = no deadline)
+  sla_seconds:
+    CRITICAL: 3600    # 1 hour
+    HIGH: 7200        # 2 hours
+    MEDIUM: 21600     # 6 hours
+    LOW: 86400        # 24 hours
 
 infractions:
   types: ["WARN","MUTE","BAN"]  # free-form; used for display
@@ -55,6 +77,16 @@ rollback:
 
 silent-chest:
   require-sneak: true
+
+# Staff mode protection settings — toggle which actions are blocked while in staff mode
+staffmode:
+  protections:
+    cancel_damage: true
+    cancel_mob_targeting: true
+    cancel_block_place: true
+    cancel_block_break: true
+    cancel_item_drop: true
+    cancel_item_pickup: true
 
 staffchat:
   cross_server: true
@@ -76,10 +108,30 @@ freeze:
     enabled: true
     particle: SNOWFLAKE
     radius: 0.7
+    # Number of particles in the ring around the frozen player
+    particle_count: 16
+    # How often the cage re-renders (ticks; 20 = 1 s, 40 = 2 s)
+    period_ticks: 40
+  # Action bar message shown to the frozen player (& color codes supported)
+  action_bar: "&cYou are frozen."
 
 randomtp:
   active_seconds: 60
   cooldown_ms: 2000
+
+# Vanish persistence — keep vanish state across server restarts/reloads
+vanish:
+  persist: true
+
+# Follow mode settings
+follow:
+  # How often the follower teleports to the target (in ticks; 20 ticks = 1 second)
+  interval_ticks: 20
+
+# Player notes settings
+notes:
+  # Maximum notes per player (0 = unlimited)
+  max_per_player: 0
 
 audit:
   enabled: true
@@ -109,6 +161,9 @@ redis:
     reports: "minestaff:reports"
     alerts: "minestaff:alerts"
     staffchannels: "minestaff:channels"
+    teleport_query: "minestaff:teleport:query"
+    teleport_response: "minestaff:teleport:response"
+    teleport_pending: "minestaff:teleport:pending"
 
 discord:
   enabled: false
@@ -134,6 +189,10 @@ security:
     enabled: false
   session_timeout_minutes: 60
   bind_ip: true
+  # Maximum failed /stafflogin attempts before lockout
+  max_failed_attempts: 5
+  # How long a lockout lasts (in minutes)
+  lockout_duration_minutes: 5
 
 # Sound customization for all plugin features
 sounds:
@@ -208,6 +267,12 @@ sounds:
       sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
       volume: 1.0
       pitch: 1.0
+    # Played to staff when a new report notification arrives
+    notification:
+      enabled: true
+      sound: "ENTITY_EXPERIENCE_ORB_PICKUP"
+      volume: 0.6
+      pitch: 1.2
   infraction:
     added:
       enabled: true
@@ -298,11 +363,15 @@ backup:
   max_backups: 1
   # Maximum age of backups in days (older backups are deleted)
   max_age_days: 30
+  # Seconds to wait after startup before running the first automatic backup
+  startup_delay_seconds: 60
 
 # Private staff channels configuration
 channels:
   # Enable private staff channels system
   enabled: true
+  # Suffix appended to the sender name for messages received from another server
+  remote_suffix: " §7[Remote]"
   # Default channels (can add custom channels here)
   default_channels:
     admin:
@@ -394,3 +463,19 @@ alts:
   notify-staff: true
   # Optional salt for address hashing. Changing it resets existing links.
   salt: ""
+
+# Cross-server teleport settings (requires Redis)
+crossserver:
+  # How long (ms) a pending teleport request is kept before it expires
+  timeout_ms: 60000
+  # How often (ticks) the expired-request cleanup job runs (1200 = 60 s)
+  cleanup_interval_ticks: 1200
+  # Ticks to wait for a cross-server response before telling the requester nobody was found (60 = 3 s)
+  response_timeout_ticks: 60
+
+# Cooldown Config GUI — step sizes used when clicking tool cooldown entries
+cooldowns:
+  # Left/right-click adjustment (ms)
+  small_step_ms: 250
+  # Shift + left/right-click adjustment (ms)
+  large_step_ms: 1000

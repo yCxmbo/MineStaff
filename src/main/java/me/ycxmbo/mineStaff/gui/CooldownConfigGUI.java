@@ -50,12 +50,14 @@ public class CooldownConfigGUI {
     }
 
     private ItemStack item(Material mat, String name, String path, int current) {
+        int smallStep = plugin.getConfig().getInt("cooldowns.small_step_ms", 250);
+        int largeStep = plugin.getConfig().getInt("cooldowns.large_step_ms", 1000);
         List<String> lore = new ArrayList<>();
         lore.add(ChatColor.GRAY + "Cooldown: " + ChatColor.WHITE + current + "ms"
                 + ChatColor.DARK_GRAY + " (" + String.format("%.2f", current / 1000.0) + "s)");
         lore.add("");
-        lore.add(ChatColor.GREEN + "Left-click " + ChatColor.GRAY + "+250ms  " + ChatColor.DARK_GRAY + "(shift +1000ms)");
-        lore.add(ChatColor.RED + "Right-click " + ChatColor.GRAY + "-250ms  " + ChatColor.DARK_GRAY + "(shift -1000ms)");
+        lore.add(ChatColor.GREEN + "Left-click " + ChatColor.GRAY + "+" + smallStep + "ms  " + ChatColor.DARK_GRAY + "(shift +" + largeStep + "ms)");
+        lore.add(ChatColor.RED + "Right-click " + ChatColor.GRAY + "-" + smallStep + "ms  " + ChatColor.DARK_GRAY + "(shift -" + largeStep + "ms)");
         lore.add(ChatColor.DARK_GRAY + "PATH:" + path);
         return named(mat, ChatColor.AQUA + name, lore);
     }

@@ -9,6 +9,7 @@ import java.time.Instant;
 import java.util.*;
 
 public class PlayerNotesManager {
+    private final MineStaff plugin;
     private final File file;
     private YamlConfiguration yaml;
     private final boolean useSql;
@@ -19,9 +20,17 @@ public class PlayerNotesManager {
     }
 
     public PlayerNotesManager(MineStaff plugin) {
+        this.plugin = plugin;
         this.file = new File(plugin.getDataFolder(), "notes.yml");
         this.useSql = plugin.getStorage() != null;
         if (!useSql) reload();
+    }
+
+    /** Returns true if adding a note would exceed the configured per-player limit. */
+    public boolean isAtLimit(UUID target) {
+        int max = plugin.getConfigManager().getConfig().getInt("notes.max_per_player", 0);
+        if (max <= 0) return false;
+        return get(target).size() >= max;
     }
 
     public void reload() {

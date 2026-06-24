@@ -39,6 +39,11 @@ public class NotesCommand implements CommandExecutor {
         switch (sub) {
             case "add":
                 if (args.length < 3) { sender.sendMessage(cfg.getMessage("notes_add_usage", "Usage: /notes <player> add <note>")); return true; }
+                if (notes.isAtLimit(t.getUniqueId())) {
+                    int max = plugin.getConfigManager().getConfig().getInt("notes.max_per_player", 0);
+                    sender.sendMessage(cfg.getMessage("notes_limit_reached", "Note limit reached (" + max + " max)."));
+                    return true;
+                }
                 String note = String.join(" ", java.util.Arrays.copyOfRange(args, 2, args.length));
                 notes.add(t.getUniqueId(), (sender instanceof Player p) ? p.getUniqueId() : java.util.UUID.randomUUID(), note);
                 sender.sendMessage(cfg.getMessage("notes_note_added", "Note added."));

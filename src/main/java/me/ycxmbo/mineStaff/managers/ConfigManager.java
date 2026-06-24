@@ -76,6 +76,74 @@ public class ConfigManager {
         defaults.put("reports.default_category", "GENERAL");
         defaults.put("reports.default_priority", "MEDIUM");
         defaults.put("redis.channels.alerts", "minestaff:alerts");
+
+        // Tool materials
+        defaults.put("tools.materials.teleport", "COMPASS");
+        defaults.put("tools.materials.freeze",   "BLAZE_ROD");
+        defaults.put("tools.materials.inspect",  "BOOK");
+        defaults.put("tools.materials.cps",      "CLOCK");
+        defaults.put("tools.materials.randomtp", "FEATHER");
+
+        // Tool display names
+        defaults.put("tools.names.teleport",  "&bTeleport");
+        defaults.put("tools.names.freeze",    "&cFreeze");
+        defaults.put("tools.names.inspect",   "&6Inspect");
+        defaults.put("tools.names.cps",       "&eCPS Check");
+        defaults.put("tools.names.randomtp",  "&bRandom TP");
+        defaults.put("tools.names.vanish_on",  "&dVanish &aON");
+        defaults.put("tools.names.vanish_off", "&dVanish &7OFF");
+
+        // Staff mode protections
+        defaults.put("staffmode.protections.cancel_damage",         true);
+        defaults.put("staffmode.protections.cancel_mob_targeting",  true);
+        defaults.put("staffmode.protections.cancel_block_place",    true);
+        defaults.put("staffmode.protections.cancel_block_break",    true);
+        defaults.put("staffmode.protections.cancel_item_drop",      true);
+        defaults.put("staffmode.protections.cancel_item_pickup",    true);
+
+        // Vanish
+        defaults.put("vanish.persist", true);
+
+        // Follow mode
+        defaults.put("follow.interval_ticks", 20);
+
+        // Notes limit
+        defaults.put("notes.max_per_player", 0);
+
+        // Security thresholds
+        defaults.put("security.max_failed_attempts",      5);
+        defaults.put("security.lockout_duration_minutes", 5);
+
+        // Freeze visual cage extras
+        defaults.put("freeze.visual_cage.particle_count", 16);
+        defaults.put("freeze.visual_cage.period_ticks",   40);
+        defaults.put("freeze.action_bar", "&cYou are frozen.");
+
+        // Report SLA defaults
+        defaults.put("reports.sla_seconds.CRITICAL", 3600);
+        defaults.put("reports.sla_seconds.HIGH",     7200);
+        defaults.put("reports.sla_seconds.MEDIUM",  21600);
+        defaults.put("reports.sla_seconds.LOW",     86400);
+
+        // Backup startup delay
+        defaults.put("backup.startup_delay_seconds", 60);
+
+        // Channels remote suffix
+        defaults.put("channels.remote_suffix", " §7[Remote]");
+
+        // Cross-server teleport
+        defaults.put("crossserver.timeout_ms",               60000);
+        defaults.put("crossserver.cleanup_interval_ticks",   1200);
+        defaults.put("crossserver.response_timeout_ticks",   60);
+
+        // Redis teleport channels
+        defaults.put("redis.channels.teleport_query",    "minestaff:teleport:query");
+        defaults.put("redis.channels.teleport_response", "minestaff:teleport:response");
+        defaults.put("redis.channels.teleport_pending",  "minestaff:teleport:pending");
+
+        // Cooldown GUI step sizes
+        defaults.put("cooldowns.small_step_ms", 250);
+        defaults.put("cooldowns.large_step_ms", 1000);
     }
 
     private void ensureDefaults() {

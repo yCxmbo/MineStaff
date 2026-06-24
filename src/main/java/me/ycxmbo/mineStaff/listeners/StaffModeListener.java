@@ -45,9 +45,9 @@ public class StaffModeListener implements Listener {
         // Clear login status to force re-authentication
         login.clearLoginStatus(p);
 
-        // If player was persisted as vanished, restore vanish state
-        // (vanish is intentionally persistent across sessions)
-        if (MineStaff.getInstance().getVanishStore().isVanished(p.getUniqueId())) {
+        // If vanish persistence is enabled and player was stored as vanished, restore it
+        boolean persistVanish = plugin.getConfigManager().getConfig().getBoolean("vanish.persist", true);
+        if (persistVanish && MineStaff.getInstance().getVanishStore().isVanished(p.getUniqueId())) {
             staff.setVanished(p, true);
             VanishUtil.applyVanish(p, true);
             MineStaff.getInstance().getToolManager().updateVanishDye(p, true);
@@ -77,9 +77,12 @@ public class StaffModeListener implements Listener {
             staff.disableStaffMode(p);
         }
 
-        // Persist vanish state if player was vanished (vanish persists across sessions)
-        if (staff.isVanished(p)) {
+        // Persist vanish state on quit if persistence is enabled
+        boolean persistVanish = plugin.getConfigManager().getConfig().getBoolean("vanish.persist", true);
+        if (persistVanish && staff.isVanished(p)) {
             MineStaff.getInstance().getVanishStore().setVanished(p.getUniqueId(), true);
+        } else if (!persistVanish) {
+            MineStaff.getInstance().getVanishStore().setVanished(p.getUniqueId(), false);
         }
 
         // Clean up any other lingering state data to prevent getting stuck
@@ -91,36 +94,48 @@ public class StaffModeListener implements Listener {
 
     @EventHandler
     public void onDamage(EntityDamageEvent e) {
-        if (e.getEntity() instanceof Player p && staff.isStaffMode(p)) {
+        if (e.getEntity() instanceof Player p && staff.isStaffMode(p)
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_damage", true)) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onTarget(EntityTargetEvent e) {
-        if (e.getTarget() instanceof Player p && staff.isStaffMode(p)) {
+        if (e.getTarget() instanceof Player p && staff.isStaffMode(p)
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_mob_targeting", true)) {
             e.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onDrop(PlayerDropItemEvent e) {
-        if (staff.isStaffMode(e.getPlayer())) e.setCancelled(true);
+        if (staff.isStaffMode(e.getPlayer())
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_item_drop", true)) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onPlace(BlockPlaceEvent e) {
-        if (staff.isStaffMode(e.getPlayer())) e.setCancelled(true);
+        if (staff.isStaffMode(e.getPlayer())
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_block_place", true)) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onBreak(BlockBreakEvent e) {
-        if (staff.isStaffMode(e.getPlayer())) e.setCancelled(true);
+        if (staff.isStaffMode(e.getPlayer())
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_block_break", true)) {
+            e.setCancelled(true);
+        }
     }
 
     @EventHandler
     public void onPickup(EntityPickupItemEvent e) {
-        if (e.getEntity() instanceof Player p && staff.isStaffMode(p)) {
+        if (e.getEntity() instanceof Player p && staff.isStaffMode(p)
+                && plugin.getConfigManager().getConfig().getBoolean("staffmode.protections.cancel_item_pickup", true)) {
             e.setCancelled(true);
         }
     }

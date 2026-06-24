@@ -229,9 +229,10 @@ public class ChannelManager {
         StaffChannel channel = getChannel(channelId);
         if (channel == null) return;
 
+        String remoteSuffix = plugin.getConfig().getString("channels.remote_suffix", " §7[Remote]");
         String formatted = channel.getFormat()
                 .replace("{channel}", channel.getDisplayName())
-                .replace("{name}", senderName + " §7[Remote]")
+                .replace("{name}", senderName + remoteSuffix)
                 .replace("{message}", message);
 
         formatted = formatted.replace('&', '§');

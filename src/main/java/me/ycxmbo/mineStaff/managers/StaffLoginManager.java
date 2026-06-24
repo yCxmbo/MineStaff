@@ -25,10 +25,6 @@ public class StaffLoginManager {
     // BCrypt cost factor (higher = more secure but slower)
     private static final int BCRYPT_COST = 12;
 
-    // Rate limiting configuration
-    private static final int MAX_FAILED_ATTEMPTS = 5;
-    private static final long LOCKOUT_DURATION_MS = 5 * 60 * 1000; // 5 minutes
-
     public StaffLoginManager(MineStaff plugin) {
         this.plugin = plugin;
 
@@ -176,8 +172,10 @@ public class StaffLoginManager {
         int attempts = failedAttempts.getOrDefault(uuid, 0) + 1;
         failedAttempts.put(uuid, attempts);
 
-        if (attempts >= MAX_FAILED_ATTEMPTS) {
-            long lockoutUntil = System.currentTimeMillis() + LOCKOUT_DURATION_MS;
+        int maxAttempts = plugin.getConfigManager().getConfig().getInt("security.max_failed_attempts", 5);
+        if (attempts >= maxAttempts) {
+            long lockoutMinutes = plugin.getConfigManager().getConfig().getLong("security.lockout_duration_minutes", 5);
+            long lockoutUntil = System.currentTimeMillis() + lockoutMinutes * 60_000L;
             lockoutExpiry.put(uuid, lockoutUntil);
             plugin.getLogger().warning("Player " + uuid + " has been locked out due to " + attempts + " failed login attempts");
         }
