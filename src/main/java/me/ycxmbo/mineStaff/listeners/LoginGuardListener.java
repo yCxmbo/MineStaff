@@ -12,6 +12,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -22,8 +23,15 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityPickupItemEvent;
 
 public class LoginGuardListener implements Listener {
+    // How long (ms) after clicking an NPC a dispatched command is treated as
+    // originating from that NPC rather than typed by the player.
+    private static final long NPC_COMMAND_GRACE_MS = 250L;
+
     private final StaffLoginManager login;
     private final ConfigManager config;
+    // Tracks the last time each logged-out staff member clicked a Citizens NPC, so
+    // commands the NPC runs on their behalf are not blocked by the login guard.
+    private final java.util.Map<java.util.UUID, Long> recentNpcClicks = new java.util.concurrent.ConcurrentHashMap<>();
 
     public LoginGuardListener(MineStaff plugin) {
         this.login = plugin.getStaffLoginManager();
@@ -54,6 +62,10 @@ public class LoginGuardListener implements Listener {
         if (!requiresLogin(p)) return;
         String msg = e.getMessage().toLowerCase();
         if (msg.startsWith("/stafflogin")) return; // allow both /stafflogin and /stafflogin set
+        // Allow commands dispatched by a Citizens NPC the player just clicked, so
+        // menu/login NPCs remain usable before a staff member authenticates.
+        Long clicked = recentNpcClicks.get(p.getUniqueId());
+        if (clicked != null && System.currentTimeMillis() - clicked <= NPC_COMMAND_GRACE_MS) return;
         e.setCancelled(true);
         p.sendMessage(config.getMessage("login_cmd_restricted", "Please /stafflogin before using commands."));
     }
@@ -79,8 +91,12 @@ public class LoginGuardListener implements Listener {
         Player p = e.getPlayer();
         if (!requiresLogin(p)) return;
         // Allow clicking Citizens NPCs (tagged with the "NPC" metadata) so menu/login
-        // NPCs remain usable before a staff member authenticates.
-        if (e.getRightClicked().hasMetadata("NPC")) return;
+        // NPCs remain usable before a staff member authenticates. Record the click so
+        // any command the NPC runs on the player's behalf is not blocked either.
+        if (e.getRightClicked().hasMetadata("NPC")) {
+            recentNpcClicks.put(p.getUniqueId(), System.currentTimeMillis());
+            return;
+        }
         e.setCancelled(true);
         p.sendMessage(config.getMessage("login_interact_restricted", "Please /stafflogin to interact."));
     }
@@ -138,5 +154,10 @@ public class LoginGuardListener implements Listener {
         if (!(e.getEntity() instanceof Player p)) return;
         if (!requiresLogin(p)) return;
         e.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent e) {
+        recentNpcClicks.remove(e.getPlayer().getUniqueId());
     }
 }
